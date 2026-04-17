@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Bash(claude mcp:*)",
+      "Bash(command -v pdftotext)",
+      "Bash(pdftotext --version)",
+      "Bash(command -v python)",
+      "Bash(command -v node)",
+      "Bash(pdftotext -layout \"C:\\\\Sistema de Contagem Rei AutoParts/manual.pdf\" /tmp/manual.txt)",
+      "Read(//tmp/**)",
+      "Bash(grep -nE \"^[A-Z]{2,3}[[:space:]]*[:|-]|Comando \\(DR|PR|OE|SW|SR|PW|DS|ST|RS|PN|OS|RR\\)|Altera.*programa|Troca.*programa|mudar.*programa|Iniciar|Parar|suspens|Contagem\" /tmp/manual.txt)",
+      "Bash(npm install *)",
+      "Bash(where npm.cmd)",
+      "Bash(where node *)",
+      "Bash(npm --version)",
+      "Bash(/c/Program Files/nodejs/npm.cmd *)",
+      "Bash(\"/c/Program Files/nodejs/npm.cmd\" install)",
+      "Bash(rm -rf node_modules)",
+      "Bash(\"/c/Program Files/nodejs/npm.cmd\" install --ignore-scripts --strict-ssl=false)",
+      "Bash(npm test *)",
+      "Bash(node --test tests/config.test.js)",
+      "Bash(node --input-type=module)",
+      "Bash(node *)",
+      "Bash(where npm *)",
+      "Bash(\"/c/Program Files/nodejs/npm.cmd\" rebuild better-sqlite3)",
+      "Read(//c/Users/emiliojv/**)",
+      "Read(//c/Users/emiliojv/.node_gyp/**)",
+      "Bash(where node-gyp *)",
+      "Bash(NODE_TLS_REJECT_UNAUTHORIZED=0 \"/c/Program Files/nodejs/npm.cmd\" rebuild better-sqlite3)"
+    ]
+  }
+}
