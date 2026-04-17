@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detalhes da Carga - Rei AutoParts</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#d5e5ef",
+                        "primary-fixed": "#d5e5ef",
+                        "on-tertiary-fixed": "#304f49",
+                        "surface": "#f8f9fa",
+                        "tertiary": "#46655e",
+                        "secondary": "#40665d",
+                        "inverse-primary": "#e0f0fb",
+                        "outline-variant": "#abb3b7",
+                        "on-secondary-container": "#325950",
+                        "inverse-surface": "#0c0f10",
+                        "tertiary-fixed-dim": "#caede4",
+                        "surface-container-highest": "#dbe4e7",
+                        "surface-tint": "#516169",
+                        "on-surface-variant": "#586064",
+                        "outline": "#737c7f",
+                        "error-dim": "#4e0309",
+                        "on-secondary-fixed-variant": "#3c6359",
+                        "background": "#f8f9fa",
+                        "tertiary-container": "#d8fbf2",
+                        "secondary-dim": "#345a51",
+                        "on-primary-fixed-variant": "#4e5e66",
+                        "surface-variant": "#dbe4e7",
+                        "on-primary-fixed": "#324149",
+                        "on-surface": "#2b3437",
+                        "surface-bright": "#f8f9fa",
+                        "surface-container": "#eaeff1",
+                        "primary-dim": "#45555d",
+                        "surface-container-low": "#f1f4f6",
+                        "primary": "#516169",
+                        "on-background": "#2b3437",
+                        "secondary-container": "#c1ebdf",
+                        "on-error-container": "#752121",
+                        "on-tertiary": "#e3fff7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#4d6c65",
+                        "on-secondary-fixed": "#1f463d",
+                        "tertiary-fixed": "#d8fbf2",
+                        "on-tertiary-container": "#42625b",
+                        "surface-dim": "#d1dce0",
+                        "secondary-fixed-dim": "#b3ddd1",
+                        "on-error": "#fff7f6",
+                        "inverse-on-surface": "#9b9d9e",
+                        "error": "#9f403d",
+                        "surface-container-high": "#e3e9ec",
+                        "primary-fixed-dim": "#c7d7e1",
+                        "on-primary-container": "#45545c",
+                        "secondary-fixed": "#c1ebdf",
+                        "tertiary-dim": "#3a5952",
+                        "on-primary": "#f0f9ff",
+                        "error-container": "#fe8983",
+                        "on-secondary": "#e3fff6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-manrope { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #abb3b733; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+<!-- SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-slate-100 dark:bg-slate-950 flex flex-col p-6 space-y-8 z-50">
+<div class="flex items-center space-x-3 mb-4">
+<div class="w-10 h-10 bg-primary-dim rounded-xl flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="factory">factory</span>
+</div>
+<div>
+<h2 class="font-manrope font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">Silent Inspector</h2>
+<p class="font-manrope uppercase tracking-widest text-[10px] text-slate-500">Unidade de Fundição</p>
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-all font-manrope uppercase tracking-widest text-xs" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span>Inicial</span>
+</a>
+<!-- Active Tab: Carga -->
+<a class="flex items-center space-x-3 px-4 py-3 text-teal-800 dark:text-teal-300 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm font-manrope uppercase tracking-widest text-xs translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Carga</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-all font-manrope uppercase tracking-widest text-xs" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span>Eventos</span>
+</a>
+</nav>
+<div class="pt-8 border-t border-slate-200/50">
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-all font-manrope uppercase tracking-widest text-xs" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span>Suporte</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 min-h-screen flex flex-col relative">
+<!-- TopNavBar Component -->
+<header class="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl flex justify-between items-center px-8 py-4 w-full z-40 sticky top-0">
+<div class="flex items-center space-x-4">
+<h1 class="font-manrope font-light tracking-widest text-slate-800 dark:text-slate-100 uppercase text-lg">Rei AutoParts</h1>
+<span class="text-outline-variant text-xs font-light">|</span>
+<span class="text-on-surface-variant font-manrope text-sm tracking-tight">Embarque SHP-2024-00125</span>
+</div>
+<div class="flex items-center space-x-6">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm" data-icon="search">search</span>
+<input class="bg-surface-container-high border-none rounded-full pl-10 pr-4 py-1.5 text-sm focus:ring-1 focus:ring-primary-dim w-64 transition-all placeholder:text-outline/60" placeholder="Buscar peça ou OP..." type="text"/>
+</div>
+<div class="flex items-center space-x-2">
+<button class="p-2 text-slate-500 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="ml-4 flex items-center space-x-3 border-l border-slate-200/50 pl-6">
+<div class="text-right">
+<p class="text-xs font-semibold text-slate-900 dark:text-white">Operador Logístico</p>
+<p class="text-[10px] text-slate-500">ID: #8821-XP</p>
+</div>
+<img alt="portrait of a focused professional logistics operator" class="w-8 h-8 rounded-full object-cover grayscale brightness-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbEgOQzQz68_Iv68XB5soqkQzh1ElTCXmFTeju3mZUxFNl7QlaCa35pGXypPjZC_hLVUsbGDh0_NWuAQYRlmYyXxbOjXxH4XhtFr62tSIuFEegPLcevr72wT3fdYnMEeGq19FX2krtWUq-Y7ErjUTETsWshqJIDD6hsPn2oIY6OwzKlsMxyYh06atuk188EDEiO6EbYs4QuQz-KvlWYBLScs0Yzf1NIJaNVGm4EOnORRSSQ_S_jaXiDgXWXju65Oc3gSCEeLZVA8s"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-8 space-y-8 flex-1 overflow-auto">
+<!-- Summary Bento Header -->
+<section class="grid grid-cols-12 gap-6">
+<div class="col-span-12 md:col-span-8 bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between relative overflow-hidden">
+<div class="relative z-10">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-[10px] font-manrope font-semibold tracking-widest uppercase mb-4 inline-block">Status: Expedido</span>
+<h2 class="text-4xl font-manrope font-light text-on-surface tracking-tight leading-tight">Embarque <br/><span class="font-bold">SHP-2024-00125</span></h2>
+</div>
+<div class="grid grid-cols-3 gap-8 mt-12 relative z-10">
+<div>
+<p class="text-[10px] font-manrope uppercase tracking-widest text-outline mb-1">Nota Fiscal</p>
+<p class="text-lg font-manrope text-primary-dim">NF-992.110-B</p>
+</div>
+<div>
+<p class="text-[10px] font-manrope uppercase tracking-widest text-outline mb-1">Data Expedida</p>
+<p class="text-lg font-manrope text-primary-dim">14 Abr 2024</p>
+</div>
+<div>
+<p class="text-[10px] font-manrope uppercase tracking-widest text-outline mb-1">Total Itens</p>
+<p class="text-lg font-manrope text-primary-dim">1.240 un</p>
+</div>
+</div>
+<!-- Decorative Industrial Shape -->
+<div class="absolute -right-20 -bottom-20 w-80 h-80 bg-slate-200/20 rounded-full blur-3xl pointer-events-none"></div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-primary text-on-primary rounded-xl p-8 flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-5xl mb-4 opacity-50" data-icon="local_shipping">local_shipping</span>
+<p class="font-manrope text-xs uppercase tracking-[0.2em] opacity-80 mb-2">Logística de Saída</p>
+<p class="font-manrope text-2xl font-light">Motorista: <span class="font-bold">João Silva</span><br/><span class="text-lg">Placa: <span class="font-bold uppercase">ABC-1234</span></span></p>
+</div>
+</section>
+<!-- Table Section -->
+<section class="bg-surface-container-low rounded-xl overflow-hidden">
+<div class="px-8 py-6 flex justify-between items-center bg-surface-container-lowest/40 border-b border-outline-variant/10">
+<h3 class="font-manrope font-semibold text-slate-700 tracking-tight">Detalhamento da Carga</h3>
+<div class="flex space-x-2">
+<button class="flex items-center space-x-2 px-4 py-2 bg-white rounded-lg text-xs font-medium text-primary shadow-sm hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+<span>Filtros</span>
+</button>
+<button class="flex items-center space-x-2 px-4 py-2 bg-primary-dim text-on-primary rounded-lg text-xs font-medium shadow-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+<span>Exportar Manifesto</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="font-manrope uppercase text-[10px] tracking-[0.15em] text-outline">
+<th class="px-8 py-5 font-medium">Item / SKU</th>
+<th class="px-6 py-5 font-medium">Ordem de Produção</th>
+<th class="px-6 py-5 font-medium">Quantidade</th>
+<th class="px-6 py-5 font-medium">Nº Caixa</th>
+<th class="px-6 py-5 font-medium">Cód. Operador</th>
+<th class="px-6 py-5 font-medium">Data Contagem</th>
+<th class="px-8 py-5 font-medium text-right">Ação</th>
+</tr>
+</thead>
+<tbody class="text-sm font-body text-on-surface">
+<!-- Row 1 -->
+<tr class="bg-white/50 hover:bg-white transition-colors group">
+<td class="px-8 py-5 border-t border-slate-200/30">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg text-slate-400" data-icon="settings_input_component">settings_input_component</span>
+</div>
+<div>
+<p class="font-semibold text-slate-800">Disco Freio Ventilado</p>
+<p class="text-[10px] text-outline">SKU-330-X</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 border-t border-slate-200/30">
+<span class="font-mono text-xs text-primary bg-primary-container/30 px-2 py-0.5 rounded">OP-88291</span>
+</td>
+<td class="px-6 py-5 border-t border-slate-200/30 font-medium">450 un</td>
+<td class="px-6 py-5 border-t border-slate-200/30 text-outline">CX-0012/24</td>
+<td class="px-6 py-5 border-t border-slate-200/30">
+<div class="flex items-center space-x-2">
+<div class="w-2 h-2 rounded-full bg-teal-500"></div>
+<span>OP-114</span>
+</div>
+</td>
+<td class="px-6 py-5 border-t border-slate-200/30 text-outline">14/04/2024 08:45</td>
+<td class="px-8 py-5 border-t border-slate-200/30 text-right">
+<button class="text-primary hover:text-primary-dim font-semibold text-xs tracking-tight transition-colors">Ver Relatório</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-slate-100/30 hover:bg-white transition-colors group">
+<td class="px-8 py-5 border-t border-slate-200/30">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg text-slate-400" data-icon="hub">hub</span>
+</div>
+<div>
+<p class="font-semibold text-slate-800">Cubo Roda Tras.</p>
+<p class="text-[10px] text-outline">SKU-441-A</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 border-t border-slate-200/30">
+<span class="font-mono text-xs text-primary bg-primary-container/30 px-2 py-0.5 rounded">OP-88292</span>
+</td>
+<td class="px-6 py-5 border-t border-slate-200/30 font-medium">320 un</td>
+<td class="px-6 py-5 border-t border-slate-200/30 text-outline">CX-0013/24</td>
+<td class="px-6 py-5 border-t border-slate-200/30">
+<div class="flex items-center space-x-2">
+<div class="w-2 h-2 rounded-full bg-teal-500"></div>
+<span>OP-114</span>
+</div>
+</td>
+<td class="px-6 py-5 border-t border-slate-200/30 text-outline">14/04/2024 09:20</td>
+<td class="px-8 py-5 border-t border-slate-200/30 text-right">
+<button class="text-primary hover:text-primary-dim font-semibold text-xs tracking-tight transition-colors">Ver Relatório</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="bg-white/50 hover:bg-white transition-colors group">
+<td class="px-8 py-5 border-t border-slate-200/30">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg text-slate-400" data-icon="hardware">hardware</span>
+</div>
+<div>
+<p class="font-semibold text-slate-800">Eixo Transmissão</p>
+<p class="text-[10px] text-outline">SKU-212-K</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 border-t border-slate-200/30">
+<span class="font-mono text-xs text-primary bg-primary-container/30 px-2 py-0.5 rounded">OP-88295</span>
+</td>
+<td class="px-6 py-5 border-t border-slate-200/30 font-medium">470 un</td>
+<td class="px-6 py-5 border-t border-slate-200/30 text-outline">CX-0014/24</td>
+<td class="px-6 py-5 border-t border-slate-200/30">
+<div class="flex items-center space-x-2">
+<div class="w-2 h-2 rounded-full bg-orange-400"></div>
+<span>OP-202</span>
+</div>
+</td>
+<td class="px-6 py-5 border-t border-slate-200/30 text-outline">14/04/2024 10:15</td>
+<td class="px-8 py-5 border-t border-slate-200/30 text-right">
+<button class="text-primary hover:text-primary-dim font-semibold text-xs tracking-tight transition-colors">Ver Relatório</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-8 py-4 bg-white/30 text-[10px] text-outline-variant font-manrope uppercase tracking-widest flex justify-between items-center">
+<span>Exibindo 3 de 3 SKUs carregados</span>
+<div class="flex space-x-4">
+<button class="hover:text-primary">Anterior</button>
+<span class="text-primary font-bold">1</span>
+<button class="hover:text-primary">Próximo</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

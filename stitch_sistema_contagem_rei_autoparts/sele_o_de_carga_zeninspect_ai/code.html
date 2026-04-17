@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Foundry Inspector - Carga em Aberto</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Manrope:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-container": "#45545c",
+                      "primary": "#516169",
+                      "on-error": "#fff7f6",
+                      "tertiary-fixed-dim": "#caede4",
+                      "on-tertiary-container": "#42625b",
+                      "on-secondary-fixed": "#1f463d",
+                      "surface-bright": "#f8f9fa",
+                      "secondary-fixed-dim": "#b3ddd1",
+                      "surface": "#f8f9fa",
+                      "secondary-container": "#c1ebdf",
+                      "surface-container-highest": "#dbe4e7",
+                      "on-surface-variant": "#586064",
+                      "outline": "#737c7f",
+                      "secondary": "#40665d",
+                      "primary-container": "#d5e5ef",
+                      "on-secondary": "#e3fff6",
+                      "tertiary-container": "#d8fbf2",
+                      "on-tertiary-fixed": "#304f49",
+                      "on-secondary-fixed-variant": "#3c6359",
+                      "surface-variant": "#dbe4e7",
+                      "secondary-fixed": "#c1ebdf",
+                      "tertiary": "#46655e",
+                      "tertiary-dim": "#3a5952",
+                      "on-background": "#2b3437",
+                      "on-surface": "#2b3437",
+                      "background": "#f8f9fa",
+                      "inverse-surface": "#0c0f10",
+                      "surface-container": "#eaeff1",
+                      "secondary-dim": "#345a51",
+                      "primary-fixed": "#d5e5ef",
+                      "surface-container-low": "#f1f4f6",
+                      "on-primary-fixed-variant": "#4e5e66",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed-variant": "#4d6c65",
+                      "error": "#9f403d",
+                      "on-tertiary": "#e3fff7",
+                      "on-primary": "#f0f9ff",
+                      "error-container": "#fe8983",
+                      "surface-tint": "#516169",
+                      "primary-fixed-dim": "#c7d7e1",
+                      "inverse-primary": "#e0f0fb",
+                      "error-dim": "#4e0309",
+                      "primary-dim": "#45555d",
+                      "surface-container-high": "#e3e9ec",
+                      "tertiary-fixed": "#d8fbf2",
+                      "on-secondary-container": "#325950",
+                      "inverse-on-surface": "#9b9d9e",
+                      "on-error-container": "#752121",
+                      "surface-dim": "#d1dce0",
+                      "on-primary-fixed": "#324149",
+                      "outline-variant": "#abb3b7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(248, 249, 250, 0.8);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface selection:bg-secondary-container">
+<!-- Blurred Dashboard Background Layer -->
+<div class="fixed inset-0 overflow-hidden flex blur-md saturate-50 brightness-95">
+<!-- SideNavBar Integration -->
+<aside class="fixed left-0 top-0 h-full flex flex-col bg-slate-100 dark:bg-slate-950 h-screen w-64 border-r-0 font-inter body-md">
+<div class="p-8">
+<div class="h-12 w-12 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-teal-700">precision_manufacturing</span>
+</div>
+<h2 class="text-on-surface font-semibold">Unit 04</h2>
+<p class="text-on-surface-variant text-xs">Casting Line A</p>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<div class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 text-teal-800 dark:text-teal-200 rounded-l-xl border-r-4 border-teal-500">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Overview</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined" data-icon="videocam">videocam</span>
+<span>Live Feed</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined" data-icon="thermostat">thermostat</span>
+<span>Thermal Scan</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+<span>X-Ray</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>Reports</span>
+</div>
+</nav>
+<div class="p-6">
+<button class="w-full py-4 rounded-xl bg-error text-on-error font-medium">Emergency Stop</button>
+</div>
+</aside>
+<!-- Main Content Area (Background) -->
+<main class="flex-1 ml-64 min-h-screen bg-surface p-8">
+<!-- TopNavBar Integration -->
+<header class="flex justify-between items-center w-full px-8 py-4 max-w-[1920px] mx-auto bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-3xl docked full-width top-0 mb-12">
+<div class="text-xl font-light tracking-[0.2em] uppercase text-slate-800 dark:text-slate-100">Foundry Inspector</div>
+<div class="flex items-center gap-8">
+<div class="hidden md:flex gap-6 font-manrope tracking-wide headline-md text-slate-500 dark:text-slate-400">
+<span class="text-slate-900 dark:text-white font-semibold border-b-2 border-slate-500">Dashboard</span>
+<span>Analytics</span>
+<span>Quality</span>
+<span>History</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-300" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-300" data-icon="settings">settings</span>
+<img alt="Inspector profile" class="w-10 h-10 rounded-full border border-outline-variant" data-alt="professional male inspector headshot in industrial setting with clean lighting and neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYVnxzIgux5C3ZlWpvhxSHUVJjLy9j5ktN1FbK3BhA2du5rOsHjMGckm0DNQ-2DQc7VPkk_I1KOGf3WB6-nDu79S0DmnJA4AkTHNqR-MCM90awTUzlBuQfy5pXj4C0Js8Xu2zr7YDtiYr8UvdhjUOfthk7_xGORzXPOnCGdIRB88MDkL0TBAqo1bN9YkFO47JZMm-L2L2l13VirsCO8VBOKC91KpLhcxQGwkiH-S48JUsBPv9CeR4hcDw-Qanr08dxbtubqC2DMAs"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Bento Content (Blurred Background) -->
+<div class="grid grid-cols-12 gap-8">
+<div class="col-span-8 space-y-8">
+<div class="bg-surface-container rounded-xl p-8 h-96">
+<div class="h-4 w-32 bg-surface-container-high rounded mb-4"></div>
+<div class="grid grid-cols-4 gap-4 h-full pb-8">
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/10"></div>
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/10"></div>
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/10"></div>
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/10"></div>
+</div>
+</div>
+</div>
+<div class="col-span-4 bg-surface-container-high rounded-xl p-8">
+<div class="h-4 w-48 bg-surface-container-highest rounded mb-8"></div>
+<div class="space-y-4">
+<div class="h-12 bg-surface-container-lowest rounded-lg"></div>
+<div class="h-12 bg-surface-container-lowest rounded-lg"></div>
+<div class="h-12 bg-surface-container-lowest rounded-lg"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Selection Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-on-background/10 backdrop-blur-[2px]">
+<div class="glass-panel w-full max-w-3xl rounded-[2rem] shadow-[0_40px_100px_-20px_rgba(43,52,55,0.15)] relative overflow-hidden flex flex-col items-center p-12 md:p-16 text-center border border-surface-container-highest">
+<!-- Close Button -->
+<button class="absolute top-8 right-8 p-2 rounded-full hover:bg-surface-container-high transition-colors text-outline">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+<!-- Modal Header -->
+<div class="mb-12">
+<div class="inline-flex items-center gap-3 mb-6 px-4 py-1.5 rounded-full bg-secondary-container/30 text-on-secondary-container">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="font-label text-xs tracking-widest uppercase font-semibold">Sistema de Segurança</span>
+</div>
+<h1 class="font-headline text-4xl md:text-5xl font-light text-on-background tracking-tight mb-4">Carga em Aberto Detectada</h1>
+<p class="font-body text-lg text-on-surface-variant max-w-lg mx-auto">Identificamos uma sessão de carregamento incompleta. Como deseja prosseguir com a operação atual?</p>
+</div>
+<!-- Selection Cards -->
+<div class="grid md:grid-cols-2 gap-6 w-full">
+<!-- Card: Continuar -->
+<div class="group relative bg-surface-container-lowest p-8 rounded-[1.5rem] text-left transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px] cursor-pointer ring-1 ring-outline-variant/15">
+<div class="w-12 h-12 rounded-xl bg-primary-container flex items-center justify-center mb-6 text-primary">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">resume</span>
+</div>
+<h3 class="font-headline text-xl font-semibold text-on-background mb-3">Continuar Carga Atual</h3>
+<p class="font-body text-sm text-on-surface-variant leading-relaxed">Retoma a sessão salva anteriormente. Todas as ordens de produção existentes e o progresso da linha serão preservados.</p>
+<div class="mt-8 flex items-center text-primary font-medium text-sm gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<span>Retomar Operação</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</div>
+</div>
+<!-- Card: Iniciar Nova -->
+<div class="group relative bg-surface-container-lowest p-8 rounded-[1.5rem] text-left transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px] cursor-pointer ring-1 ring-outline-variant/15">
+<div class="w-12 h-12 rounded-xl bg-tertiary-container flex items-center justify-center mb-6 text-tertiary">
+<span class="material-symbols-outlined text-2xl">add_box</span>
+</div>
+<h3 class="font-headline text-xl font-semibold text-on-background mb-3">Iniciar Nova Carga</h3>
+<p class="font-body text-sm text-on-surface-variant leading-relaxed">Cria uma sessão de carga totalmente limpa. As informações da carga anterior serão arquivadas nos logs do sistema.</p>
+<div class="mt-8 flex items-center text-tertiary font-medium text-sm gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<span>Nova Sessão</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Footer Note -->
+<p class="mt-12 font-label text-xs text-outline tracking-wide">As ações realizadas nesta tela são registradas no log de auditoria da Unidade 04.</p>
+</div>
+</div>
+</body></html>

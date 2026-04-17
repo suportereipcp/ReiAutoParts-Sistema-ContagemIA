@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-dim": "#4e0309",
+                        "error-container": "#fe8983",
+                        "surface-container-high": "#e3e9ec",
+                        "on-primary-fixed-variant": "#4e5e66",
+                        "primary-fixed": "#d5e5ef",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#eaeff1",
+                        "secondary-fixed-dim": "#b3ddd1",
+                        "on-tertiary-fixed-variant": "#4d6c65",
+                        "inverse-on-surface": "#9b9d9e",
+                        "tertiary-dim": "#3a5952",
+                        "on-tertiary-container": "#42625b",
+                        "secondary-container": "#c1ebdf",
+                        "error": "#9f403d",
+                        "on-primary-container": "#45545c",
+                        "outline-variant": "#abb3b7",
+                        "tertiary-fixed-dim": "#caede4",
+                        "on-error-container": "#752121",
+                        "on-secondary": "#e3fff6",
+                        "secondary-fixed": "#c1ebdf",
+                        "secondary": "#40665d",
+                        "tertiary-container": "#d8fbf2",
+                        "primary-dim": "#45555d",
+                        "on-error": "#fff7f6",
+                        "outline": "#737c7f",
+                        "on-surface": "#2b3437",
+                        "on-primary-fixed": "#324149",
+                        "background": "#f8f9fa",
+                        "surface-dim": "#d1dce0",
+                        "on-tertiary-fixed": "#304f49",
+                        "on-primary": "#f0f9ff",
+                        "on-tertiary": "#e3fff7",
+                        "on-secondary-fixed-variant": "#3c6359",
+                        "on-background": "#2b3437",
+                        "primary": "#516169",
+                        "surface": "#f8f9fa",
+                        "primary-container": "#d5e5ef",
+                        "surface-tint": "#516169",
+                        "inverse-surface": "#0c0f10",
+                        "primary-fixed-dim": "#c7d7e1",
+                        "tertiary": "#46655e",
+                        "tertiary-fixed": "#d8fbf2",
+                        "inverse-primary": "#e0f0fb",
+                        "on-surface-variant": "#586064",
+                        "on-secondary-fixed": "#1f463d",
+                        "secondary-dim": "#345a51",
+                        "surface-container-highest": "#dbe4e7",
+                        "surface-container-low": "#f1f4f6",
+                        "on-secondary-container": "#325950",
+                        "surface-bright": "#f8f9fa",
+                        "surface-variant": "#dbe4e7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-4 space-y-2 bg-[#f8f9fa] dark:bg-slate-950 h-screen w-64 border-r-0 font-manrope font-medium text-sm text-[#516169] dark:text-slate-300 z-50">
+<div class="flex flex-col space-y-1 mb-8 px-2">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="factory">factory</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-[#2f3e46] dark:text-white leading-tight">Rei AutoParts</h1>
+<p class="text-[10px] uppercase tracking-widest text-primary/60">Inspeção Silenciosa</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center space-x-3 px-3 py-2.5 text-[#516169]/70 dark:text-slate-400 hover:text-[#516169] hover:bg-[#eaeff1] dark:hover:bg-slate-900 transition-all duration-300 rounded-lg group" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Inicial</span>
+</a>
+<!-- Active Tab: Análise de Dados -->
+<a class="flex items-center space-x-3 px-3 py-2.5 bg-[#ffffff] dark:bg-slate-800 text-[#516169] dark:text-white rounded-lg shadow-sm font-semibold transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Análise de Dados</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-2.5 text-[#516169]/70 dark:text-slate-400 hover:text-[#516169] hover:bg-[#eaeff1] dark:hover:bg-slate-900 transition-all duration-300 rounded-lg group" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>Eventos</span>
+</a>
+</nav>
+<div class="pt-4 mt-auto border-t border-outline-variant/10 space-y-1">
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 ml-64 min-h-screen flex flex-col">
+<!-- TopNavBar Shell -->
+<header class="flex justify-between items-center w-full px-8 h-16 bg-[#eaeff1] dark:bg-slate-900 text-[#516169] dark:text-slate-300 font-manrope tracking-tight font-light sticky top-0 z-40">
+<div class="flex items-center space-x-2">
+<span class="text-sm opacity-60">Análise de Dados</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-sm font-semibold">Carga</span>
+</div>
+<div class="flex items-center space-x-6">
+<div class="relative group">
+<span class="material-symbols-outlined p-2 rounded-full hover:bg-[#e3e9ec] dark:hover:bg-slate-800 transition-colors cursor-pointer" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-[#eaeff1]"></span>
+</div>
+<span class="material-symbols-outlined p-2 rounded-full hover:bg-[#e3e9ec] dark:hover:bg-slate-800 transition-colors cursor-pointer" data-icon="settings">settings</span>
+<div class="flex items-center space-x-3 pl-4 border-l border-outline-variant/20">
+<div class="text-right">
+<p class="text-xs font-bold leading-none">Operador Industrial</p>
+<p class="text-[10px] opacity-60">Turno A</p>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Operador Industrial" data-alt="close-up portrait of a professional industrial operator wearing a subtle uniform in a soft lit studio environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6HhswxiyfZ0648UjcN24J4et7kIeIQKDleNMucHzn7P_A3hTdgTT8eB3gYiBHLzF8hxY9COQJJRgT6t9T1lBi21-uyO56-OYRxAM8auaGXMqj0sSnY72GEbrer7mBqlJGfe_vAcDN0OGS4nnRPIXkEpN1YKs_ywKRt4woJ1U-7GFLv_mtEsgw7VlhHfAKhkQd53ZSHx42nVLbao0JwX663ss0wS7iWOBCWgZ_0u_z3zp7dmMqD30ADlr32HHQl74PP4PavcyT4Ig"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-8 max-w-7xl w-full mx-auto space-y-8">
+<!-- Page Header (Editorial Style) -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="space-y-1">
+<div class="flex items-center space-x-2 text-primary/60 mb-2">
+<span class="material-symbols-outlined text-sm" data-icon="package_2">package_2</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.2em]">Detalhes da Carga</span>
+</div>
+<h2 class="text-4xl font-headline font-light tracking-tight text-on-surface">SHP-2024-00126</h2>
+<p class="text-sm text-on-surface-variant font-light">Criado em 14 de Outubro, 2024 às 08:42 AM</p>
+</div>
+<div class="flex space-x-3">
+<button class="px-5 py-2.5 rounded-xl text-sm font-medium text-primary hover:bg-surface-container-high transition-colors flex items-center space-x-2">
+<span class="material-symbols-outlined text-lg" data-icon="print">print</span>
+<span>Imprimir Etiquetas</span>
+</button>
+<button class="px-5 py-2.5 rounded-xl text-sm font-medium bg-primary text-on-primary shadow-sm hover:opacity-95 transition-all flex items-center space-x-2">
+<span class="material-symbols-outlined text-lg" data-icon="check_circle">check_circle</span>
+<span>Finalizar Carga</span>
+</button>
+</div>
+</section>
+<!-- Status Bento Grid (Industrial Zen Layout) -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="bg-surface-container-low p-6 rounded-xl space-y-2">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Total Itens</p>
+<p class="text-3xl font-headline font-light">1,248</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl space-y-2">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Contados</p>
+<p class="text-3xl font-headline font-light">842</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[67%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl space-y-2">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Eficiência</p>
+<p class="text-3xl font-headline font-light">94%</p>
+<p class="text-[10px] text-secondary font-medium">+2% vs última carga</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl space-y-2 border-l-4 border-secondary-container">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Status Global</p>
+<p class="text-3xl font-headline font-light">Em Progresso</p>
+<p class="text-[10px] text-on-surface-variant">Previsão: 2h restantes</p>
+</div>
+</section>
+<!-- Main Data Table Container -->
+<section class="bg-surface-container-lowest rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
+<div class="px-8 py-6 border-b border-surface-container-high flex items-center justify-between">
+<h3 class="font-headline font-semibold text-lg text-on-surface">Lista de Itens para Inspeção</h3>
+<div class="flex items-center bg-surface-container px-3 py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-sm text-primary/60 mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none text-xs focus:ring-0 w-48 font-light" placeholder="Filtrar OP ou Nº Caixa..." type="text"/>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Item</th>
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Ordem de Produção</th>
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant text-center">Qtd. Contada</th>
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Nº Caixa</th>
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Data Contagem</th>
+<th class="px-8 py-4 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-8 py-5">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary/40 text-sm" data-icon="precision_manufacturing">precision_manufacturing</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Eixo Comando V6</p>
+<p class="text-[10px] text-on-surface-variant">Ref: AC-992-B</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="text-xs font-mono bg-surface-container-high px-2 py-1 rounded text-primary">OP-882103</span>
+</td>
+<td class="px-8 py-5 text-center">
+<span class="text-sm font-headline">120 / 120</span>
+</td>
+<td class="px-8 py-5">
+<span class="text-sm text-on-surface-variant">CX-00124</span>
+</td>
+<td class="px-8 py-5">
+<span class="text-xs text-on-surface-variant">14/10/2024 09:15</span>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-secondary-container/30 text-on-secondary-container text-[10px] font-bold uppercase tracking-tighter">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary mr-2"></span>
+                                        Concluído
+                                    </span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-8 py-5">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary/40 text-sm" data-icon="hardware">hardware</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Bloco de Motor Diesel</p>
+<p class="text-[10px] text-on-surface-variant">Ref: BM-001-X</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="text-xs font-mono bg-surface-container-high px-2 py-1 rounded text-primary">OP-882145</span>
+</td>
+<td class="px-8 py-5 text-center">
+<span class="text-sm font-headline">45 / 80</span>
+</td>
+<td class="px-8 py-5">
+<span class="text-sm text-on-surface-variant">CX-00125</span>
+</td>
+<td class="px-8 py-5">
+<span class="text-xs text-on-surface-variant">14/10/2024 10:30</span>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-primary-container/40 text-on-primary-container text-[10px] font-bold uppercase tracking-tighter">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-2 animate-pulse"></span>
+                                        Andamento
+                                    </span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-8 py-5">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary/40 text-sm" data-icon="settings_input_component">settings_input_component</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Válvula de Admissão</p>
+<p class="text-[10px] text-on-surface-variant">Ref: VA-441-C</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="text-xs font-mono bg-surface-container-high px-2 py-1 rounded text-primary">OP-882188</span>
+</td>
+<td class="px-8 py-5 text-center">
+<span class="text-sm font-headline">250 / 250</span>
+</td>
+<td class="px-8 py-5">
+<span class="text-sm text-on-surface-variant">CX-00126</span>
+</td>
+<td class="px-8 py-5">
+<span class="text-xs text-on-surface-variant">14/10/2024 11:05</span>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-secondary-container/30 text-on-secondary-container text-[10px] font-bold uppercase tracking-tighter">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary mr-2"></span>
+                                        Concluído
+                                    </span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-8 py-5">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary/40 text-sm" data-icon="car_repair">car_repair</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Pistão Forjado 86mm</p>
+<p class="text-[10px] text-on-surface-variant">Ref: PF-860-S</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="text-xs font-mono bg-surface-container-high px-2 py-1 rounded text-primary">OP-882201</span>
+</td>
+<td class="px-8 py-5 text-center">
+<span class="text-sm font-headline">0 / 40</span>
+</td>
+<td class="px-8 py-5">
+<span class="text-sm text-on-surface-variant">CX-00127</span>
+</td>
+<td class="px-8 py-5">
+<span class="text-xs text-on-surface-variant">Pendente</span>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-surface-container text-on-surface-variant/60 text-[10px] font-bold uppercase tracking-tighter">
+<span class="w-1.5 h-1.5 rounded-full bg-outline mr-2"></span>
+                                        Aguardando
+                                    </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-8 py-4 bg-surface-container-low/30 border-t border-surface-container flex items-center justify-between">
+<p class="text-[10px] text-on-surface-variant font-medium">Exibindo 4 de 12 itens</p>
+<div class="flex space-x-2">
+<button class="p-1 rounded hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Bottom Detail Cards (Industrial Metadata) -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-4">
+<h4 class="font-headline font-semibold text-sm tracking-wide text-on-surface flex items-center">
+<span class="material-symbols-outlined text-primary mr-2" data-icon="history_edu">history_edu</span>
+                        Histórico de Atividade
+                    </h4>
+<div class="space-y-3">
+<div class="flex items-start space-x-3">
+<div class="mt-1 w-2 h-2 rounded-full bg-secondary flex-shrink-0"></div>
+<div>
+<p class="text-xs font-semibold">Contagem concluída: CX-00126</p>
+<p class="text-[10px] text-on-surface-variant">Há 15 minutos por Operador Turno A</p>
+</div>
+</div>
+<div class="flex items-start space-x-3">
+<div class="mt-1 w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>
+<div>
+<p class="text-xs font-semibold">Início de inspeção: CX-00125</p>
+<p class="text-[10px] text-on-surface-variant">Há 42 minutos por Operador Turno A</p>
+</div>
+</div>
+<div class="flex items-start space-x-3">
+<div class="mt-1 w-2 h-2 rounded-full bg-outline-variant flex-shrink-0"></div>
+<div>
+<p class="text-xs font-semibold">Manifesto criado: SHP-2024-00126</p>
+<p class="text-[10px] text-on-surface-variant">Hoje, 08:42 AM pelo Sistema Central</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

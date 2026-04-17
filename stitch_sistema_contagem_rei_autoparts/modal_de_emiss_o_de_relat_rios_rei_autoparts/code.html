@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Relatórios - Rei AutoParts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#c1ebdf",
+                        "tertiary-fixed": "#d8fbf2",
+                        "surface-container-high": "#e3e9ec",
+                        "secondary-fixed-dim": "#b3ddd1",
+                        "outline": "#737c7f",
+                        "secondary-dim": "#345a51",
+                        "primary-fixed": "#d5e5ef",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f1f4f6",
+                        "on-error-container": "#752121",
+                        "on-secondary": "#e3fff6",
+                        "on-primary-container": "#45545c",
+                        "primary-fixed-dim": "#c7d7e1",
+                        "surface-variant": "#dbe4e7",
+                        "tertiary": "#46655e",
+                        "outline-variant": "#abb3b7",
+                        "on-tertiary-fixed": "#304f49",
+                        "tertiary-dim": "#3a5952",
+                        "on-surface-variant": "#586064",
+                        "on-tertiary-fixed-variant": "#4d6c65",
+                        "error": "#9f403d",
+                        "surface-container-highest": "#dbe4e7",
+                        "on-secondary-fixed": "#1f463d",
+                        "on-primary-fixed-variant": "#4e5e66",
+                        "error-dim": "#4e0309",
+                        "error-container": "#fe8983",
+                        "background": "#f8f9fa",
+                        "surface-container": "#eaeff1",
+                        "on-primary-fixed": "#324149",
+                        "on-primary": "#f0f9ff",
+                        "inverse-on-surface": "#9b9d9e",
+                        "surface-bright": "#f8f9fa",
+                        "primary-dim": "#45555d",
+                        "primary": "#516169",
+                        "on-tertiary-container": "#42625b",
+                        "surface-tint": "#516169",
+                        "inverse-surface": "#0c0f10",
+                        "primary-container": "#d5e5ef",
+                        "tertiary-fixed-dim": "#caede4",
+                        "secondary": "#40665d",
+                        "on-error": "#fff7f6",
+                        "on-secondary-container": "#325950",
+                        "on-surface": "#2b3437",
+                        "on-secondary-fixed-variant": "#3c6359",
+                        "inverse-primary": "#e0f0fb",
+                        "surface": "#f8f9fa",
+                        "surface-dim": "#d1dce0",
+                        "secondary-container": "#c1ebdf",
+                        "on-background": "#2b3437",
+                        "on-tertiary": "#e3fff7",
+                        "tertiary-container": "#d8fbf2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        .bg-machined-satin {
+            background: linear-gradient(180deg, #516169 0%, #45555d 100%);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface overflow-hidden">
+<!-- TopNavBar -->
+<header class="w-full h-16 border-none bg-[#f8f9fa] dark:bg-[#1a1c1e] flex justify-between items-center px-8 z-30 fixed top-0 left-0">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-widest text-[#2f3e46] dark:text-[#eaeff1] font-headline">Rei AutoParts</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<button class="p-2 text-[#516169]/60 hover:bg-[#eaeff1] transition-colors rounded-full scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-[#516169]/60 hover:bg-[#eaeff1] transition-colors rounded-full scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline-variant/20">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="professional portrait of a senior industrial engineer in a clean modern workspace, soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeWQyoCYmDfm2iIDM7Uj5plCCZUoZ8x_v0DHkYh_HbDLq7Ro3ChSMd6_Yjn0Y93ELgfUpEcBF0fg1aAZOK6yN9dymbruhFxg3zw7hWQFSo4nRKXIfCuYrgNxV42Vz4JjAHUAjE2xxfGpRv2Q4565HGWvF4V3lvC9oZwUFbT6USXPE7NDj6m5IsTipwJCwq4bgAYk_a6nhgXUtGzTEYrkjRz71wWObqhX3Qc0Myp5jVOudZ_zDLxmuExnTf-TE_xgk9X7TxTnwWjLY"/>
+</div>
+</div>
+</header>
+<div class="flex h-screen pt-16">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#eaeff1] dark:bg-[#121416] flex flex-col py-6 z-40">
+<div class="px-6 mb-10">
+<div class="text-lg font-semibold text-[#2f3e46] dark:text-[#eaeff1] font-headline">Industrial Zen</div>
+<div class="text-xs font-light text-[#516169]/70 tracking-wide uppercase">Silent Inspector</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 text-[#516169]/70 hover:pl-8 transition-all font-light text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined mr-3">home</span>
+                    Inicial
+                </a>
+<div class="bg-[#ffffff] dark:bg-[#2f3e46] text-[#516169] dark:text-white rounded-r-full font-medium ml-0 shadow-sm flex flex-col">
+<a class="flex items-center px-6 py-3" href="#">
+<span class="material-symbols-outlined mr-3">analytics</span>
+                        Análise de Dados
+                    </a>
+<div class="pl-14 pb-2">
+<a class="block py-2 text-sm font-medium text-primary" href="#">Carga</a>
+</div>
+</div>
+<a class="flex items-center px-6 py-3 text-[#516169]/70 hover:pl-8 transition-all font-light text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined mr-3">history</span>
+                    Eventos (Logs)
+                </a>
+</nav>
+<div class="mt-auto px-6 space-y-4">
+<button class="w-full bg-machined-satin text-white py-3 rounded-md text-sm font-medium shadow-sm hover:opacity-90 transition-opacity">
+                    Emitir Relatório
+                </button>
+<a class="flex items-center py-3 text-[#516169]/70 hover:pl-2 transition-all font-light text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined mr-3">help_outline</span>
+                    Suporte
+                </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 p-8 overflow-auto bg-surface relative">
+<div class="max-w-6xl mx-auto">
+<header class="mb-10">
+<h1 class="text-4xl font-light font-headline tracking-tight text-on-surface">Relatórios de Carga</h1>
+<p class="text-on-surface-variant font-body mt-2">Monitoramento de precisão e integridade de fundição.</p>
+</header>
+<!-- Data Table Backdrop (The Content being blurred) -->
+<div class="bg-surface-container rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high">
+<th class="px-6 py-4 font-headline text-sm font-semibold text-primary">ID CARGA</th>
+<th class="px-6 py-4 font-headline text-sm font-semibold text-primary">TEMPERATURA</th>
+<th class="px-6 py-4 font-headline text-sm font-semibold text-primary">PRESSÃO (PSI)</th>
+<th class="px-6 py-4 font-headline text-sm font-semibold text-primary">STATUS</th>
+<th class="px-6 py-4 font-headline text-sm font-semibold text-primary">OPERADOR</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 text-sm font-medium">#CP-9821</td>
+<td class="px-6 py-4 text-sm">1.450°C</td>
+<td class="px-6 py-4 text-sm">24.5</td>
+<td class="px-6 py-4 text-sm"><span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-md text-xs">Estável</span></td>
+<td class="px-6 py-4 text-sm">M. Silva</td>
+</tr>
+<tr class="bg-surface-container-low/50 hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 text-sm font-medium">#CP-9822</td>
+<td class="px-6 py-4 text-sm">1.442°C</td>
+<td class="px-6 py-4 text-sm">24.1</td>
+<td class="px-6 py-4 text-sm"><span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-md text-xs">Estável</span></td>
+<td class="px-6 py-4 text-sm">J. Santos</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 text-sm font-medium">#CP-9823</td>
+<td class="px-6 py-4 text-sm">1.480°C</td>
+<td class="px-6 py-4 text-sm">26.8</td>
+<td class="px-6 py-4 text-sm"><span class="bg-error-container/20 text-error px-2 py-1 rounded-md text-xs">Alerta</span></td>
+<td class="px-6 py-4 text-sm">M. Silva</td>
+</tr>
+<tr class="bg-surface-container-low/50 hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 text-sm font-medium">#CP-9824</td>
+<td class="px-6 py-4 text-sm">1.435°C</td>
+<td class="px-6 py-4 text-sm">23.9</td>
+<td class="px-6 py-4 text-sm"><span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-md text-xs">Estável</span></td>
+<td class="px-6 py-4 text-sm">A. Lima</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-on-surface/10">
+<!-- Export Modal -->
+<div class="w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-[0_40px_100px_-20px_rgba(43,52,55,0.15)] overflow-hidden border border-outline-variant/10">
+<div class="p-8">
+<div class="flex justify-between items-center mb-10">
+<h2 class="text-2xl font-light font-headline text-on-surface tracking-tight">Exportar Relatório</h2>
+<button class="p-2 text-outline-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="space-y-10">
+<!-- Section 1: Relatório de Carga -->
+<section>
+<h3 class="text-xs font-semibold text-primary uppercase tracking-widest mb-6 border-b border-surface-container-high pb-2">Relatório de Carga</h3>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 p-4 bg-surface-container-low hover:bg-surface-container transition-colors rounded-xl group">
+<span class="material-symbols-outlined text-secondary">table_chart</span>
+<span class="text-sm font-medium text-on-surface">Excel</span>
+</button>
+<button class="flex items-center justify-center gap-3 p-4 bg-surface-container-low hover:bg-surface-container transition-colors rounded-xl group">
+<span class="material-symbols-outlined text-error">picture_as_pdf</span>
+<span class="text-sm font-medium text-on-surface">PDF</span>
+</button>
+</div>
+</section>
+<!-- Section 2: Relatório de Contagem -->
+<section>
+<h3 class="text-xs font-semibold text-primary uppercase tracking-widest mb-6 border-b border-surface-container-high pb-2">Relatório de Contagem</h3>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 p-4 bg-surface-container-low hover:bg-surface-container transition-colors rounded-xl group">
+<span class="material-symbols-outlined text-secondary">grid_on</span>
+<span class="text-sm font-medium text-on-surface">Excel</span>
+</button>
+<button class="flex items-center justify-center gap-3 p-4 bg-surface-container-low hover:bg-surface-container transition-colors rounded-xl group">
+<span class="material-symbols-outlined text-error">picture_as_pdf</span>
+<span class="text-sm font-medium text-on-surface">PDF</span>
+</button>
+</div>
+</section>
+</div>
+<div class="mt-12 flex justify-end">
+<button class="px-8 py-3 bg-machined-satin text-white rounded-md text-sm font-medium shadow-sm hover:opacity-90 transition-opacity">
+                                Concluído
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

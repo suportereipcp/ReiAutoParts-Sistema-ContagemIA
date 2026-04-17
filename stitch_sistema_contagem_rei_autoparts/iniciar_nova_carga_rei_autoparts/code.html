@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Manrope:wght@300;400;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eaeff1",
+                        "surface-variant": "#dbe4e7",
+                        "on-error": "#fff7f6",
+                        "outline-variant": "#abb3b7",
+                        "inverse-surface": "#0c0f10",
+                        "secondary-fixed": "#c1ebdf",
+                        "primary-container": "#d5e5ef",
+                        "inverse-on-surface": "#9b9d9e",
+                        "secondary-container": "#c1ebdf",
+                        "on-secondary-fixed": "#1f463d",
+                        "surface-container-highest": "#dbe4e7",
+                        "on-primary-fixed-variant": "#4e5e66",
+                        "on-background": "#2b3437",
+                        "on-primary": "#f0f9ff",
+                        "secondary-fixed-dim": "#b3ddd1",
+                        "surface-container-low": "#f1f4f6",
+                        "on-tertiary-fixed": "#304f49",
+                        "on-error-container": "#752121",
+                        "error-dim": "#4e0309",
+                        "surface-bright": "#f8f9fa",
+                        "on-primary-container": "#45545c",
+                        "on-tertiary-fixed-variant": "#4d6c65",
+                        "on-tertiary-container": "#42625b",
+                        "tertiary-fixed-dim": "#caede4",
+                        "tertiary-container": "#d8fbf2",
+                        "surface-tint": "#516169",
+                        "primary-fixed-dim": "#c7d7e1",
+                        "primary-fixed": "#d5e5ef",
+                        "secondary": "#40665d",
+                        "on-secondary-container": "#325950",
+                        "primary": "#516169",
+                        "tertiary-fixed": "#d8fbf2",
+                        "surface-container-high": "#e3e9ec",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#46655e",
+                        "on-surface-variant": "#586064",
+                        "error-container": "#fe8983",
+                        "on-primary-fixed": "#324149",
+                        "error": "#9f403d",
+                        "secondary-dim": "#345a51",
+                        "outline": "#737c7f",
+                        "background": "#f8f9fa",
+                        "tertiary-dim": "#3a5952",
+                        "on-surface": "#2b3437",
+                        "on-secondary-fixed-variant": "#3c6359",
+                        "on-secondary": "#e3fff6",
+                        "surface-dim": "#d1dce0",
+                        "on-tertiary": "#e3fff7",
+                        "inverse-primary": "#e0f0fb",
+                        "surface": "#f8f9fa",
+                        "primary-dim": "#45555d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(248, 249, 250, 0.8);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+<!-- Dashboard Background (Blurred under modal) -->
+<div class="fixed inset-0 z-0 flex blur-md saturate-50 opacity-40">
+<!-- SideNavBar Simulation -->
+<div class="h-full w-64 bg-slate-50 flex flex-col py-8 pl-4">
+<div class="text-xl font-bold text-slate-900 mb-12">Industrial Zen</div>
+<div class="space-y-6">
+<div class="flex items-center gap-3 text-slate-400"><span class="material-symbols-outlined">precision_manufacturing</span><span class="text-xs font-light">Inspeção</span></div>
+<div class="flex items-center gap-3 text-slate-400"><span class="material-symbols-outlined">factory</span><span class="text-xs font-light">Produção</span></div>
+<div class="flex items-center gap-3 bg-white text-slate-900 rounded-l-xl border-r-4 border-slate-600 p-2"><span class="material-symbols-outlined">conveyor_belt</span><span class="text-xs font-light">Logística</span></div>
+</div>
+</div>
+<!-- Content Simulation -->
+<div class="flex-1 p-10 grid grid-cols-3 gap-8">
+<div class="col-span-2 space-y-8">
+<div class="h-64 bg-surface-container rounded-xl"></div>
+<div class="grid grid-cols-2 gap-4">
+<div class="h-32 bg-surface-container-high rounded-xl"></div>
+<div class="h-32 bg-surface-container-high rounded-xl"></div>
+</div>
+</div>
+<div class="h-full bg-surface-container-low rounded-xl"></div>
+</div>
+</div>
+<!-- Modal Backdrop -->
+<div class="fixed inset-0 z-50 bg-on-surface/10 backdrop-blur-sm flex items-center justify-center p-4">
+<!-- Modal Container -->
+<div class="w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-2xl overflow-hidden border border-outline-variant/10 flex flex-col md:flex-row">
+<!-- Modal Content Area -->
+<div class="flex-1 p-8 space-y-8">
+<header>
+<h2 class="text-2xl font-bold text-on-surface tracking-tight font-headline">Nova Carga</h2>
+<p class="text-on-surface-variant text-sm font-light mt-1">Insira os parâmetros técnicos para iniciar o carregamento.</p>
+</header>
+<div class="space-y-6">
+<!-- Input Fields -->
+<div class="space-y-1">
+<label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-medium">Número do Embarque</label>
+<input class="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all duration-300" placeholder="EXP-2024-0882" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-medium">Ordem de Produção</label>
+<input class="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all duration-300" placeholder="OP-4491" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-medium">Código do Operador</label>
+<input class="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all duration-300" placeholder="ID-992" type="text"/>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-4 pt-4">
+<button class="flex-1 py-3 px-6 bg-gradient-to-b from-primary to-primary-dim text-on-primary rounded-lg font-medium text-sm transition-all active:scale-95 shadow-lg shadow-primary/20">
+                            Continuar
+                        </button>
+<button class="px-6 py-3 text-primary text-sm font-medium hover:bg-primary-container/50 rounded-lg transition-colors">
+                            Cancelar
+                        </button>
+</div>
+</div>
+</div>
+<!-- Item Identification Sidebar (Asymmetric Design) -->
+<div class="w-full md:w-72 bg-surface-container p-8 flex flex-col justify-between border-l border-outline-variant/10">
+<div class="space-y-6">
+<label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-medium block">Item Identificado</label>
+<!-- Piece Photo -->
+<div class="relative group">
+<div class="aspect-square w-full rounded-xl overflow-hidden bg-white shadow-sm">
+<img alt="Peça automotiva de metal fundido" class="w-full h-full object-cover" data-alt="close-up of a high-precision machined metal automotive component with clean metallic surfaces and sharp edges on a neutral studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-omS5CD5Nkcnm09s6cBraM4zjoxxSHEqOHZgXsiDL6zpEkIYMpd9LTEZfAAOo18jyZokOA3CG9b-ZOKKjk1_I2pfXpavLdjd0weleNyfTghnsxOc4CLVFEvTaoNcMWNhnGxyJnkGtUNJeAyCy5SsENvqf0cvKFKy8psdc_imHmDuDhWJw3GygtOGQZfRjpPIlmobcdQYA0niMn-VKIfkQkY6BZQym2l_DW-TcJP7QXpiKrufzESt8_GTxaKuqd3OU6cAXXcxHURo"/>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-secondary-container text-on-secondary-container p-2 rounded-lg shadow-md">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="space-y-1">
+<h3 class="text-sm font-bold text-on-surface">Eixo de Transmissão V8</h3>
+<p class="text-xs text-on-surface-variant leading-relaxed">SKU: 8821-XP-AUTO<br/>Material: Aço Forjado G4</p>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-outline-variant/20">
+<div class="flex items-center gap-2 text-secondary text-xs font-medium">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                        Pronto para Validação
+                    </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Hidden Navigation Shell Logic (TopNavBar as requested by Brand Anchors hierarchy) -->
+<nav class="fixed top-0 w-full z-[60] flex justify-between items-center px-6 py-4 bg-slate-50/80 backdrop-blur-xl pointer-events-none opacity-20">
+<div class="text-lg font-bold tracking-widest text-slate-800 uppercase">Rei AutoParts</div>
+<div class="flex gap-8">
+<span class="text-slate-900 border-b border-slate-400 pb-1 text-sm font-light">Nova Carga</span>
+<span class="text-slate-400 text-sm font-light">Carga Atual</span>
+<span class="text-slate-400 text-sm font-light">Histórico</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-600">notifications</span>
+<span class="material-symbols-outlined text-slate-600">settings</span>
+<div class="w-8 h-8 rounded-full bg-slate-200"></div>
+</div>
+</nav>
+</body></html>

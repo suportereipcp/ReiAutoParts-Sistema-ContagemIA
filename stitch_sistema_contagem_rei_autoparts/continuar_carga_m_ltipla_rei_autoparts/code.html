@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rei AutoParts - Continuar Carga</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Manrope:wght@300;400;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#eaeff1",
+                    "surface-variant": "#dbe4e7",
+                    "on-error": "#fff7f6",
+                    "outline-variant": "#abb3b7",
+                    "inverse-surface": "#0c0f10",
+                    "secondary-fixed": "#c1ebdf",
+                    "primary-container": "#d5e5ef",
+                    "inverse-on-surface": "#9b9d9e",
+                    "secondary-container": "#c1ebdf",
+                    "on-secondary-fixed": "#1f463d",
+                    "surface-container-highest": "#dbe4e7",
+                    "on-primary-fixed-variant": "#4e5e66",
+                    "on-background": "#2b3437",
+                    "on-primary": "#f0f9ff",
+                    "secondary-fixed-dim": "#b3ddd1",
+                    "surface-container-low": "#f1f4f6",
+                    "on-tertiary-fixed": "#304f49",
+                    "on-error-container": "#752121",
+                    "error-dim": "#4e0309",
+                    "surface-bright": "#f8f9fa",
+                    "on-primary-container": "#45545c",
+                    "on-tertiary-fixed-variant": "#4d6c65",
+                    "on-tertiary-container": "#42625b",
+                    "tertiary-fixed-dim": "#caede4",
+                    "tertiary-container": "#d8fbf2",
+                    "surface-tint": "#516169",
+                    "primary-fixed-dim": "#c7d7e1",
+                    "primary-fixed": "#d5e5ef",
+                    "secondary": "#40665d",
+                    "on-secondary-container": "#325950",
+                    "primary": "#516169",
+                    "tertiary-fixed": "#d8fbf2",
+                    "surface-container-high": "#e3e9ec",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#46655e",
+                    "on-surface-variant": "#586064",
+                    "error-container": "#fe8983",
+                    "on-primary-fixed": "#324149",
+                    "error": "#9f403d",
+                    "secondary-dim": "#345a51",
+                    "outline": "#737c7f",
+                    "background": "#f8f9fa",
+                    "tertiary-dim": "#3a5952",
+                    "on-surface": "#2b3437",
+                    "on-secondary-fixed-variant": "#3c6359",
+                    "on-secondary": "#e3fff6",
+                    "surface-dim": "#d1dce0",
+                    "on-tertiary": "#e3fff7",
+                    "inverse-primary": "#e0f0fb",
+                    "surface": "#f8f9fa",
+                    "primary-dim": "#45555d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-background overflow-hidden">
+<!-- Dashboard Background (Simulated) -->
+<div class="fixed inset-0 z-0 grid grid-cols-12 gap-6 p-8 opacity-40 blur-sm pointer-events-none">
+<!-- TopNavBar Mock -->
+<div class="col-span-12 fixed top-0 left-0 w-full flex justify-between items-center px-6 py-4 bg-slate-50/80">
+<span class="text-lg font-bold tracking-widest text-slate-800 uppercase">REI AUTOPARTS</span>
+<div class="flex gap-8">
+<span class="text-slate-400 font-manrope text-sm font-light">Carga Atual</span>
+<span class="text-slate-400 font-manrope text-sm font-light">Nova Carga</span>
+<span class="text-slate-400 font-manrope text-sm font-light">Histórico</span>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-slate-400">notifications</span>
+<div class="w-8 h-8 rounded-full bg-slate-300"></div>
+</div>
+</div>
+<!-- Sidebar Mock -->
+<div class="col-span-2 mt-16 h-[calc(100vh-8rem)] flex flex-col gap-4">
+<div class="h-24 bg-surface-container rounded-xl"></div>
+<div class="flex-1 bg-surface-container rounded-xl"></div>
+</div>
+<!-- Main Content Area Mock -->
+<div class="col-span-10 mt-16 grid grid-cols-3 gap-6">
+<div class="col-span-2 h-64 bg-surface-container-high rounded-xl"></div>
+<div class="col-span-1 h-64 bg-surface-container-high rounded-xl"></div>
+<div class="col-span-1 h-96 bg-surface-container-high rounded-xl"></div>
+<div class="col-span-2 h-96 bg-surface-container-high rounded-xl"></div>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-on-background/10 backdrop-blur-md">
+<!-- The Modal: "Continuar Carga Atual" -->
+<div class="w-full max-w-4xl glass-panel shadow-2xl rounded-xl overflow-hidden flex flex-col md:flex-row min-h-[600px] border-outline-variant/10">
+<!-- Left Side: Selection & Context -->
+<div class="w-full md:w-[450px] p-10 flex flex-col">
+<header class="mb-12">
+<h1 class="font-headline text-3xl font-light tracking-tight text-primary mb-2">Continuar Carga</h1>
+<p class="text-on-surface-variant font-light text-sm">Existem múltiplas cargas pendentes no sistema. Selecione um embarque para prosseguir.</p>
+</header>
+<div class="space-y-8 flex-grow">
+<!-- Step 1: Dropdown/Selection -->
+<div class="space-y-4">
+<label class="block font-headline text-xs font-bold tracking-widest text-primary-dim uppercase">Escolha o Embarque</label>
+<div class="relative group">
+<select class="w-full appearance-none bg-surface-container-high border-none rounded-xl px-4 py-4 text-on-surface font-body text-sm focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
+<option disabled="" selected="" value="">Selecione a carga ativa...</option>
+<option value="EB-2023-094">Embarque EB-2023-094 - Fundição Unid. 04</option>
+<option value="EB-2023-095">Embarque EB-2023-095 - Acabamento Sul</option>
+<option value="EB-2023-098">Embarque EB-2023-098 - Logística Interna</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-outline">expand_more</span>
+</div>
+</div>
+<!-- Step 2: Form Fields -->
+<div class="grid grid-cols-1 gap-6 pt-4">
+<div class="space-y-2">
+<label class="block font-headline text-xs font-bold tracking-widest text-primary-dim uppercase">Ordem de Produção</label>
+<input class="w-full bg-surface-container-high border-none rounded-xl px-4 py-4 text-on-surface font-body text-sm focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline/50" placeholder="Ex: OP-8829-X" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="block font-headline text-xs font-bold tracking-widest text-primary-dim uppercase">Código do Operador</label>
+<div class="relative">
+<input class="w-full bg-surface-container-high border-none rounded-xl px-4 py-4 text-on-surface font-body text-sm focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all" type="password" value="********"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline cursor-pointer">visibility</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-6 mt-12">
+<button class="flex-1 py-4 bg-gradient-to-b from-primary to-primary-dim text-on-primary rounded-xl font-headline font-semibold tracking-wide text-sm shadow-lg shadow-primary/20 hover:scale-[0.98] transition-transform">
+                        Continuar
+                    </button>
+<button class="px-6 py-4 text-primary font-headline font-medium text-sm hover:bg-primary-container/30 rounded-xl transition-colors">
+                        Cancelar
+                    </button>
+</div>
+</div>
+<!-- Right Side: Visual Context (The Piece) -->
+<div class="hidden md:flex flex-1 bg-surface-container-high p-10 flex-col">
+<div class="flex justify-between items-center mb-8">
+<span class="font-headline text-xs font-bold tracking-widest text-primary-dim uppercase">Visualização da Peça</span>
+<div class="flex gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+<span class="text-[10px] font-bold text-secondary uppercase tracking-tighter">Sistema Ativo</span>
+</div>
+</div>
+<!-- Product Card -->
+<div class="flex-1 flex flex-col">
+<div class="relative group flex-1 bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
+<img class="w-full h-full object-cover mix-blend-multiply opacity-90 group-hover:scale-105 transition-transform duration-700" data-alt="close-up of a precision-machined heavy automotive metal engine component on a clean industrial workshop surface with soft directional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPmySgGHUOIxhDVFIL6DxhkDDIga_7TJmod0-c8p5mpKq58T5utWJaBxvhKDyXg3gOkJj9Mo_mP7qG4aWlVrMDSYvhUhuqkm1lEpn3v4521zU2cXk_8_BJTJUbip8nWhR86i8oqtGG0jXMiDxjOiwf7_1bXq-4lkp_aF9LVkLF4UiWwwLHt13shzsvi9TVLNvOgTNSgv9bv6Hv7N7Iq92o-Of_8If3d3z49YJPBxpmJ3Pk3_ktI_fQRQ_4SPNU_QFS5L8f49fS6BI"/>
+<!-- Overlay Details -->
+<div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-surface-container-lowest to-transparent">
+<h3 class="font-headline text-xl font-bold text-on-background tracking-tight">Disco de Freio Ventilado T-800</h3>
+<p class="text-on-surface-variant text-xs font-light">Liga de Ferro Gusa Refinado • Categoria A1</p>
+</div>
+<!-- Zoom/Action Icon -->
+<div class="absolute top-4 right-4 w-10 h-10 rounded-full bg-surface-container-lowest/80 backdrop-blur-md flex items-center justify-center text-primary cursor-pointer hover:bg-white transition-colors">
+<span class="material-symbols-outlined">zoom_in</span>
+</div>
+</div>
+<!-- Metadata Grid -->
+<div class="grid grid-cols-2 gap-4 mt-6">
+<div class="p-4 bg-surface-container rounded-xl">
+<span class="block text-[10px] text-outline font-bold uppercase tracking-widest mb-1">Última Inspeção</span>
+<span class="text-sm font-medium text-on-surface">Há 14 min</span>
+</div>
+<div class="p-4 bg-surface-container rounded-xl">
+<span class="block text-[10px] text-outline font-bold uppercase tracking-widest mb-1">Peso Estimado</span>
+<span class="text-sm font-medium text-on-surface">12.45 kg</span>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container" data-weight="fill">verified_user</span>
+</div>
+<div>
+<p class="text-[10px] font-bold text-on-surface uppercase tracking-tighter">Status da Qualidade</p>
+<p class="text-xs text-on-surface-variant">Lote aprovado para transbordo</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Material Symbols Support -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+</body></html>

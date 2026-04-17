@@ -1,0 +1,17 @@
+# segredos
+.env
+.env.local
+.env.*.local
+
+# build / runtime
+node_modules/
+data/*.db
+data/*.db-journal
+logs/*.log
+dist/
+coverage/
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db

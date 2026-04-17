@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#46655e",
+                        "inverse-surface": "#0c0f10",
+                        "error-dim": "#4e0309",
+                        "error": "#9f403d",
+                        "surface-container-low": "#f1f4f6",
+                        "secondary-dim": "#345a51",
+                        "surface-container": "#eaeff1",
+                        "on-background": "#2b3437",
+                        "surface-container-highest": "#dbe4e7",
+                        "primary-fixed-dim": "#c7d7e1",
+                        "on-error-container": "#752121",
+                        "tertiary-fixed-dim": "#caede4",
+                        "on-primary": "#f0f9ff",
+                        "on-surface": "#2b3437",
+                        "on-primary-fixed": "#324149",
+                        "on-primary-container": "#45545c",
+                        "on-secondary-fixed-variant": "#3c6359",
+                        "on-secondary": "#e3fff6",
+                        "inverse-on-surface": "#9b9d9e",
+                        "on-primary-fixed-variant": "#4e5e66",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#40665d",
+                        "on-surface-variant": "#586064",
+                        "on-tertiary-container": "#42625b",
+                        "surface": "#f8f9fa",
+                        "outline-variant": "#abb3b7",
+                        "tertiary-dim": "#3a5952",
+                        "secondary-fixed": "#c1ebdf",
+                        "primary-fixed": "#d5e5ef",
+                        "on-tertiary-fixed": "#304f49",
+                        "surface-container-high": "#e3e9ec",
+                        "outline": "#737c7f",
+                        "error-container": "#fe8983",
+                        "surface-variant": "#dbe4e7",
+                        "on-tertiary": "#e3fff7",
+                        "on-secondary-fixed": "#1f463d",
+                        "on-secondary-container": "#325950",
+                        "surface-dim": "#d1dce0",
+                        "secondary-container": "#c1ebdf",
+                        "on-tertiary-fixed-variant": "#4d6c65",
+                        "primary-container": "#d5e5ef",
+                        "on-error": "#fff7f6",
+                        "tertiary-fixed": "#d8fbf2",
+                        "background": "#f8f9fa",
+                        "primary": "#516169",
+                        "surface-bright": "#f8f9fa",
+                        "primary-dim": "#45555d",
+                        "secondary-fixed-dim": "#b3ddd1",
+                        "inverse-primary": "#e0f0fb",
+                        "tertiary-container": "#d8fbf2",
+                        "surface-tint": "#516169"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-manrope { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<aside class="fixed left-0 top-0 h-full w-64 bg-slate-100 dark:bg-slate-900 flex flex-col py-6 px-4 z-50">
+<div class="flex items-center gap-3 px-2 mb-10">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+</div>
+<div>
+<h2 class="font-bold text-slate-800 dark:text-slate-100 font-manrope text-sm tracking-wide">Cast Inspector</h2>
+<p class="text-xs text-slate-500 opacity-70">Foundry Unit 04</p>
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-teal-700 dark:text-teal-400 bg-white dark:bg-slate-800 border-r-4 border-teal-500 transition-all font-manrope text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Inicial</span>
+</a>
+<div class="space-y-1">
+<button class="w-full flex items-center justify-between px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-200 dark:hover:bg-slate-800 hover:opacity-100 transition-all font-manrope text-sm tracking-wide group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Análise de Dados</span>
+</div>
+<span class="material-symbols-outlined text-sm transition-transform group-hover:rotate-180" data-icon="expand_more">expand_more</span>
+</button>
+<div class="pl-11 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-500 dark:text-slate-400 opacity-70 hover:text-primary transition-all font-manrope text-xs tracking-wide" href="#">
+<span>Carga</span>
+</a>
+</div>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 opacity-70 hover:bg-slate-200 dark:hover:bg-slate-800 hover:opacity-100 transition-all font-manrope text-sm tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>Eventos (Logs)</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-slate-200/50">
+<!-- Footer actions removed per request -->
+</div>
+</aside>
+<header class="fixed top-0 right-0 left-64 z-40 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-xl flex justify-between items-center px-8 py-3 shadow-sm dark:shadow-none">
+<div class="flex items-center gap-8">
+<h1 class="text-xl font-light tracking-widest text-slate-800 dark:text-slate-100 uppercase font-manrope">CastPrecision</h1>
+<div class="relative group">
+<span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+<span class="material-symbols-outlined text-lg" data-icon="search">search</span>
+</span>
+<input class="bg-surface-container-high border-none rounded-full py-1.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary w-64 transition-all duration-300 font-manrope" placeholder="Search systems..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-300 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="flex items-center gap-3 ml-2 pl-4 border-l border-slate-200">
+<div class="text-right">
+<p class="text-xs font-bold text-on-surface">Operator 04</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-tighter">Verified User</p>
+</div>
+<img alt="Inspector profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-surface-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3KD6Kqqg0RapZ09S-63BJp9iSyOpaIHFIdm_JUi9I3lEvVFTrCneGVz_BwMeisdD4-oXKvxO2uS9rf6mdJxgY8AkUOKIzPSsshKRXSuUXnPk2TNjB9OE_nwUr2gnrHvEq6QyuAaCjg7jMqvWwLMgJGQy02lNGbjBkO1B315rU0Sll2vbK4LpkzZDsWCL4GGhQ4GOpsu_8WdwhuHTwGgZIIjUDoWmVcggR3EnmGLAdaQWagLpEP11fRV_vWlqmDh0r_QRHQJOBhuc"/>
+</div>
+</div>
+</header>
+<main class="ml-64 pt-20 p-8 min-h-screen">
+<section class="mb-12 flex justify-between items-end">
+<div>
+<p class="text-secondary-dim font-medium tracking-widest text-xs uppercase mb-1">Sessão Ativa</p>
+<h2 class="text-3xl font-light text-slate-800 tracking-tight font-manrope">Bem-vindo, Operador.</h2>
+<p class="text-slate-500 text-sm font-light">Unidade de Fundição 04 • <span class="font-medium text-slate-700">Status: Operacional</span></p>
+</div>
+<div class="text-right">
+<p class="text-2xl font-manrope font-extralight text-slate-400">14:42</p>
+<p class="text-[9px] uppercase tracking-[0.2em] text-slate-400">24 Outubro, 2023</p>
+</div>
+</section>
+<!-- Red Alert Card Removed -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[calc(100vh-20rem)]">
+<div class="lg:col-span-8 space-y-8">
+<section>
+<h3 class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4">Ações Rápidas do Sistema</h3>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center gap-4 p-5 bg-surface-container-lowest rounded-2xl hover:bg-teal-50 transition-all border border-slate-100 group shadow-sm">
+<div class="p-3 bg-teal-50 rounded-xl group-hover:bg-teal-100 transition-colors">
+<span class="material-symbols-outlined text-2xl text-teal-600" data-icon="add_box">add_box</span>
+</div>
+<span class="text-xs font-bold text-slate-700 uppercase tracking-widest">Nova Contagem</span>
+</button>
+<button class="flex items-center gap-4 p-5 bg-surface-container-lowest rounded-2xl hover:bg-teal-50 transition-all border border-slate-100 group shadow-sm">
+<div class="p-3 bg-teal-50 rounded-xl group-hover:bg-teal-100 transition-colors">
+<span class="material-symbols-outlined text-2xl text-teal-600" data-icon="print">print</span>
+</div>
+<span class="text-xs font-bold text-slate-700 uppercase tracking-widest">Emitir Relatórios</span>
+</button>
+</div>
+</section>
+</div>
+<!-- Feed Section and Metric Cards removed -->
+<div class="lg:col-span-4"><div class="flex flex-col justify-end h-full">
+<div class="rounded-3xl text-slate-100 relative overflow-hidden flex flex-col justify-center shadow-2xl bg-slate-900/60 backdrop-blur-md p-5 min-h-[160px] bg-slate-900/70">
+<div class="absolute top-0 left-0 w-full h-full opacity-50">
+<img alt="Abstract industrial" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0uiyH8Og_WBscTyCdCkOEGN7DCpy0TJ_R7zV8cmxMjv9HtTLrY4FypAg51VlLyrbF1810JoqO8_fWel4G7ys8F7acZS0r-k3tTE6dX5D9GMhxJOd6_eLFJTztvhQ5umbDvhZYOqz4YKDe5qJiTfpsZhdVbQbyOtGmf118jZe4zYH7lMx-SQX-7T8a2esHgAvd0Lcanjolhb9VVQ0RyUHuI2bYOIP8c4rVRCcwGe0SZtZ2JlB8zMqgk4g5lEq6mb6rPDnHL81iNZmfQ"/>
+</div>
+<div class="relative z-10">
+<span class="material-symbols-outlined text-teal-400 opacity-50 text-xl mb-1" data-icon="format_quote">format_quote</span>
+<blockquote class="font-manrope italic font-light leading-relaxed text-slate-200 text-sm mb-3">
+                                "A precisão não é apenas um requisito técnico; é o silêncio entre o erro e a perfeição."
+                            </blockquote>
+<div class="flex items-center gap-3">
+<span class="w-8 h-[1px] bg-teal-400"></span>
+<span class="text-[9px] uppercase tracking-[0.4em] font-bold text-teal-400">REI AUTOPARTS</span>
+</div>
+</div>
+</div>
+</div></div>
+</div>
+<footer class="mt-12 pt-6 border-t border-slate-100 flex justify-between items-center text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+<div class="flex gap-8">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    SISTEMA ONLINE
+                </div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    IA SENSOR CALIBRADO
+                </div>
+</div>
+<div>
+                v2.4.0-STABLE
+            </div>
+</footer>
+</main>
+</body></html>

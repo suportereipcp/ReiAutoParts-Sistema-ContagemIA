@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Manrope:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#9f403d",
+                    "surface-container-low": "#f1f4f6",
+                    "tertiary-fixed-dim": "#caede4",
+                    "surface": "#f8f9fa",
+                    "on-primary-container": "#45545c",
+                    "primary-container": "#d5e5ef",
+                    "secondary-container": "#c1ebdf",
+                    "on-secondary-fixed-variant": "#3c6359",
+                    "inverse-surface": "#0c0f10",
+                    "secondary": "#40665d",
+                    "surface-dim": "#d1dce0",
+                    "surface-container-high": "#e3e9ec",
+                    "outline-variant": "#abb3b7",
+                    "on-tertiary-container": "#42625b",
+                    "on-error": "#fff7f6",
+                    "secondary-dim": "#345a51",
+                    "secondary-fixed-dim": "#b3ddd1",
+                    "tertiary-container": "#d8fbf2",
+                    "on-background": "#2b3437",
+                    "surface-bright": "#f8f9fa",
+                    "on-error-container": "#752121",
+                    "on-secondary-fixed": "#1f463d",
+                    "tertiary": "#46655e",
+                    "surface-tint": "#516169",
+                    "tertiary-fixed": "#d8fbf2",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#325950",
+                    "surface-container": "#eaeff1",
+                    "on-tertiary": "#e3fff7",
+                    "error-dim": "#4e0309",
+                    "on-primary": "#f0f9ff",
+                    "tertiary-dim": "#3a5952",
+                    "on-primary-fixed": "#324149",
+                    "surface-variant": "#dbe4e7",
+                    "outline": "#737c7f",
+                    "secondary-fixed": "#c1ebdf",
+                    "on-tertiary-fixed-variant": "#4d6c65",
+                    "on-surface-variant": "#586064",
+                    "surface-container-highest": "#dbe4e7",
+                    "primary-dim": "#45555d",
+                    "on-primary-fixed-variant": "#4e5e66",
+                    "inverse-primary": "#e0f0fb",
+                    "primary-fixed": "#d5e5ef",
+                    "on-secondary": "#e3fff6",
+                    "primary": "#516169",
+                    "on-surface": "#2b3437",
+                    "error-container": "#fe8983",
+                    "background": "#f8f9fa",
+                    "primary-fixed-dim": "#c7d7e1",
+                    "inverse-on-surface": "#9b9d9e",
+                    "on-tertiary-fixed": "#304f49"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .glass-panel {
+            background: rgba(248, 249, 250, 0.8);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-slate-50 flex flex-col py-6 px-4 z-50">
+<div class="mb-10 px-4">
+<h1 class="text-xl font-light tracking-widest text-slate-800">Silent Inspector</h1>
+<p class="text-xs font-manrope tracking-tight text-slate-500 mt-1 uppercase">Automotive Casting</p>
+</div>
+<nav class="flex-1 space-y-2">
+<!-- Inicial -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-manrope tracking-tight text-sm">Inicial</span>
+</a>
+<!-- Inspeção -->
+<!-- Análise de Dados -->
+<div>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-manrope tracking-tight text-sm">Análise de Dados</span>
+</a>
+<div class="ml-11 mt-1 space-y-1">
+<a class="block py-2 px-3 text-xs text-slate-400 hover:text-slate-700 transition-colors" href="#">Carga</a>
+</div>
+</div>
+<!-- Eventos (Logs) - ACTIVE -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 text-slate-900 font-semibold border-r-2 border-slate-700 bg-slate-100" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-manrope tracking-tight text-sm">Eventos (Logs)</span>
+</a>
+</nav>
+<div class="mt-auto px-4 pt-6 border-t border-slate-200/50 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Close up portrait of a middle aged industrial engineer with a focused expression and neutral lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhtEbV7YSjz2RCtPosrcy4qP0-L9EgXv6rp5x62JI1TP1vE90HHDMNNo9_4niZU7d09n5apUeqhnLcDwvirz_8rw3damm4SdnVeGwbBtkxMjsbc67ZUaNdmuSnFy8BuqO1EP0cxdp-JKo09Mk_xbHlm2VC9eyvMTeyWQF3srVKF7MjVxlKOkGbbflN4wu58PqcZ7a7toN6v_oTG1UtfM04XuvowiKfVDPv6RVOCEpfDY0XtoRzXF3v6cXZ0zOVuyWrV3-f6MTzhBM"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-xs font-semibold text-slate-800 truncate">Marco Silva</p>
+<p class="text-[10px] text-slate-500">Inspetor Sênior</p>
+</div>
+</div>
+</aside>
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-white/80 backdrop-blur-xl flex justify-between items-center h-16 px-8">
+<h2 class="font-manrope text-lg font-medium text-slate-800">Eventos (Logs)</h2>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined scale-75" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-high border-none rounded-full text-sm focus:ring-1 focus:ring-primary w-64 transition-all duration-300" placeholder="Buscar logs..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-slate-400">
+<button class="hover:text-slate-900 transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:text-slate-900 transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 pb-12 px-8 min-h-screen">
+<!-- Header & Summary Section -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h3 class="text-3xl font-manrope font-light tracking-tight text-on-background">Eventos do Sistema (Logs)</h3>
+<p class="text-on-surface-variant text-sm mt-2 font-body">Rastreabilidade completa de operações e anomalias térmicas.</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-surface-container-lowest text-primary text-sm font-medium rounded-lg shadow-sm hover:bg-surface-container-low transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span> Exportar Relatório
+                </button>
+<button class="px-4 py-2 bg-primary text-on-primary text-sm font-medium rounded-lg shadow-sm hover:bg-primary-dim transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="refresh">refresh</span> Atualizar
+                </button>
+</div>
+</div>
+<!-- Filters Bar -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center justify-between mb-6">
+<div class="flex items-center gap-4">
+<span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mr-2">Filtrar por Severidade:</span>
+<button class="px-4 py-1.5 rounded-full text-xs font-medium bg-surface-container-lowest text-primary shadow-sm">Todos</button>
+<button class="px-4 py-1.5 rounded-full text-xs font-medium text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors">Crítico</button>
+<button class="px-4 py-1.5 rounded-full text-xs font-medium text-on-surface-variant hover:bg-secondary-container hover:text-on-secondary-container transition-colors">Alerta</button>
+<button class="px-4 py-1.5 rounded-full text-xs font-medium text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-colors">Informativo</button>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs text-on-surface-variant">Data: 14 Abr - 15 Abr</span>
+<span class="material-symbols-outlined text-outline cursor-pointer" data-icon="calendar_month">calendar_month</span>
+</div>
+</div>
+<!-- Log List Table Area -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-high border-none">
+<tr>
+<th class="px-6 py-4 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Timestamp</th>
+<th class="px-6 py-4 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest text-center">Nível</th>
+<th class="px-6 py-4 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Categoria</th>
+<th class="px-6 py-4 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Mensagem</th>
+<th class="px-6 py-4 text-[10px] font-semibold text-on-surface-variant uppercase tracking-widest">Operador</th>
+</tr>
+</thead>
+<tbody class="divide-y-0"><tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-on-surface">15 Abr 2024</span>
+<span class="text-xs text-on-surface-variant">14:45:00</span>
+</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container/20 text-on-error-container text-[10px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs" data-icon="error" style="font-variation-settings: 'FILL' 1;">error</span> Crítico
+                            </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-medium text-on-surface-variant px-2 py-1 bg-surface-container-high rounded">Structural</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-on-surface font-medium">Anomalia Crítica detectada: Fissura profunda em Bloco V6 (OP-001234)</p>
+<p class="text-xs text-on-surface-variant mt-1">Interrupção automática sugerida.</p>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant italic">AI-System</td>
+</tr>
+<tr class="h-3"></tr>
+<!-- Row 1: Crítico -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-on-surface">15 Abr 2024</span>
+<span class="text-xs text-on-surface-variant">14:22:15</span>
+</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container/20 text-on-error-container text-[10px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs" data-icon="error" style="font-variation-settings: 'FILL' 1;">error</span> Crítico
+                            </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-medium text-on-surface-variant px-2 py-1 bg-surface-container-high rounded">Hardware</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-on-surface font-medium">Falha de conexão com Câmera Térmica 04</p>
+<p class="text-xs text-on-surface-variant mt-1">Interrupção de sinal no Setor B, Linha de Resfriamento.</p>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant italic">System Auto-Diagnostics</td>
+</tr>
+<!-- Spacer -->
+<tr class="h-3"></tr>
+<!-- Row 2: Informativo -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-low/30 group">
+<td class="px-6 py-5 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-on-surface">15 Abr 2024</span>
+<span class="text-xs text-on-surface-variant">14:18:03</span>
+</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs" data-icon="info">info</span> Informativo
+                            </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-medium text-on-surface-variant px-2 py-1 bg-surface-container-high rounded">Inspeção</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-on-surface font-medium">Nova inspeção iniciada: OP-001234</p>
+<p class="text-xs text-on-surface-variant mt-1">Lote de cabeçotes de motor V6 em processamento.</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="text-sm text-on-surface">Marco Silva</span>
+</div>
+</td>
+</tr>
+<tr class="h-3"></tr>
+<!-- Row 3: Alerta -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-on-surface">15 Abr 2024</span>
+<span class="text-xs text-on-surface-variant">13:45:50</span>
+</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span> Alerta
+                            </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-medium text-on-surface-variant px-2 py-1 bg-surface-container-high rounded">Hardware</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-on-surface font-medium">Sensor de temperatura calibrado</p>
+<p class="text-xs text-on-surface-variant mt-1">Desvio de 0.4°C detectado e corrigido automaticamente no molde 12.</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="text-sm text-on-surface">Ana Costa</span>
+</div>
+</td>
+</tr>
+<tr class="h-3"></tr>
+<!-- Row 4: Informativo -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-low/30 group">
+<td class="px-6 py-5 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-on-surface">15 Abr 2024</span>
+<span class="text-xs text-on-surface-variant">12:10:22</span>
+</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs" data-icon="cloud_sync">cloud_sync</span> Informativo
+                            </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-medium text-on-surface-variant px-2 py-1 bg-surface-container-high rounded">Conectividade</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-on-surface font-medium">Sincronização de dados concluída</p>
+<p class="text-xs text-on-surface-variant mt-1">452 novos registros de inspeção enviados para o servidor central.</p>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant italic">Cloud Sync Agent</td>
+</tr>
+<tr class="h-3"></tr>
+<!-- Row 5: Crítico -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="text-sm font-medium text-on-surface">15 Abr 2024</span>
+<span class="text-xs text-on-surface-variant">11:55:01</span>
+</div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container/20 text-on-error-container text-[10px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs" data-icon="emergency_home" style="font-variation-settings: 'FILL' 1;">emergency_home</span> Crítico
+                            </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-medium text-on-surface-variant px-2 py-1 bg-surface-container-high rounded">Sistema</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-on-surface font-medium">Interrupção Forçada de Segurança</p>
+<p class="text-xs text-on-surface-variant mt-1">Acionamento de botão de emergência na estação de vazamento 03.</p>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="text-sm text-on-surface">Ricardo L.</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="bg-surface-container p-6 flex items-center justify-between border-t border-outline-variant/10">
+<p class="text-xs text-on-surface-variant">Exibindo <span class="font-semibold text-on-surface">1 - 5</span> de <span class="font-semibold text-on-surface">240</span> eventos</p>
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="px-3.5 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold">1</button>
+<button class="px-3.5 py-1.5 rounded-lg hover:bg-surface-container-high text-on-surface text-xs transition-colors">2</button>
+<button class="px-3.5 py-1.5 rounded-lg hover:bg-surface-container-high text-on-surface text-xs transition-colors">3</button>
+<span class="px-2 text-on-surface-variant">...</span>
+<button class="px-3.5 py-1.5 rounded-lg hover:bg-surface-container-high text-on-surface text-xs transition-colors">48</button>
+<button class="p-2 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Visual Identity -->
+<div class="mt-12 flex justify-between items-center opacity-30 pointer-events-none">
+<div class="flex items-center gap-2">
+<div class="w-12 h-[1px] bg-outline"></div>
+<span class="text-[10px] font-headline tracking-[0.3em] uppercase">ZenInspect AI Platform</span>
+</div>
+<span class="text-[10px] font-label uppercase tracking-widest">Precision. Clarity. Forged.</span>
+</div>
+</main>
+</body></html>
