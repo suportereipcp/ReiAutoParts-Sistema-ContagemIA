@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV — Contagem em tempo real</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Manrope', sans-serif; background: #0f172a; color: #f8fafc; }
+    .camera-card { background: #1e293b; border-radius: 24px; padding: 48px; flex: 1; }
+    .camera-id { font-size: 2rem; color: #94a3b8; margin-bottom: 24px; }
+    .contagem { font-size: 14rem; font-weight: 800; line-height: 1; color: #22d3ee; text-align: center; }
+    .meta { display: flex; justify-content: space-between; margin-top: 32px; font-size: 1.5rem; color: #cbd5e1; }
+  </style>
+</head>
+<body class="min-h-screen p-12">
+  <header class="flex justify-between items-center mb-12">
+    <h1 class="text-5xl font-extrabold">Rei AutoParts — Expedição</h1>
+    <span id="sync-badge" class="text-2xl px-6 py-2 rounded-full bg-slate-700">—</span>
+  </header>
+  <main id="painel" class="flex gap-8"></main>
+  <script type="module" src="/js/tv-app.js"></script>
+</body>
+</html>

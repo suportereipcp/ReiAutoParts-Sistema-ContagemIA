@@ -2,15 +2,21 @@
 .env
 .env.local
 .env.*.local
+.env.*.bak
 
 # build / runtime
 node_modules/
 data/*.db
 data/*.db-journal
+data/*.db-shm
+data/*.db-wal
 logs/*.log
 dist/
 coverage/
 *.tmp
+
+# screenshots e artefatos de sessão
+Screenshot_*.png
 
 # OS
 .DS_Store
