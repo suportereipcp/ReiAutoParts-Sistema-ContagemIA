@@ -53,3 +53,20 @@ test('abrir falha se operador desconhecido', async () => {
     /operador/i
   );
 });
+
+test('abrir falha se câmera desconectada', async () => {
+  const { svc, fakeCamera } = setup();
+  fakeCamera.estado = 'desconectada';
+  await assert.rejects(
+    svc.abrir({ numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 }),
+    /desconectada/i
+  );
+});
+
+test('abrir falha se câmera desconhecida', async () => {
+  const { svc } = setup();
+  await assert.rejects(
+    svc.abrir({ numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 99 }),
+    /desconhecida/i
+  );
+});

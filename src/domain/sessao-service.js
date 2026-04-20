@@ -14,6 +14,9 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
 
   async function abrir({ numero_embarque, codigo_op, codigo_operador, camera_id }) {
     _validarPreRequisitos({ numero_embarque, codigo_op, codigo_operador });
+    const cam = cameraManagers.get(camera_id);
+    if (!cam) throw new Error(`Câmera ${camera_id} desconhecida.`);
+    if (cam.estado === 'desconectada') throw new Error(`Câmera ${camera_id} desconectada.`);
     const atual = buscarAtivaPorCamera(db, camera_id);
     if (atual) throw new Error(`Câmera ${camera_id} já tem sessão ativa (${atual.id}).`);
 

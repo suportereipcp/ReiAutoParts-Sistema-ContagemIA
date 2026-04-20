@@ -27,7 +27,12 @@
       "Read(//c/Users/emiliojv/**)",
       "Read(//c/Users/emiliojv/.node_gyp/**)",
       "Bash(where node-gyp *)",
-      "Bash(NODE_TLS_REJECT_UNAUTHORIZED=0 \"/c/Program Files/nodejs/npm.cmd\" rebuild better-sqlite3)"
+      "Bash(NODE_TLS_REJECT_UNAUTHORIZED=0 \"/c/Program Files/nodejs/npm.cmd\" rebuild better-sqlite3)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(FAKE_PORT=8501 node *)",
+      "Bash(npm run *)",
+      "Bash(netstat -ano)"
     ]
   }
 }
