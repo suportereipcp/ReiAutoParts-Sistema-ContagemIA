@@ -55,3 +55,16 @@ test('POST /sessoes/:id/encerrar retorna 400 sem caixa', async () => {
   const r = await fastify.inject({ method: 'POST', url: '/sessoes/u1/encerrar', payload: {} });
   assert.equal(r.statusCode, 400);
 });
+
+test('GET /sessoes?embarque=E1 delega para listarPorEmbarque', async () => {
+  const chamadas = [];
+  const service = {
+    listarAtivas: () => [],
+    listarPorEmbarque: (n) => { chamadas.push(n); return [{ id: 'x', numero_embarque: n }]; },
+  };
+  const f = Fastify();
+  rotasSessoes(f, { sessaoService: service });
+  const r = await f.inject({ method: 'GET', url: '/sessoes?embarque=E1' });
+  assert.equal(r.statusCode, 200);
+  assert.deepEqual(chamadas, ['E1']);
+});

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { openDatabase } from '../src/db/sqlite.js';
-import { criarSessao, buscarAtivaPorCamera, incrementarContagem, encerrarSessao } from '../src/db/queries/sessoes.js';
+import { criarSessao, buscarAtivaPorCamera, incrementarContagem, encerrarSessao, listarPorEmbarque } from '../src/db/queries/sessoes.js';
 
 function setup() {
   const db = openDatabase(':memory:');
@@ -53,4 +53,16 @@ test('caixa duplicada no mesmo embarque é bloqueada', () => {
   encerrarSessao(db, 'u1', 'CX-001', '2026-04-17T11:00:00Z');
   criarSessao(db, { id: 'u2', numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 2, iniciada_em: '2026-04-17T11:00:00Z' });
   assert.throws(() => encerrarSessao(db, 'u2', 'CX-001', '2026-04-17T12:00:00Z'), /UNIQUE/);
+});
+
+test('listarPorEmbarque retorna todas (ativas + encerradas) do embarque', () => {
+  const db = setup();
+  db.prepare('INSERT INTO embarques (numero_embarque, status) VALUES (?, ?)').run('E2', 'aberto');
+  criarSessao(db, { id: 'a', numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1, iniciada_em: '2026-01-01T00:00:00Z' });
+  criarSessao(db, { id: 'b', numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 2, iniciada_em: '2026-01-01T00:01:00Z' });
+  encerrarSessao(db, 'b', 'CX-1', '2026-01-01T00:02:00Z');
+  criarSessao(db, { id: 'c', numero_embarque: 'E2', codigo_op: 'OP1', codigo_operador: '001', camera_id: 2, iniciada_em: '2026-01-01T00:03:00Z' });
+  const r = listarPorEmbarque(db, 'E1');
+  assert.equal(r.length, 2);
+  assert.ok(r.every(s => s.numero_embarque === 'E1'));
 });

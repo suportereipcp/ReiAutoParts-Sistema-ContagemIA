@@ -1,5 +1,9 @@
 export function rotasSessoes(fastify, { sessaoService }) {
-  fastify.get('/sessoes', async () => sessaoService.listarAtivas());
+  fastify.get('/sessoes', async (req) => {
+    const { embarque } = req.query;
+    if (embarque) return sessaoService.listarPorEmbarque(embarque);
+    return sessaoService.listarAtivas();
+  });
 
   fastify.post('/sessoes', async (req, reply) => {
     try {

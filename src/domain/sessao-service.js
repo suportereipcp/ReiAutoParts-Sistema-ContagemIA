@@ -1,4 +1,4 @@
-import { criarSessao, buscarAtivaPorCamera, buscarPorId, encerrarSessao, listarAtivas } from '../db/queries/sessoes.js';
+import { criarSessao, buscarAtivaPorCamera, buscarPorId, encerrarSessao, listarAtivas, listarPorEmbarque } from '../db/queries/sessoes.js';
 import { buscarEmbarque, buscarOP, buscarOperador } from '../db/queries/espelhos.js';
 
 export function criarSessaoService({ db, cameraManagers, registrarEvento, enfileirarSync, gerarUUID, broadcast }) {
@@ -66,6 +66,7 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
   }
 
   function listarAtivasSnapshot() { return listarAtivas(db); }
+  function listarPorEmbarqueSnapshot(numero) { return listarPorEmbarque(db, numero); }
 
-  return { abrir, confirmar, encerrar, listarAtivas: listarAtivasSnapshot };
+  return { abrir, confirmar, encerrar, listarAtivas: listarAtivasSnapshot, listarPorEmbarque: listarPorEmbarqueSnapshot };
 }

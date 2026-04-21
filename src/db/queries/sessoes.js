@@ -45,3 +45,11 @@ export function listarAtivas(db) {
 export function buscarPorId(db, id) {
   return db.prepare(`SELECT * FROM sessoes_contagem WHERE id = ?`).get(id);
 }
+
+export function listarPorEmbarque(db, numero_embarque) {
+  return db.prepare(
+    `SELECT * FROM sessoes_contagem
+     WHERE numero_embarque = ?
+     ORDER BY iniciada_em DESC`
+  ).all(numero_embarque);
+}
