@@ -1,3 +1,7 @@
+import { toast } from '../ui/primitives/toast.js';
+import { abrirContinuarCargaUnica } from '../ui/composites/modal-continuar-carga-unica.js';
+import { abrirContinuarCargaMultipla } from '../ui/composites/modal-continuar-carga-multipla.js';
+
 export function renderDashboard(ctx) {
   const container = document.createElement('div');
   container.className = 'space-y-12';
@@ -15,7 +19,7 @@ export function renderDashboard(ctx) {
   title.className = 'text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-4';
   title.textContent = 'Ações Rápidas';
   const grid = document.createElement('div');
-  grid.className = 'grid grid-cols-2 gap-4';
+  grid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
 
   const acao1 = document.createElement('a');
   acao1.dataset.quickAction = 'nova-contagem';
@@ -26,20 +30,48 @@ export function renderDashboard(ctx) {
     <span class="text-xs font-bold text-on-surface uppercase tracking-widest">Nova Contagem</span>
   `;
 
-  const acao2 = document.createElement('a');
-  acao2.dataset.quickAction = 'emitir-relatorios';
-  acao2.href = '#/relatorios';
-  acao2.className = 'flex items-center gap-4 p-5 bg-surface-container-lowest rounded-2xl hover:bg-secondary-container/40 transition-all zen-shadow-ambient group';
+  const acao2 = document.createElement('button');
+  acao2.dataset.quickAction = 'continuar-carga';
+  acao2.type = 'button';
+  acao2.className = 'flex items-center gap-4 p-5 bg-surface-container-lowest rounded-2xl hover:bg-secondary-container/40 transition-all zen-shadow-ambient group text-left';
   acao2.innerHTML = `
+    <div class="p-3 bg-secondary-container/50 rounded-xl"><span class="material-symbols-outlined text-2xl text-secondary">play_circle</span></div>
+    <span class="text-xs font-bold text-on-surface uppercase tracking-widest">Continuar Carga</span>
+  `;
+  acao2.addEventListener('click', () => dispararContinuar(ctx));
+
+  const acao3 = document.createElement('a');
+  acao3.dataset.quickAction = 'emitir-relatorios';
+  acao3.href = '#/relatorios';
+  acao3.className = 'flex items-center gap-4 p-5 bg-surface-container-lowest rounded-2xl hover:bg-secondary-container/40 transition-all zen-shadow-ambient group';
+  acao3.innerHTML = `
     <div class="p-3 bg-secondary-container/50 rounded-xl"><span class="material-symbols-outlined text-2xl text-secondary">print</span></div>
     <span class="text-xs font-bold text-on-surface uppercase tracking-widest">Emitir Relatórios</span>
   `;
 
   grid.appendChild(acao1);
   grid.appendChild(acao2);
+  grid.appendChild(acao3);
   section.appendChild(title);
   section.appendChild(grid);
   container.appendChild(hero);
   container.appendChild(section);
   return container;
+}
+
+async function dispararContinuar(ctx) {
+  try {
+    const ativas = await ctx.api.get('/sessoes');
+    if (!Array.isArray(ativas) || ativas.length === 0) {
+      toast.info('Nenhuma carga pendente no momento.');
+      return;
+    }
+    if (ativas.length === 1) {
+      abrirContinuarCargaUnica({ sessao: ativas[0] });
+      return;
+    }
+    abrirContinuarCargaMultipla({ sessoes: ativas });
+  } catch (e) {
+    toast.erro(`Falha ao buscar cargas pendentes: ${e.message}`);
+  }
 }

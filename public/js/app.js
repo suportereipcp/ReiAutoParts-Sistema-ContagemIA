@@ -12,6 +12,8 @@ import { renderDashboard } from './pages/dashboard.js';
 import { renderSelecaoCarga } from './pages/selecao-carga.js';
 import { renderDetalhesCarga } from './pages/detalhes-carga.js';
 import { renderEmitirRelatorios } from './pages/emitir-relatorios.js';
+import { renderDetalhesCargaExpedida } from './pages/detalhes-carga-expedida.js';
+import { renderRelatoriosCargasAbertas } from './pages/relatorios-cargas-abertas.js';
 import { renderEventos } from './pages/eventos.js';
 
 const api = criarApi({ base: location.origin });
@@ -70,7 +72,9 @@ criarRouter({
     '/': async () => { renderShell('inicial'); return renderDashboard(ctx); },
     '/cargas': async () => { renderShell('cargas'); return renderSelecaoCarga(ctx); },
     '/cargas/:numero': async (p) => { renderShell('cargas'); return renderDetalhesCarga(ctx, p.numero); },
+    '/expedidas/:numero': async (p) => { renderShell('cargas'); return renderDetalhesCargaExpedida(ctx, p.numero); },
     '/relatorios': async () => { renderShell('relatorios'); return renderEmitirRelatorios(ctx); },
+    '/relatorios/abertas': async () => { renderShell('relatorios'); return renderRelatoriosCargasAbertas(ctx); },
     '/eventos': async () => { renderShell('eventos'); return renderEventos(ctx); },
   },
   render: (html) => {
