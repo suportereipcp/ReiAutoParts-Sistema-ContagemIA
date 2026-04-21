@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rei AutoParts — Inspeção Silenciosa</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Manrope:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      'surface': '#f8f9fa', 'surface-container-low': '#f1f4f6', 'surface-container': '#eaeff1',
+      'surface-container-high': '#e3e9ec', 'surface-container-lowest': '#ffffff',
+      'on-surface': '#2b3437', 'on-surface-variant': '#586064',
+      'primary': '#516169', 'primary-dim': '#45555d', 'primary-container': '#d5e5ef', 'on-primary': '#f0f9ff',
+      'secondary': '#40665d', 'secondary-container': '#c1ebdf', 'on-secondary-container': '#325950',
+      'error-container': '#fe8983', 'on-error-container': '#752121',
+      'outline': '#737c7f', 'outline-variant': '#abb3b7',
+    } } } };
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+  <div id="shell"></div>
+  <main id="root" class="ml-64 pt-20 p-8 min-h-screen"></main>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
