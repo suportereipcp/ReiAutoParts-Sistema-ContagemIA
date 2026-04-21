@@ -1697,9 +1697,11 @@ async function pollHealth() {
 setInterval(pollHealth, 5000);
 pollHealth();
 
+let _unsubSyncBadge = null;
 function renderShell(ativo) {
   const shell = document.getElementById('shell');
   shell.innerHTML = '';
+  if (_unsubSyncBadge) { _unsubSyncBadge(); _unsubSyncBadge = null; }
   const side = SideNav({
     titulo: 'Rei AutoParts',
     subtitulo: 'Inspeção Silenciosa',
@@ -1711,13 +1713,14 @@ function renderShell(ativo) {
     ],
     ativo,
   });
-  const badge = SyncBadge(sync.atual().estado);
+  let badge = SyncBadge(sync.atual().estado);
   const top = TopNav({ caminho: [caminhoPadrao(ativo)], badge });
   shell.appendChild(side);
   shell.appendChild(top);
-  sync.subscribe(() => {
+  _unsubSyncBadge = sync.subscribe(() => {
     const novoBadge = SyncBadge(sync.atual().estado);
     badge.replaceWith(novoBadge);
+    badge = novoBadge;
   });
 }
 function caminhoPadrao(id) {
@@ -2155,13 +2158,100 @@ git commit -m "feat(frontend): modal Nova Carga composite + tests"
 
 Base: `detalhes_da_carga_aberta_rei_autoparts/code.html`. Lista caixas do embarque, painel da sessão ativa (contador gigante), botão "Finalizar Carga" e "Imprimir Etiquetas".
 
+**Pré-requisito (back-end):** a rota `GET /sessoes` atual só retorna ativas globais. Precisa suportar `?embarque=<numero>` (retorna ativas + encerradas daquele embarque) para a página montar o painel + tabela.
+
 **Files:**
+- Modify: `src/db/queries/sessoes.js` (nova função `listarPorEmbarque`)
+- Modify: `src/domain/sessao-service.js` (expor `listarPorEmbarque`)
+- Modify: `src/http/routes/sessoes.js` (filtro por query param)
+- Modify: `tests/sessoes-routes.test.js` (novo caso `?embarque=`)
 - Create: `public/js/pages/detalhes-carga.js`
 - Create: `public/js/ui/composites/painel-contagem.js`
 - Create: `public/js/ui/composites/tabela-caixas.js`
 - Test: `tests/frontend/pages/detalhes-carga.test.js`
 - Test: `tests/frontend/ui/painel-contagem.test.js`
 - Test: `tests/frontend/ui/tabela-caixas.test.js`
+
+- [ ] **Step 0.1: Teste da nova query**
+
+Em `tests/sessoes-queries.test.js`, adicionar `listarPorEmbarque` ao import no topo e incluir:
+
+```js
+import { criarSessao, buscarAtivaPorCamera, incrementarContagem, encerrarSessao, listarPorEmbarque } from '../src/db/queries/sessoes.js';
+// ...
+
+test('listarPorEmbarque retorna todas (ativas + encerradas) do embarque', () => {
+  const db = setup();
+  db.prepare('INSERT INTO embarques (numero_embarque, status) VALUES (?, ?)').run('E2', 'aberto');
+  criarSessao(db, { id: 'a', numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1, iniciada_em: '2026-01-01T00:00:00Z' });
+  criarSessao(db, { id: 'b', numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 2, iniciada_em: '2026-01-01T00:01:00Z' });
+  encerrarSessao(db, 'b', 'CX-1', '2026-01-01T00:02:00Z');
+  criarSessao(db, { id: 'c', numero_embarque: 'E2', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1, iniciada_em: '2026-01-01T00:03:00Z' });
+  const r = listarPorEmbarque(db, 'E1');
+  assert.equal(r.length, 2);
+  assert.ok(r.every(s => s.numero_embarque === 'E1'));
+});
+```
+
+- [ ] **Step 0.2: Implementar query**
+
+Adicionar em `src/db/queries/sessoes.js`:
+
+```js
+export function listarPorEmbarque(db, numero_embarque) {
+  return db.prepare(
+    `SELECT * FROM sessoes_contagem
+     WHERE numero_embarque = ?
+     ORDER BY iniciada_em DESC`
+  ).all(numero_embarque);
+}
+```
+
+- [ ] **Step 0.3: Expor no service e rota**
+
+Em `src/domain/sessao-service.js`:
+```js
+import { criarSessao, buscarAtivaPorCamera, buscarPorId, encerrarSessao, listarAtivas, listarPorEmbarque } from '../db/queries/sessoes.js';
+// ...
+function listarPorEmbarqueSnapshot(numero) { return listarPorEmbarque(db, numero); }
+return { abrir, confirmar, encerrar, listarAtivas: listarAtivasSnapshot, listarPorEmbarque: listarPorEmbarqueSnapshot };
+```
+
+Em `src/http/routes/sessoes.js`, substituir handler:
+```js
+fastify.get('/sessoes', async (req) => {
+  const { embarque } = req.query;
+  if (embarque) return sessaoService.listarPorEmbarque(embarque);
+  return sessaoService.listarAtivas();
+});
+```
+
+- [ ] **Step 0.4: Teste da rota**
+
+Em `tests/sessoes-routes.test.js`, adicionar caso:
+
+```js
+test('GET /sessoes?embarque=E1 delega para listarPorEmbarque', async () => {
+  const chamadas = [];
+  const service = {
+    listarAtivas: () => [],
+    listarPorEmbarque: (n) => { chamadas.push(n); return [{ id: 'x', numero_embarque: n }]; },
+  };
+  const f = Fastify();
+  rotasSessoes(f, { sessaoService: service });
+  const r = await f.inject({ method: 'GET', url: '/sessoes?embarque=E1' });
+  assert.equal(r.statusCode, 200);
+  assert.deepEqual(chamadas, ['E1']);
+});
+```
+
+- [ ] **Step 0.5: PASS back-end + Commit parcial**
+
+```bash
+node --test tests/sessoes-queries.test.js tests/sessoes-routes.test.js
+git add src/db/queries/sessoes.js src/domain/sessao-service.js src/http/routes/sessoes.js tests/sessoes-queries.test.js tests/sessoes-routes.test.js
+git commit -m "feat(sessoes): suporte a GET /sessoes?embarque=<numero>"
+```
 
 - [ ] **Step 1: Teste PainelContagem**
 
@@ -2283,7 +2373,10 @@ test('renderDetalhesCarga busca embarque + caixas', async () => {
     api: {
       get: async (path) => {
         if (path.startsWith('/embarques/')) return { numero_embarque: '01', motorista: 'E', status: 'aberto', data_criacao: '2026-04-18T00:00:00Z' };
-        if (path.startsWith('/sessoes')) return [{ id: 'a', numero_embarque: '01', camera_id: 1, quantidade_total: 5, numero_caixa: 'CX-1', codigo_op: 'OP1' }];
+        if (path.startsWith('/sessoes')) return [
+          { id: 'a', numero_embarque: '01', camera_id: 1, quantidade_total: 5, numero_caixa: 'CX-1', codigo_op: 'OP1', status: 'encerrada', encerrada_em: '2026-04-18T10:00:00Z' },
+          { id: 'b', numero_embarque: '01', camera_id: 2, quantidade_total: 3, codigo_op: 'OP1', status: 'ativa', programa_nome: 'PECA-X', iniciada_em: '2026-04-18T11:00:00Z' },
+        ];
         return [];
       },
     },
@@ -2292,6 +2385,7 @@ test('renderDetalhesCarga busca embarque + caixas', async () => {
   const el = await renderDetalhesCarga(ctx, '01');
   assert.match(el.textContent, /01/);
   assert.match(el.textContent, /CX-1/);
+  assert.match(el.textContent, /PECA-X/);
 });
 ```
 
@@ -2542,14 +2636,14 @@ test('GET /eventos?nivel=ERROR filtra', async () => {
 
 `src/http/routes/eventos.js`:
 ```js
+import { listarRecentes } from '../../db/queries/eventos.js';
+
 export function rotasEventos(fastify, { db }) {
   fastify.get('/eventos', async (req) => {
     const nivel = req.query.nivel;
     const limit = Math.min(Number(req.query.limit ?? 100), 500);
-    if (nivel) {
-      return db.prepare('SELECT * FROM eventos_log WHERE nivel = ? ORDER BY timestamp DESC LIMIT ?').all(nivel, limit);
-    }
-    return db.prepare('SELECT * FROM eventos_log ORDER BY timestamp DESC LIMIT ?').all(limit);
+    const todos = listarRecentes(db, limit);
+    return nivel ? todos.filter(e => e.nivel === nivel) : todos;
   });
 }
 ```
