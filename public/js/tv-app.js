@@ -1,53 +1,42 @@
-const ws = new WebSocket(`ws://${location.host}/ws`);
+import { criarApi } from './infra/api.js';
+import { criarWS } from './infra/ws.js';
+import { criarSessoesState } from './domain/sessoes-state.js';
+import { criarSyncState } from './domain/sync-state.js';
+import { SyncBadge } from './ui/primitives/badge.js';
+import { renderTV } from './tv-render.js';
 
-const estado = { cameras: new Map() };
+const api = criarApi({ base: location.origin });
+const sync = criarSyncState();
+const sessoes = criarSessoesState();
+criarWS({ url: `ws://${location.host}/ws` });
 
-function render() {
-  const el = document.getElementById('painel');
-  if (!el) return;
-  el.innerHTML = [...estado.cameras.values()].map(c => `
-    <div class="camera-card">
-      <h2 class="camera-id">Câmera ${c.camera_id}</h2>
-      <div class="contagem">${c.quantidade_total ?? 0}</div>
-      <div class="meta">
-        <span>Operador: ${c.codigo_operador ?? '-'}</span>
-        <span>OP: ${c.codigo_op ?? '-'}</span>
-      </div>
-    </div>
-  `).join('');
+document.addEventListener('ws:sync.status', (e) => sync.aplicaEventoWS(e.detail));
+document.addEventListener('ws:contagem.incrementada', (e) => sessoes.aplicaContagem(e.detail));
+document.addEventListener('ws:sessao.atualizada', (e) => sessoes.aplicaAtualizacao(e.detail));
+
+async function rerender() {
+  const el = renderTV({ sessoes });
+  const painel = document.getElementById('painel');
+  painel.innerHTML = '';
+  painel.appendChild(el);
 }
-
-ws.addEventListener('message', (m) => {
-  const { evento, payload } = JSON.parse(m.data);
-  if (evento === 'contagem.incrementada') {
-    const c = estado.cameras.get(payload.camera_id) ?? { camera_id: payload.camera_id };
-    c.quantidade_total = payload.quantidade_total;
-    estado.cameras.set(payload.camera_id, c);
-    render();
-  } else if (evento === 'sessao.atualizada') {
-    estado.cameras.set(payload.camera_id, payload);
-    render();
-  } else if (evento === 'sync.status') {
-    const badge = document.getElementById('sync-badge');
-    if (badge) badge.textContent = payload.estado;
-  }
+sessoes.subscribe(rerender);
+sync.subscribe(() => {
+  const slot = document.getElementById('sync-slot');
+  slot.innerHTML = '';
+  slot.appendChild(SyncBadge(sync.atual().estado));
 });
 
-async function carregarAtivas() {
-  const r = await fetch('/sessoes?status=ativa');
-  const ativas = await r.json();
-  for (const s of ativas) estado.cameras.set(s.camera_id, s);
-  render();
-}
-carregarAtivas();
-
-async function pollHealth() {
+async function bootstrap() {
   try {
-    const r = await fetch('/health');
-    const h = await r.json();
-    const badge = document.getElementById('sync-badge');
-    if (badge) badge.textContent = h.sync.estado;
-  } catch (_) { /* ignore */ }
+    const ativas = await api.get('/sessoes?status=ativa');
+    sessoes.carregarAtivas(ativas);
+  } catch {}
+  try {
+    const h = await api.get('/health');
+    sync.aplicaHealth(h);
+  } catch {}
+  rerender();
 }
-pollHealth();
-setInterval(pollHealth, 5000);
+bootstrap();
+setInterval(async () => { try { sync.aplicaHealth(await api.get('/health')); } catch {} }, 5000);
