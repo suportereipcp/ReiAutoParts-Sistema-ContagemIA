@@ -25,5 +25,7 @@
     "pino": "^9.4.0",
     "pino-pretty": "^11.2.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "happy-dom": "^15.0.0"
+  }
 }
