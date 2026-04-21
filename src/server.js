@@ -26,6 +26,7 @@ import { rotasOperadores } from './http/routes/operadores.js';
 import { rotasSessoes } from './http/routes/sessoes.js';
 import { rotasProgramas } from './http/routes/programas.js';
 import { rotasRelatorios } from './http/routes/relatorios.js';
+import { rotasEventos } from './http/routes/eventos.js';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -110,6 +111,7 @@ async function main() {
   rotasProgramas(fastify, { cameraManagers });
   rotasSessoes(fastify, { sessaoService });
   rotasRelatorios(fastify, { db });
+  rotasEventos(fastify, { db });
 
   await fastify.listen({ host: config.http.host, port: config.http.port });
   logger.info({ port: config.http.port }, 'HTTP ouvindo');
