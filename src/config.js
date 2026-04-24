@@ -23,6 +23,10 @@ export function loadConfig(env = process.env) {
       { id: 1, ip: env.CAMERA_1_IP, porta: Number(env.CAMERA_1_PORTA ?? 8500) },
       { id: 2, ip: env.CAMERA_2_IP, porta: Number(env.CAMERA_2_PORTA ?? 8500) },
     ],
+    camera: {
+      programScanMax: Number(env.CAMERA_PROGRAM_SCAN_MAX ?? 32),
+      programScanDelayMs: Number(env.CAMERA_PROGRAM_SCAN_DELAY_MS ?? 200),
+    },
     http: {
       host: env.HTTP_HOST ?? '127.0.0.1',
       port: Number(env.HTTP_PORT ?? 3000),

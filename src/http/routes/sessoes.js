@@ -31,4 +31,20 @@ export function rotasSessoes(fastify, { sessaoService }) {
       return reply.code(400).send({ erro: e.message });
     }
   });
+
+  fastify.post('/sessoes/:id/reiniciar-contagem', async (req, reply) => {
+    try {
+      return await sessaoService.reiniciarContagem(req.params.id);
+    } catch (e) {
+      return reply.code(400).send({ erro: e.message });
+    }
+  });
+
+  fastify.post('/sessoes/:id/reiniciar-sessao', async (req, reply) => {
+    try {
+      return await sessaoService.reiniciarSessao(req.params.id);
+    } catch (e) {
+      return reply.code(400).send({ erro: e.message });
+    }
+  });
 }

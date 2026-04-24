@@ -9,8 +9,11 @@ import { logger } from './shared/logger.js';
 import { getDb } from './db/sqlite.js';
 import { enfileirar } from './db/queries/outbox.js';
 import { registrarEvento } from './db/queries/eventos.js';
+import { buscarAtivaPorCamera } from './db/queries/sessoes.js';
 import { KeyenceClient } from './camera/keyence-client.js';
 import { CameraManager } from './camera/camera-manager.js';
+import { ProgramCache } from './camera/program-cache.js';
+import { atualizarCacheProgramasAoConectar } from './camera/programas-boot.js';
 import { createSupabase, upsertSessao, upsertEvento, buscarAlteracoes } from './sync/supabase-client.js';
 import { criarHealthchecker } from './sync/healthcheck.js';
 import { criarPusher } from './sync/outbox-pusher.js';
@@ -45,7 +48,14 @@ async function main() {
   const cameraManagers = new Map();
   for (const cfg of config.cameras) {
     const client = new KeyenceClient({ ip: cfg.ip, porta: cfg.porta });
-    const manager = new CameraManager({ cameraId: cfg.id, client, logger });
+    const manager = new CameraManager({
+      cameraId: cfg.id,
+      client,
+      logger,
+      maxProgramas: config.camera.programScanMax,
+      intervaloDescobertaMs: config.camera.programScanDelayMs,
+      programCache: new ProgramCache({ cameraId: cfg.id }),
+    });
     cameraManagers.set(cfg.id, manager);
   }
 
@@ -94,6 +104,12 @@ async function main() {
     broadcast: wsHub.broadcast,
   });
 
+  const atualizarProgramasDaCamera = (manager) => atualizarCacheProgramasAoConectar({
+    manager,
+    existeSessaoAtiva: (cameraId) => Boolean(buscarAtivaPorCamera(db, cameraId)),
+    logger,
+  });
+
   for (const manager of cameraManagers.values()) {
     manager.on('pulso', (p) => contagemService.processarPulso({
       cameraId: p.cameraId,
@@ -102,6 +118,9 @@ async function main() {
       brilho: p.brilho,
     }));
     manager.on('estado', (estado) => wsHub.broadcast('camera.estado', { cameraId: manager.cameraId, estado }));
+    manager.on('conectada', () => {
+      atualizarProgramasDaCamera(manager).catch((e) => logger.warn({ err: e, cameraId: manager.cameraId }, 'refresh de programas falhou'));
+    });
   }
 
   rotaHealth(fastify, { db, syncWorker, cameraManagers });

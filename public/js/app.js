@@ -9,6 +9,7 @@ import { SideNav } from './ui/primitives/sidenav.js';
 import { TopNav } from './ui/primitives/topnav.js';
 import { SyncBadge } from './ui/primitives/badge.js';
 import { renderDashboard } from './pages/dashboard.js';
+import { renderIniciarSessao } from './pages/iniciar-sessao.js';
 import { renderSelecaoCarga } from './pages/selecao-carga.js';
 import { renderDetalhesCarga } from './pages/detalhes-carga.js';
 import { renderEmitirRelatorios } from './pages/emitir-relatorios.js';
@@ -70,7 +71,9 @@ criarRouter({
   root: '#root',
   rotas: {
     '/': async () => { renderShell('inicial'); return renderDashboard(ctx); },
+    '/sessoes/nova': async () => { renderShell('cargas'); return renderIniciarSessao(ctx); },
     '/cargas': async () => { renderShell('cargas'); return renderSelecaoCarga(ctx); },
+    '/cargas/:numero/nova-sessao': async (p) => { renderShell('cargas'); return renderIniciarSessao(ctx, { numeroEmbarque: p.numero }); },
     '/cargas/:numero': async (p) => { renderShell('cargas'); return renderDetalhesCarga(ctx, p.numero); },
     '/expedidas/:numero': async (p) => { renderShell('cargas'); return renderDetalhesCargaExpedida(ctx, p.numero); },
     '/relatorios': async () => { renderShell('relatorios'); return renderEmitirRelatorios(ctx); },

@@ -12,6 +12,7 @@ export function criarCatalogos({ api }) {
     },
     invalidarOperadores() { cacheOper = null; },
     async ops(q = '') { return api.get(`/ops?q=${encodeURIComponent(q)}`); },
+    async op(codigo) { return api.get(`/ops/${encodeURIComponent(codigo)}`); },
     async programas(cameraId, q = '') { return api.get(`/programas?camera=${cameraId}&q=${encodeURIComponent(q)}`); },
     async embarque(numero) { return api.get(`/embarques/${encodeURIComponent(numero)}`); },
   };

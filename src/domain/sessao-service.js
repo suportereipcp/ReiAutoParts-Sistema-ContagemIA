@@ -1,4 +1,4 @@
-import { criarSessao, buscarAtivaPorCamera, buscarPorId, encerrarSessao, listarAtivas, listarPorEmbarque } from '../db/queries/sessoes.js';
+import { criarSessao, buscarAtivaPorCamera, buscarPorId, cancelarSessao, encerrarSessao, listarAtivas, listarPorEmbarque, zerarContagem } from '../db/queries/sessoes.js';
 import { buscarEmbarque, buscarOP, buscarOperador } from '../db/queries/espelhos.js';
 
 export function criarSessaoService({ db, cameraManagers, registrarEvento, enfileirarSync, gerarUUID, broadcast }) {
@@ -18,7 +18,7 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
     if (!cam) throw new Error(`Câmera ${camera_id} desconhecida.`);
     if (cam.estado === 'desconectada') throw new Error(`Câmera ${camera_id} desconectada.`);
     const atual = buscarAtivaPorCamera(db, camera_id);
-    if (atual) throw new Error(`Câmera ${camera_id} já tem sessão ativa (${atual.id}).`);
+    if (atual) throw new Error(`Camera ${camera_id} esta com sessao ativa. Encerre a sessao antes de continuar.`);
 
     const id = gerarUUID();
     const iniciadaEm = new Date().toISOString();
@@ -65,8 +65,38 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
     return final;
   }
 
+  async function reiniciarContagem(sessaoId) {
+    const s = buscarPorId(db, sessaoId);
+    if (!s) throw new Error(`Sessão ${sessaoId} não existe.`);
+    if (s.status !== 'ativa') throw new Error(`Sessão ${sessaoId} não está ativa.`);
+    const cam = cameraManagers.get(s.camera_id);
+    if (!cam?.reiniciarContagem) throw new Error(`Câmera ${s.camera_id} indisponível.`);
+    await cam.reiniciarContagem();
+    zerarContagem(db, sessaoId);
+    const atualizada = buscarPorId(db, sessaoId);
+    enfileirarSync('sessoes_contagem', atualizada);
+    registrarEvento({ nivel: 'INFO', categoria: 'SESSAO', mensagem: `Contagem da sessão ${sessaoId} reiniciada`, codigo_operador: s.codigo_operador });
+    broadcast('sessao.atualizada', atualizada);
+    return atualizada;
+  }
+
+  async function reiniciarSessao(sessaoId) {
+    const s = buscarPorId(db, sessaoId);
+    if (!s) throw new Error(`Sessão ${sessaoId} não existe.`);
+    if (s.status !== 'ativa') throw new Error(`Sessão ${sessaoId} não está ativa.`);
+    const cam = cameraManagers.get(s.camera_id);
+    if (cam) await cam.encerrarSessao();
+    const encerradaEm = new Date().toISOString();
+    cancelarSessao(db, sessaoId, encerradaEm);
+    const final = buscarPorId(db, sessaoId);
+    enfileirarSync('sessoes_contagem', final);
+    registrarEvento({ nivel: 'WARN', categoria: 'SESSAO', mensagem: `Sessão ${sessaoId} reiniciada e marcada como cancelada`, codigo_operador: s.codigo_operador });
+    broadcast('sessao.atualizada', final);
+    return final;
+  }
+
   function listarAtivasSnapshot() { return listarAtivas(db); }
   function listarPorEmbarqueSnapshot(numero) { return listarPorEmbarque(db, numero); }
 
-  return { abrir, confirmar, encerrar, listarAtivas: listarAtivasSnapshot, listarPorEmbarque: listarPorEmbarqueSnapshot };
+  return { abrir, confirmar, encerrar, reiniciarContagem, reiniciarSessao, listarAtivas: listarAtivasSnapshot, listarPorEmbarque: listarPorEmbarqueSnapshot };
 }

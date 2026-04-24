@@ -36,6 +36,23 @@ export function encerrarSessao(db, id, numeroCaixa, encerradaEm) {
   `).run(numeroCaixa, encerradaEm, id);
 }
 
+export function cancelarSessao(db, id, encerradaEm) {
+  db.prepare(`
+    UPDATE sessoes_contagem
+       SET status = 'cancelada',
+           encerrada_em = ?
+     WHERE id = ?
+  `).run(encerradaEm, id);
+}
+
+export function zerarContagem(db, id) {
+  db.prepare(`
+    UPDATE sessoes_contagem
+       SET quantidade_total = 0
+     WHERE id = ?
+  `).run(id);
+}
+
 export function listarAtivas(db) {
   return db.prepare(
     `SELECT * FROM sessoes_contagem WHERE status = 'ativa' ORDER BY camera_id`
