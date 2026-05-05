@@ -1,4 +1,5 @@
 import { formatarData, formatarHora, formatarNumero } from '../infra/formatters.js';
+import { rotuloCaixa } from '../domain/caixas.js';
 
 export async function renderDetalhesCargaExpedida(ctx, numero) {
   const el = document.createElement('div');
@@ -12,6 +13,7 @@ export async function renderDetalhesCargaExpedida(ctx, numero) {
 
   const encerradas = caixas.filter(c => c.status === 'encerrada');
   const totalItens = encerradas.reduce((acc, c) => acc + (Number(c.quantidade_total) || 0), 0);
+  const dataExpedicao = embarque.atualizado_em ?? embarque.data_criacao ?? null;
 
   const bento = document.createElement('section');
   bento.className = 'grid grid-cols-12 gap-6';
@@ -22,11 +24,11 @@ export async function renderDetalhesCargaExpedida(ctx, numero) {
       <div class="grid grid-cols-3 gap-8 mt-10">
         <div>
           <p class="text-[10px] font-headline uppercase tracking-widest text-outline mb-1">Nota Fiscal</p>
-          <p class="text-lg font-headline text-primary-dim">${embarque.nota_fiscal ?? '—'}</p>
+          <p class="text-lg font-headline text-primary-dim">${embarque.numero_nota_fiscal ?? '—'}</p>
         </div>
         <div>
           <p class="text-[10px] font-headline uppercase tracking-widest text-outline mb-1">Data Expedida</p>
-          <p class="text-lg font-headline text-primary-dim">${embarque.data_expedicao ? formatarData(embarque.data_expedicao) : '—'}</p>
+          <p class="text-lg font-headline text-primary-dim">${dataExpedicao ? formatarData(dataExpedicao) : '—'}</p>
         </div>
         <div>
           <p class="text-[10px] font-headline uppercase tracking-widest text-outline mb-1">Total Itens</p>
@@ -105,7 +107,7 @@ export async function renderDetalhesCargaExpedida(ctx, numero) {
           <span class="font-mono text-xs text-primary bg-primary-container/40 px-2 py-0.5 rounded">${c.codigo_op ?? '—'}</span>
         </td>
         <td class="px-4 py-4 border-t border-outline-variant/10 font-medium">${formatarNumero(c.quantidade_total)} un</td>
-        <td class="px-4 py-4 border-t border-outline-variant/10 text-outline">${c.numero_caixa ?? '—'}</td>
+        <td class="px-4 py-4 border-t border-outline-variant/10 text-outline">${rotuloCaixa(c.numero_caixa)}</td>
         <td class="px-4 py-4 border-t border-outline-variant/10">${c.codigo_operador ?? '—'}</td>
         <td class="px-4 py-4 border-t border-outline-variant/10 text-outline">${c.encerrada_em ? `${formatarData(c.encerrada_em)} ${formatarHora(c.encerrada_em)}` : '—'}</td>
         <td class="px-6 py-4 border-t border-outline-variant/10 text-right">

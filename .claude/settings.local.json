@@ -53,7 +53,12 @@
       "Bash(git commit -m 'feat\\(frontend\\): Card primitive no-line rule + tests *)",
       "Bash(git commit -m 'feat\\(frontend\\): Modal primitive + tests *)",
       "Bash(git commit *)",
-      "Bash(where pm2 *)"
+      "Bash(where pm2 *)",
+      "Bash(git *)",
+      "Bash(mkdir -p docs/obsidian-vault docs/design-stitch docs/dev)",
+      "Bash(mv \"Sistema de Contagem - AutoParts\" docs/obsidian-vault/contents)",
+      "Bash(mv stitch_sistema_contagem_rei_autoparts docs/design-stitch/contents)",
+      "Bash(mv estrutura_sistema.md scripts_automacao.md AGENTS.md ARQUITETURA.md DEVELOPER_CONTEXT.md docs/dev/)"
     ]
   }
 }

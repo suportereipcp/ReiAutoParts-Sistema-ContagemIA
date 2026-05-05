@@ -16,6 +16,8 @@ test('abre modal wide com dropdown de todos os embarques pendentes', () => {
   abrirContinuarCargaMultipla({ sessoes });
   const stage = document.querySelector('[data-stage="continuar-multipla"]');
   assert.ok(stage);
+  assert.ok(document.querySelector('[data-coluna-formulario]'));
+  assert.ok(document.querySelector('[data-coluna-visualizacao]'));
   const options = document.querySelectorAll('[data-input="embarque_selecionado"] option');
   assert.equal(options.length, sessoes.length + 1);
   assert.match(document.body.textContent, /EB-094/);
@@ -29,6 +31,7 @@ test('ao mudar select, painel de visualização atualiza contexto', () => {
   select.value = 'S2';
   select.dispatchEvent(new Event('change'));
   const painel = document.querySelector('[data-visualizacao]');
+  assert.ok(document.querySelector('[data-status-qualidade]'));
   assert.match(painel.textContent, /Acabamento Sul/);
   assert.match(painel.textContent, /EB-095/);
 });

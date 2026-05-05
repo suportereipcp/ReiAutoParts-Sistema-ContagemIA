@@ -1709,6 +1709,13 @@ git commit -m "docs: record label implementation verification"
 
 ---
 
+## Execution Notes
+
+- Implementadas Tasks 1-8 com TDD (testes falham → implementação → testes passam).
+- Suite completa: `node --test "tests/**/*.test.js"` → 252/252 PASS.
+- Hardware print pendente: validar com impressora Zebra real assim que `LABEL_PRINTER_HOST`/modelo forem confirmados.
+- Spooler permanece como stub explícito.
+
 ## Self-Review
 
 - Spec coverage: schema, logical document, ZPL pagination, automatic close emission, reprint API, UI action, configurable transport, sync, tests and hardware risks are covered.

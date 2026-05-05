@@ -17,6 +17,16 @@ export async function upsertEvento(sb, evento) {
   if (error) throw error;
 }
 
+export async function upsertEtiquetaCaixa(sb, payload) {
+  const { error } = await sb.from('etiquetas_caixa').upsert(payload, { onConflict: 'id' });
+  if (error) throw error;
+}
+
+export async function upsertEtiquetaCaixaParte(sb, payload) {
+  const { error } = await sb.from('etiquetas_caixa_partes').upsert(payload, { onConflict: 'id' });
+  if (error) throw error;
+}
+
 export async function buscarAlteracoes(sb, tabela, cursor, limite = 500) {
   let q = sb.from(tabela).select('*').order('atualizado_em', { ascending: true }).limit(limite);
   if (cursor) q = q.gt('atualizado_em', cursor);

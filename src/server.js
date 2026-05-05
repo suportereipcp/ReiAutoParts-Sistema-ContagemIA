@@ -14,13 +14,27 @@ import { KeyenceClient } from './camera/keyence-client.js';
 import { CameraManager } from './camera/camera-manager.js';
 import { ProgramCache } from './camera/program-cache.js';
 import { atualizarCacheProgramasAoConectar } from './camera/programas-boot.js';
-import { createSupabase, upsertSessao, upsertEvento, buscarAlteracoes } from './sync/supabase-client.js';
+import {
+  criarRegistradorDiagnosticoKeyence,
+  formatarLinhaKeyenceNaoReconhecida,
+  formatarRespostaKeyenceSemComando,
+} from './camera/keyence-diagnostics.js';
+import { createSupabase, upsertSessao, upsertEvento, upsertEtiquetaCaixa, upsertEtiquetaCaixaParte, buscarAlteracoes } from './sync/supabase-client.js';
+import { criarCaixaLabelService } from './labels/caixa-label-service.js';
+import { renderizarEtiquetaCaixaZpl } from './labels/zpl-renderer.js';
+import { criarPrintQueue } from './printer/print-queue.js';
+import { criarDisabledTransport } from './printer/transports/disabled.js';
+import { criarTcpTransport } from './printer/transports/tcp.js';
+import { criarSpoolerTransport } from './printer/transports/spooler.js';
+import { rotasEtiquetas } from './http/routes/etiquetas.js';
 import { criarHealthchecker } from './sync/healthcheck.js';
 import { criarPusher } from './sync/outbox-pusher.js';
 import { criarPoller } from './sync/reverse-poller.js';
 import { criarSyncWorker } from './sync/sync-worker.js';
 import { criarSessaoService } from './domain/sessao-service.js';
 import { criarContagemService } from './domain/contagem-service.js';
+import { criarCalibracaoService } from './domain/calibracao-service.js';
+import { criarRoteadorPulsoCamera } from './domain/camera-pulse-router.js';
 import { criarWSHub } from './http/ws-hub.js';
 import { rotaHealth } from './http/routes/health.js';
 import { rotasEmbarques } from './http/routes/embarques.js';
@@ -28,6 +42,7 @@ import { rotasOPs } from './http/routes/ops.js';
 import { rotasOperadores } from './http/routes/operadores.js';
 import { rotasSessoes } from './http/routes/sessoes.js';
 import { rotasProgramas } from './http/routes/programas.js';
+import { rotasCalibracao } from './http/routes/calibracao.js';
 import { rotasRelatorios } from './http/routes/relatorios.js';
 import { rotasEventos } from './http/routes/eventos.js';
 
@@ -72,6 +87,8 @@ async function main() {
     enviarBatch: async ({ tabela, payload }) => {
       if (tabela === 'sessoes_contagem') await upsertSessao(sb, payload);
       else if (tabela === 'eventos_log') await upsertEvento(sb, { ...payload, origem: 'edge_pc', id_local: payload.id_local });
+      else if (tabela === 'etiquetas_caixa') await upsertEtiquetaCaixa(sb, payload);
+      else if (tabela === 'etiquetas_caixa_partes') await upsertEtiquetaCaixaParte(sb, payload);
     },
     logger,
   });
@@ -89,6 +106,26 @@ async function main() {
     const idLocal = registrarEvento(db, { ...ev, timestamp });
     enfileirarSync('eventos_log', { ...ev, timestamp, id_local: idLocal, origem: 'edge_pc' });
   };
+  const registrarDiagnosticoKeyence = criarRegistradorDiagnosticoKeyence({
+    logger,
+    registrarEvento: wrapEvento,
+  });
+
+  const printerTransport = !config.printer.enabled
+    ? criarDisabledTransport()
+    : config.printer.mode === 'tcp'
+      ? criarTcpTransport({ host: config.printer.host, port: config.printer.port })
+      : criarSpoolerTransport({ name: config.printer.name });
+
+  const printQueue = criarPrintQueue({ db, transport: printerTransport, logger });
+  const caixaLabelService = criarCaixaLabelService({
+    db,
+    gerarUUID: randomUUID,
+    renderizar: renderizarEtiquetaCaixaZpl,
+    printQueue,
+    labelsConfig: config.labels,
+    enfileirarSync,
+  });
 
   const sessaoService = criarSessaoService({
     db, cameraManagers,
@@ -96,6 +133,7 @@ async function main() {
     enfileirarSync,
     gerarUUID: randomUUID,
     broadcast: wsHub.broadcast,
+    caixaLabelService,
   });
   const contagemService = criarContagemService({
     db,
@@ -103,6 +141,14 @@ async function main() {
     enfileirarSync,
     broadcast: wsHub.broadcast,
   });
+  const calibracaoService = criarCalibracaoService({
+    db,
+    cameraManagers,
+    gerarUUID: randomUUID,
+    broadcast: wsHub.broadcast,
+    existeSessaoContagemAtiva: (cameraId) => Boolean(buscarAtivaPorCamera(db, cameraId)),
+  });
+  const rotearPulsoCamera = criarRoteadorPulsoCamera({ calibracaoService, contagemService });
 
   const atualizarProgramasDaCamera = (manager) => atualizarCacheProgramasAoConectar({
     manager,
@@ -111,12 +157,29 @@ async function main() {
   });
 
   for (const manager of cameraManagers.values()) {
-    manager.on('pulso', (p) => contagemService.processarPulso({
-      cameraId: p.cameraId,
-      contagem: p.contagem,
-      total_dia: p.total_dia,
-      brilho: p.brilho,
-    }));
+    manager.on('pulso', rotearPulsoCamera);
+    manager.on('linha-processada', ({ cameraId, linha, status, parsed }) => {
+      wsHub.broadcast('camera.trafego', {
+        camera_id: cameraId,
+        cameraId,
+        timestamp: new Date().toISOString(),
+        linha,
+        status,
+        parsed,
+      });
+    });
+    manager.on('raw', ({ cameraId, linha }) => {
+      registrarDiagnosticoKeyence(
+        cameraId,
+        formatarLinhaKeyenceNaoReconhecida({ cameraId, linha }),
+      );
+    });
+    manager.on('resposta-sem-comando', ({ cameraId, resposta }) => {
+      registrarDiagnosticoKeyence(
+        cameraId,
+        formatarRespostaKeyenceSemComando({ cameraId, resposta }),
+      );
+    });
     manager.on('estado', (estado) => wsHub.broadcast('camera.estado', { cameraId: manager.cameraId, estado }));
     manager.on('conectada', () => {
       atualizarProgramasDaCamera(manager).catch((e) => logger.warn({ err: e, cameraId: manager.cameraId }, 'refresh de programas falhou'));
@@ -128,7 +191,9 @@ async function main() {
   rotasOPs(fastify, { db });
   rotasOperadores(fastify, { db });
   rotasProgramas(fastify, { cameraManagers });
+  rotasCalibracao(fastify, { calibracaoService });
   rotasSessoes(fastify, { sessaoService });
+  rotasEtiquetas(fastify, { db, caixaLabelService, printQueue });
   rotasRelatorios(fastify, { db });
   rotasEventos(fastify, { db });
 

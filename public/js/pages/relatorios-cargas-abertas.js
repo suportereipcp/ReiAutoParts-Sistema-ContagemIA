@@ -1,4 +1,5 @@
 import { abrirModalEmitir } from '../ui/composites/modal-emitir-relatorio.js';
+import { baixarArquivo } from '../infra/download.js';
 import { formatarData, formatarHora, formatarNumero } from '../infra/formatters.js';
 
 export async function renderRelatoriosCargasAbertas(ctx) {
@@ -116,7 +117,7 @@ export async function renderRelatoriosCargasAbertas(ctx) {
       `;
       tr.querySelector('[data-acao-detalhes]').addEventListener('click', () => abrirModalEmitir({
         numero: emb.numero_embarque,
-        onBaixar: (fmt) => { window.location.href = `/relatorios/embarque/${encodeURIComponent(emb.numero_embarque)}?fmt=${fmt}`; },
+        onBaixar: (fmt) => baixarArquivo(`/relatorios/embarque/${encodeURIComponent(emb.numero_embarque)}?fmt=${fmt}`),
       }));
       corpo.appendChild(tr);
     }

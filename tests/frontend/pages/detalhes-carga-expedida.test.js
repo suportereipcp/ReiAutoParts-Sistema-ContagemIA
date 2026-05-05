@@ -22,8 +22,8 @@ test('renderiza bento Expedido + logística + tabela com totais', async () => {
   const ctx = fakeCtx({
     embarque: {
       numero_embarque: 'SHP-0125',
-      nota_fiscal: 'NF-992110',
-      data_expedicao: '2026-04-14T12:00:00Z',
+      numero_nota_fiscal: 'NF-992110',
+      atualizado_em: '2026-04-14T12:00:00Z',
       motorista: 'João Silva',
       placa: 'ABC-1234',
     },
@@ -37,15 +37,19 @@ test('renderiza bento Expedido + logística + tabela com totais', async () => {
   assert.ok(el.querySelector('[data-bento-logistica]'));
   assert.match(el.textContent, /Status: Expedido/);
   assert.match(el.textContent, /SHP-0125/);
+  assert.match(el.textContent, /NF-992110/);
+  assert.match(el.textContent, /14\/04\/2026/);
   assert.match(el.textContent, /João Silva/);
   assert.match(el.textContent, /ABC-1234/);
+  assert.match(el.textContent, /Detalhamento da Carga/);
+  assert.match(el.textContent, /Exportar Manifesto/);
   assert.equal(el.querySelectorAll('[data-linha-caixa]').length, 2);
   assert.match(el.textContent, /770 un/);
 });
 
 test('sem caixas encerradas exibe mensagem de vazio', async () => {
   const ctx = fakeCtx({
-    embarque: { numero_embarque: 'EB-0', motorista: null, placa: null },
+    embarque: { numero_embarque: 'EB-0', numero_nota_fiscal: null, motorista: null, placa: null },
     caixas: [{ id: 'x', status: 'ativa', quantidade_total: 5 }],
   });
   const el = await renderDetalhesCargaExpedida(ctx, 'EB-0');
@@ -55,7 +59,7 @@ test('sem caixas encerradas exibe mensagem de vazio', async () => {
 
 test('link Exportar Manifesto aponta para XLSX do relatório', async () => {
   const ctx = fakeCtx({
-    embarque: { numero_embarque: 'EB-9', motorista: 'X', placa: 'Y' },
+    embarque: { numero_embarque: 'EB-9', numero_nota_fiscal: 'NF-9', motorista: 'X', placa: 'Y' },
     caixas: [],
   });
   const el = await renderDetalhesCargaExpedida(ctx, 'EB-9');

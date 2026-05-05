@@ -20,6 +20,15 @@ test('listarEmbarquesAbertos filtra por status', () => {
   assert.equal(lista[0].numero_embarque, 'E1');
 });
 
+test('listarEmbarques por status fechado retorna apenas expedidos', () => {
+  const db = openDatabase(':memory:');
+  upsertEmbarque(db, { numero_embarque: 'E1', status: 'aberto' });
+  upsertEmbarque(db, { numero_embarque: 'E2', status: 'fechado' });
+  const lista = db.prepare(`SELECT * FROM embarques WHERE status = ? ORDER BY data_criacao DESC`).all('fechado');
+  assert.equal(lista.length, 1);
+  assert.equal(lista[0].numero_embarque, 'E2');
+});
+
 test('cursor persiste timestamp', () => {
   const db = openDatabase(':memory:');
   salvarCursor(db, 'embarques', '2026-04-17T10:00:00Z');

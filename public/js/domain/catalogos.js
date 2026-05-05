@@ -1,11 +1,14 @@
 export function criarCatalogos({ api }) {
-  let cacheEmb = null, cacheOper = null;
+  let cacheOper = null;
   return {
-    async embarquesAbertos() {
-      if (!cacheEmb) cacheEmb = api.get('/embarques?status=aberto');
-      return cacheEmb;
+    async embarques(status) {
+      const query = status ? `?status=${encodeURIComponent(status)}` : '';
+      return api.get(`/embarques${query}`);
     },
-    invalidarEmbarques() { cacheEmb = null; },
+    async embarquesAbertos() {
+      return api.get('/embarques?status=aberto');
+    },
+    invalidarEmbarques() {},
     async operadores() {
       if (!cacheOper) cacheOper = api.get('/operadores');
       return cacheOper;

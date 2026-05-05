@@ -3,7 +3,7 @@ import { Input } from '../primitives/input.js';
 import { Button } from '../primitives/button.js';
 import { toast } from '../primitives/toast.js';
 
-export async function abrirModalNovaCarga(ctx) {
+export async function abrirModalNovaCarga(ctx, opts = {}) {
   const modal = Modal({ title: 'Nova Carga', subtitle: 'Insira os parâmetros técnicos para iniciar.' });
   modal.abrir();
   const body = modal.corpo();
@@ -12,7 +12,13 @@ export async function abrirModalNovaCarga(ctx) {
   stage1.dataset.stage = 'params';
 
   const embarqueIn = Input({ label: 'Número do Embarque', id: 'in-emb' });
-  embarqueIn.querySelector('input').dataset.input = 'numero_embarque';
+  const embarqueInput = embarqueIn.querySelector('input');
+  embarqueInput.dataset.input = 'numero_embarque';
+  if (opts.numeroEmbarque) embarqueInput.value = opts.numeroEmbarque;
+  if (opts.bloquearEmbarque) {
+    embarqueInput.readOnly = true;
+    embarqueInput.classList.add('opacity-80', 'cursor-not-allowed');
+  }
   const opIn = Input({ label: 'Ordem de Produção', id: 'in-op' });
   opIn.querySelector('input').dataset.input = 'codigo_op';
   const operIn = Input({ label: 'Código do Operador', id: 'in-oper' });

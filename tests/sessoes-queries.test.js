@@ -47,12 +47,14 @@ test('encerrarSessao muda status e define numero_caixa', () => {
   assert.equal(s.numero_caixa, 'CX-001');
 });
 
-test('caixa duplicada no mesmo embarque é bloqueada', () => {
+test('mesma caixa pode receber múltiplas sessões no mesmo embarque', () => {
   const db = setup();
   criarSessao(db, { id: 'u1', numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1, iniciada_em: '2026-04-17T10:00:00Z' });
   encerrarSessao(db, 'u1', 'CX-001', '2026-04-17T11:00:00Z');
   criarSessao(db, { id: 'u2', numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 2, iniciada_em: '2026-04-17T11:00:00Z' });
-  assert.throws(() => encerrarSessao(db, 'u2', 'CX-001', '2026-04-17T12:00:00Z'), /UNIQUE/);
+  assert.doesNotThrow(() => encerrarSessao(db, 'u2', 'CX-001', '2026-04-17T12:00:00Z'));
+  const rows = db.prepare('SELECT * FROM sessoes_contagem WHERE numero_caixa = ?').all('CX-001');
+  assert.equal(rows.length, 2);
 });
 
 test('listarPorEmbarque retorna todas (ativas + encerradas) do embarque', () => {

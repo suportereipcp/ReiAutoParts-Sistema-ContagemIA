@@ -1,4 +1,5 @@
 import { abrirModalEmitir } from '../ui/composites/modal-emitir-relatorio.js';
+import { baixarArquivo } from '../infra/download.js';
 
 export async function renderEmitirRelatorios(ctx) {
   const el = document.createElement('div');
@@ -34,7 +35,7 @@ export async function renderEmitirRelatorios(ctx) {
     `;
     card.addEventListener('click', () => abrirModalEmitir({
       numero: emb.numero_embarque,
-      onBaixar: (fmt) => { window.location.href = `/relatorios/embarque/${encodeURIComponent(emb.numero_embarque)}?fmt=${fmt}`; },
+      onBaixar: (fmt) => baixarArquivo(`/relatorios/embarque/${encodeURIComponent(emb.numero_embarque)}?fmt=${fmt}`),
     }));
     grid.appendChild(card);
   }

@@ -39,3 +39,10 @@ test('submete abertura e avança para seletor de programa', async () => {
   await new Promise(r => setTimeout(r, 20));
   assert.ok(document.querySelector('[data-stage="programa"]'));
 });
+
+test('aceita embarque pre-preenchido e bloqueado ao abrir pelo detalhe da carga', async () => {
+  await abrirModalNovaCarga(fakeCtx(), { numeroEmbarque: '01', bloquearEmbarque: true });
+  const input = document.querySelector('[data-input="numero_embarque"]');
+  assert.equal(input.value, '01');
+  assert.equal(input.readOnly, true);
+});

@@ -61,17 +61,46 @@ export function renderDashboard(ctx) {
 
 async function dispararContinuar(ctx) {
   try {
-    const ativas = await ctx.api.get('/sessoes');
-    if (!Array.isArray(ativas) || ativas.length === 0) {
-      toast.info('Nenhuma carga pendente no momento.');
+    const sessoes = normalizarSessoes(await ctx.api.get('/sessoes'));
+    if (sessoes.length === 1) {
+      abrirContinuarCargaUnica({
+        sessao: sessoes[0],
+        onContinuar: ({ sessao }) => {
+          if (sessao?.numero_embarque) {
+            window.location.hash = `#/cargas/${encodeURIComponent(sessao.numero_embarque)}`;
+          }
+        },
+      });
       return;
     }
-    if (ativas.length === 1) {
-      abrirContinuarCargaUnica({ sessao: ativas[0] });
+    if (sessoes.length > 1) {
+      abrirContinuarCargaMultipla({
+        sessoes,
+        onContinuar: ({ sessao }) => {
+          if (sessao?.numero_embarque) {
+            window.location.hash = `#/cargas/${encodeURIComponent(sessao.numero_embarque)}`;
+          }
+        },
+      });
       return;
     }
-    abrirContinuarCargaMultipla({ sessoes: ativas });
+
+    const embarques = await ctx.api.get('/embarques?status=aberto');
+    if (!Array.isArray(embarques) || embarques.length === 0) {
+      toast.info('Nenhuma carga aberta no momento.');
+      return;
+    }
+    if (embarques.length === 1) {
+      window.location.hash = `#/cargas/${encodeURIComponent(embarques[0].numero_embarque)}`;
+      return;
+    }
+    window.location.hash = '#/cargas';
   } catch (e) {
-    toast.erro(`Falha ao buscar cargas pendentes: ${e.message}`);
+    toast.erro(`Falha ao buscar cargas abertas: ${e.message}`);
   }
+}
+
+function normalizarSessoes(payload) {
+  if (!Array.isArray(payload)) return [];
+  return payload.filter((sessao) => typeof sessao?.id === 'string' && sessao.id.trim());
 }

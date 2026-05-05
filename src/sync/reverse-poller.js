@@ -4,7 +4,7 @@ import {
 } from '../db/queries/espelhos.js';
 
 const TABELAS = [
-  { nome: 'embarques', upsert: upsertEmbarque },
+  { nome: 'embarques', upsert: upsertEmbarque, estrategia: 'snapshot' },
   { nome: 'ordens_producao', upsert: upsertOP },
   { nome: 'operadores', upsert: upsertOperador },
 ];
@@ -12,9 +12,10 @@ const TABELAS = [
 export function criarPoller({ db, buscarAlteracoes, logger }) {
   return {
     async tick() {
-      for (const { nome, upsert } of TABELAS) {
+      for (const { nome, upsert, estrategia } of TABELAS) {
         const cursor = lerCursor(db, nome);
-        const registros = await buscarAlteracoes(nome, cursor);
+        const cursorConsulta = estrategia === 'snapshot' ? null : cursor;
+        const registros = await buscarAlteracoes(nome, cursorConsulta);
         if (registros.length === 0) {
           salvarCursor(db, nome, cursor);
           continue;

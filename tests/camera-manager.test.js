@@ -45,6 +45,58 @@ test('ativarSessao envia PW, CTR, OE em ordem', async () => {
   assert.equal(m.estado, 'ativa');
 });
 
+test('repassa linhas raw da camera com cameraId para diagnostico', () => {
+  const client = new FakeClient();
+  const m = new CameraManager({ cameraId: 1, client });
+  const eventos = [];
+  m.on('raw', (payload) => eventos.push(payload));
+
+  client.emit('raw', 'RDR,01,0000001');
+
+  assert.deepEqual(eventos, [{ cameraId: 1, linha: 'RDR,01,0000001' }]);
+});
+
+test('repassa linha processada da camera com cameraId para log ao vivo', () => {
+  const client = new FakeClient();
+  const m = new CameraManager({ cameraId: 1, client });
+  const eventos = [];
+  const linha = {
+    linha: 'RT,01995,--,01,0000001,0000123',
+    status: 'contagem_lida',
+    parsed: { tipo: 'pulso', ferramenta: 1, contagem: 1, total_dia: 123 },
+  };
+  m.on('linha-processada', (payload) => eventos.push(payload));
+
+  client.emit('linha-processada', linha);
+
+  assert.deepEqual(eventos, [{ cameraId: 1, ...linha }]);
+});
+
+test('repassa respostas sem comando da camera com cameraId para diagnostico', () => {
+  const client = new FakeClient();
+  const m = new CameraManager({ cameraId: 2, client });
+  const eventos = [];
+  const resposta = { tipo: 'resposta', comando: 'RDR', valores: ['01', '0000001'] };
+  m.on('resposta-sem-comando', (payload) => eventos.push(payload));
+
+  client.emit('resposta-sem-comando', resposta);
+
+  assert.deepEqual(eventos, [{ cameraId: 2, resposta }]);
+});
+
+test('ativarSessao segue com CTR e OE quando PW falha mas programa atual ja confere', async () => {
+  const client = new FakeClient();
+  const m = new CameraManager({ cameraId: 1, client });
+  await m.conectar();
+  client.respostas.set('PW,017', new Error('ER:PW:3'));
+  client.respostas.set('PR', { tipo: 'resposta', comando: 'PR', valores: ['017'] });
+
+  await m.ativarSessao({ programaNumero: 17 });
+
+  assert.deepEqual(client.comandos, ['PW,017', 'PR', 'CTR', 'OE,1']);
+  assert.equal(m.estado, 'ativa');
+});
+
 test('encerrarSessao envia OE,0 e volta para suspensa', async () => {
   const client = new FakeClient();
   const m = new CameraManager({ cameraId: 1, client });

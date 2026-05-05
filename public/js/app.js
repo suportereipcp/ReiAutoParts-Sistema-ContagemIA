@@ -5,6 +5,7 @@ import { criarSyncState } from './domain/sync-state.js';
 import { criarSessoesState } from './domain/sessoes-state.js';
 import { criarCatalogos } from './domain/catalogos.js';
 import { criarSessoesService } from './domain/sessoes-service.js';
+import { criarEtiquetasService } from './domain/etiquetas-service.js';
 import { SideNav } from './ui/primitives/sidenav.js';
 import { TopNav } from './ui/primitives/topnav.js';
 import { SyncBadge } from './ui/primitives/badge.js';
@@ -20,6 +21,7 @@ import { renderEventos } from './pages/eventos.js';
 const api = criarApi({ base: location.origin });
 const catalogos = criarCatalogos({ api });
 const sessoesSvc = criarSessoesService({ api });
+const etiquetasSvc = criarEtiquetasService({ api });
 const sync = criarSyncState();
 const sessoes = criarSessoesState();
 criarWS({ url: `ws://${location.host}/ws` });
@@ -65,7 +67,7 @@ function caminhoPadrao(id) {
   return { inicial: 'Inicial', cargas: 'Cargas', relatorios: 'Relatórios', eventos: 'Eventos' }[id] ?? 'Rei AutoParts';
 }
 
-const ctx = { api, catalogos, sessoesSvc, sync, sessoes };
+const ctx = { api, catalogos, sessoesSvc, etiquetasSvc, sync, sessoes };
 
 criarRouter({
   root: '#root',

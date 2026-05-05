@@ -70,3 +70,12 @@ export function listarPorEmbarque(db, numero_embarque) {
      ORDER BY iniciada_em DESC`
   ).all(numero_embarque);
 }
+
+export function listarPorCaixaNoEmbarque(db, numero_embarque, numero_caixa) {
+  return db.prepare(
+    `SELECT * FROM sessoes_contagem
+      WHERE numero_embarque = ?
+        AND numero_caixa = ?
+      ORDER BY iniciada_em DESC`
+  ).all(numero_embarque, numero_caixa);
+}

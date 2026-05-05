@@ -19,6 +19,9 @@ test('abre modal com stage continuar-unica e item identificado', () => {
   abrirContinuarCargaUnica({ sessao: sessaoFake });
   assert.ok(document.querySelector('[data-stage="continuar-unica"]'));
   assert.ok(document.querySelector('[data-item-identificado]'));
+  assert.ok(document.querySelector('[data-item-preview]'));
+  assert.ok(document.querySelector('[data-accento-modal]'));
+  assert.match(document.body.textContent, /Carga Atual/);
   assert.match(document.body.textContent, /Disco Freio Ventilado T-800/);
 });
 

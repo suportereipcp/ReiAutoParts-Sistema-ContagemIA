@@ -15,6 +15,7 @@ test('openDatabase cria tabelas via migration', () => {
   assert.ok(tables.includes('ordens_producao'));
   assert.ok(tables.includes('operadores'));
   assert.ok(tables.includes('sync_cursor'));
+  assert.ok(tables.includes('programas_calibracao'));
 });
 
 test('índice único de 1 sessão ativa por câmera', () => {

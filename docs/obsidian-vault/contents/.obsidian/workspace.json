@@ -1,0 +1,223 @@
+{
+  "main": {
+    "id": "f74cd4bcbe9d3ada",
+    "type": "split",
+    "children": [
+      {
+        "id": "e2662b0400446e3b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "732e0986f925882a",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Visualização em gráfico"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "d799ca96e45448ba",
+    "type": "split",
+    "children": [
+      {
+        "id": "fe9090383cce454f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fe9d0d4936fee848",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de arquivos"
+            }
+          },
+          {
+            "id": "494eac178b5c4e02",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Procurar"
+            }
+          },
+          {
+            "id": "2f320e89c06f259b",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 270.5
+  },
+  "right": {
+    "id": "cf89fd09a8b378f5",
+    "type": "split",
+    "children": [
+      {
+        "id": "33df2cd0dec7a338",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "dfa59cd9e2db32d5",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Bem-vindo.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Links inversos para Bem-vindo"
+            }
+          },
+          {
+            "id": "2c278d1616298dba",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Bem-vindo.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Links de saída para Bem-vindo"
+            }
+          },
+          {
+            "id": "50d0ca3a7d3b8cbc",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "d08b13936b7111d0",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas as propriedades"
+            }
+          },
+          {
+            "id": "e1110f72b763a6b2",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Bem-vindo.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Sumário de Bem-vindo"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir a troca rápida": false,
+      "graph:Abrir visualização em gráfico": false,
+      "canvas:Criar novo canvas": false,
+      "daily-notes:Abrir a nota de hoje": false,
+      "templates:Inserir modelo": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Criar nova base": false
+    }
+  },
+  "active": "732e0986f925882a",
+  "lastOpenFiles": [
+    "app.json",
+    "Sem título.canvas",
+    "Sem título 1.canvas",
+    "2026-04-23.md",
+    "06 - Referencias de Codigo/Backend/Banco Local, Queries e Migrations.md",
+    "06 - Referencias de Codigo/Operacao/Scripts e Boot Local.md",
+    "06 - Referencias de Codigo/Mapa do Codigo.md",
+    "Bem-vindo.md",
+    "06 - Referencias de Codigo/Backend/Bootstrap, Config e Runtime.md",
+    "06 - Referencias de Codigo/Backend/Dominio de Sessao e Contagem.md",
+    "06 - Referencias de Codigo/Backend/HTTP, WebSocket e Relatorios.md",
+    "06 - Referencias de Codigo/Backend/Sync e Supabase.md",
+    "06 - Referencias de Codigo/Backend/Camera Keyence e Programas.md",
+    "06 - Referencias de Codigo/Testes/Mapa de Cobertura.md",
+    "04 - Desenvolvimento/Ambiente e Comandos.md",
+    "05 - Planejamento/Design System Industrial Zen.md",
+    "03 - Operacao/Integracao Keyence IV4.md",
+    "03 - Operacao/Checklist E2E.md",
+    "03 - Operacao/Automacao e Kiosk.md",
+    "05 - Planejamento/Plano Frontend Industrial Zen.md",
+    "05 - Planejamento/Plano de Implementacao.md",
+    "05 - Planejamento/Especificacao do MVP.md",
+    "00 - Hub/Catalogo de Fontes.md",
+    "06 - Referencias de Codigo/Frontend/Shell SPA, TV e Navegacao.md",
+    "06 - Referencias de Codigo/Frontend/Estado, API e Eventos.md",
+    "06 - Referencias de Codigo/Frontend/Paginas, Modais e Componentes.md",
+    "06 - Referencias de Codigo/Testes",
+    "06 - Referencias de Codigo/Operacao",
+    "06 - Referencias de Codigo/Frontend",
+    "06 - Referencias de Codigo/Backend",
+    "06 - Referencias de Codigo",
+    "02 - Arquitetura/Fluxos Operacionais.md",
+    "02 - Arquitetura/Arquitetura Edge-First.md",
+    "05 - Planejamento",
+    "04 - Desenvolvimento",
+    "03 - Operacao",
+    "02 - Arquitetura",
+    "01 - Visao Geral"
+  ]
+}

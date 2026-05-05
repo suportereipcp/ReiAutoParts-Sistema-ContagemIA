@@ -30,6 +30,20 @@ test('confirmar manda programa', async () => {
 test('encerrar envia numero_caixa', async () => {
   const api = fakeApi();
   const svc = criarSessoesService({ api });
-  await svc.encerrar('u1', 'CX-9');
+  await svc.encerrar('u1', { numero_caixa: 'CX-9' });
   assert.deepEqual(api.posts[0].body, { numero_caixa: 'CX-9' });
+});
+
+test('reiniciarContagem usa rota dedicada', async () => {
+  const api = fakeApi();
+  const svc = criarSessoesService({ api });
+  await svc.reiniciarContagem('u1');
+  assert.equal(api.posts[0].path, '/sessoes/u1/reiniciar-contagem');
+});
+
+test('reiniciarSessao usa rota dedicada', async () => {
+  const api = fakeApi();
+  const svc = criarSessoesService({ api });
+  await svc.reiniciarSessao('u1');
+  assert.equal(api.posts[0].path, '/sessoes/u1/reiniciar-sessao');
 });

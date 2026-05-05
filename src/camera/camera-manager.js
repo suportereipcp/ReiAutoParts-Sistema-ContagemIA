@@ -25,6 +25,9 @@ export class CameraManager extends EventEmitter {
     this.tentativas = 0;
 
     client.on('pulso', p => this.emit('pulso', { cameraId, ...p }));
+    client.on('linha-processada', linha => this.emit('linha-processada', { cameraId, ...linha }));
+    client.on('raw', linha => this.emit('raw', { cameraId, linha }));
+    client.on('resposta-sem-comando', resposta => this.emit('resposta-sem-comando', { cameraId, resposta }));
     client.on('desconectado', () => this._onDesconectado());
     client.on('erro', e => this.logger.error?.({ err: e, cameraId }, 'erro no client'));
   }
@@ -56,7 +59,14 @@ export class CameraManager extends EventEmitter {
   async ativarSessao({ programaNumero, formatoOE = 1 }) {
     if (this.estado === 'desconectada') throw new Error('câmera desconectada');
     const prog = String(programaNumero).padStart(3, '0');
-    await this.client.enviaComando(`PW,${prog}`);
+    try {
+      await this.client.enviaComando(`PW,${prog}`);
+    } catch (error) {
+      const atual = await this._lerProgramaAtual();
+      if (!this._erroProgramaJaSelecionado(error) || atual !== Number(programaNumero)) {
+        throw error;
+      }
+    }
     await this.client.enviaComando('CTR');
     await this.client.enviaComando(`OE,${formatoOE}`);
     this.estado = 'ativa';
@@ -173,5 +183,9 @@ export class CameraManager extends EventEmitter {
 
   _erroProgramaInexistente(error) {
     return /^ER:PW:/i.test(error?.message ?? '');
+  }
+
+  _erroProgramaJaSelecionado(error) {
+    return /^ER:PW:0?3$/i.test(error?.message ?? '');
   }
 }

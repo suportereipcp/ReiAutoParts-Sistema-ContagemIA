@@ -18,3 +18,10 @@ test('mensagem quando vazio', () => {
   const el = TabelaCaixas({ caixas: [] });
   assert.match(el.textContent, /Nenhuma caixa/);
 });
+
+test('formata caixas sem número com rótulo amigável', () => {
+  const el = TabelaCaixas({ caixas: [
+    { numero_caixa: '__SEM_NUMERO__003', codigo_op: 'OP1', quantidade_total: 10 },
+  ]});
+  assert.match(el.textContent, /Sem número #3/);
+});

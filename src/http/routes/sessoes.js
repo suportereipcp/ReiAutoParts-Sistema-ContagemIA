@@ -25,8 +25,7 @@ export function rotasSessoes(fastify, { sessaoService }) {
 
   fastify.post('/sessoes/:id/encerrar', async (req, reply) => {
     try {
-      const s = await sessaoService.encerrar(req.params.id, req.body?.numero_caixa);
-      return s;
+      return await sessaoService.encerrar(req.params.id, req.body);
     } catch (e) {
       return reply.code(400).send({ erro: e.message });
     }

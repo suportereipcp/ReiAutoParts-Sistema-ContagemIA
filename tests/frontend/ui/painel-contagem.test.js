@@ -17,3 +17,15 @@ test('atualizar substitui valor', () => {
   painel.querySelector('[data-contagem]').textContent = '10';
   assert.equal(painel.querySelector('[data-contagem]').textContent, '10');
 });
+
+test('renderiza ações quando handlers são fornecidos', () => {
+  const painel = PainelContagem({
+    sessao: { id: 'x', quantidade_total: 0, camera_id: 1, programa_nome: 'PECA-B' },
+    onEncerrar() {},
+    onReiniciarContagem() {},
+    onReiniciarSessao() {},
+  });
+  assert.match(painel.textContent, /Encerrar Sessão/);
+  assert.match(painel.textContent, /Reiniciar Contagem/);
+  assert.match(painel.textContent, /Reiniciar Sessão/);
+});

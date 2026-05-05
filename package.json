@@ -7,9 +7,9 @@
   "engines": { "node": ">=20.0.0" },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
-    "test": "node --test tests/",
-    "test:watch": "node --test --watch tests/",
+    "dev": "node --watch --watch-path=src --watch-path=.env src/server.js",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "test:watch": "node --test --watch \"tests/**/*.test.js\"",
     "fake-keyence": "node scripts/fake-keyence.js",
     "ping-keyence": "node scripts/ping-keyence.js"
   },

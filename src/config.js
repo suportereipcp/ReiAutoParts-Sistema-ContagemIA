@@ -43,6 +43,20 @@ export function loadConfig(env = process.env) {
       level: env.LOG_LEVEL ?? 'info',
       path: env.LOG_PATH ?? './logs/app.log',
     },
+    labels: {
+      dpi: Number(env.LABEL_DPI ?? 203),
+      widthDots: Number(env.LABEL_WIDTH_DOTS ?? 812),
+      heightDots: Number(env.LABEL_HEIGHT_DOTS ?? 609),
+      linesPerPart: Number(env.LABEL_LINES_PER_PART ?? 10),
+      template: env.LABEL_TEMPLATE ?? 'caixa-default',
+    },
+    printer: {
+      enabled: String(env.LABEL_PRINTER_ENABLED ?? 'false').toLowerCase() === 'true',
+      mode: env.LABEL_PRINTER_MODE ?? 'disabled',
+      host: env.LABEL_PRINTER_HOST,
+      port: Number(env.LABEL_PRINTER_PORT ?? 9100),
+      name: env.LABEL_PRINTER_NAME,
+    },
   };
 }
 

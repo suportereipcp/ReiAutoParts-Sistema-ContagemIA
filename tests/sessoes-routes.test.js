@@ -15,6 +15,7 @@ async function bootstrap() {
     cameraId: 1, estado: 'suspensa',
     async ativarSessao() { this.estado = 'ativa'; },
     async encerrarSessao() { this.estado = 'suspensa'; },
+    async reiniciarContagem() {},
   };
   const svc = criarSessaoService({
     db, cameraManagers: new Map([[1, fakeCamera]]),
@@ -56,6 +57,35 @@ test('POST /sessoes/:id/encerrar retorna 400 sem caixa', async () => {
   assert.equal(r.statusCode, 400);
 });
 
+test('POST /sessoes/:id/encerrar aceita payload para caixa sem número', async () => {
+  const { fastify } = await bootstrap();
+  await fastify.inject({ method: 'POST', url: '/sessoes', payload: { numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 } });
+  await fastify.inject({ method: 'POST', url: '/sessoes/u1/confirmar', payload: { programaNumero: 2, programaNome: 'X' } });
+  const r = await fastify.inject({ method: 'POST', url: '/sessoes/u1/encerrar', payload: { criar_caixa_sem_numero: true } });
+  assert.equal(r.statusCode, 200);
+  const body = r.json();
+  const sessao = body.sessao ?? body;
+  assert.match(sessao.numero_caixa, /^__SEM_NUMERO__/);
+});
+
+test('POST /sessoes/:id/reiniciar-contagem zera a sessão ativa', async () => {
+  const { fastify } = await bootstrap();
+  await fastify.inject({ method: 'POST', url: '/sessoes', payload: { numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 } });
+  await fastify.inject({ method: 'POST', url: '/sessoes/u1/confirmar', payload: { programaNumero: 2, programaNome: 'X' } });
+  const r = await fastify.inject({ method: 'POST', url: '/sessoes/u1/reiniciar-contagem' });
+  assert.equal(r.statusCode, 200);
+  assert.equal(r.json().quantidade_total, 0);
+});
+
+test('POST /sessoes/:id/reiniciar-sessao cancela a sessão ativa', async () => {
+  const { fastify } = await bootstrap();
+  await fastify.inject({ method: 'POST', url: '/sessoes', payload: { numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 } });
+  await fastify.inject({ method: 'POST', url: '/sessoes/u1/confirmar', payload: { programaNumero: 2, programaNome: 'X' } });
+  const r = await fastify.inject({ method: 'POST', url: '/sessoes/u1/reiniciar-sessao' });
+  assert.equal(r.statusCode, 200);
+  assert.equal(r.json().status, 'cancelada');
+});
+
 test('GET /sessoes?embarque=E1 delega para listarPorEmbarque', async () => {
   const chamadas = [];
   const service = {
@@ -67,4 +97,22 @@ test('GET /sessoes?embarque=E1 delega para listarPorEmbarque', async () => {
   const r = await f.inject({ method: 'GET', url: '/sessoes?embarque=E1' });
   assert.equal(r.statusCode, 200);
   assert.deepEqual(chamadas, ['E1']);
+});
+
+test('POST /sessoes bloqueia quando camera informada ja possui sessao ativa', async () => {
+  const { fastify } = await bootstrap();
+  await fastify.inject({
+    method: 'POST',
+    url: '/sessoes',
+    payload: { numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 },
+  });
+
+  const r = await fastify.inject({
+    method: 'POST',
+    url: '/sessoes',
+    payload: { numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 },
+  });
+
+  assert.equal(r.statusCode, 400);
+  assert.equal(r.json().erro, 'Camera 1 esta com sessao ativa. Encerre a sessao antes de continuar.');
 });

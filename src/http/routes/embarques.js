@@ -2,8 +2,11 @@ import { listarEmbarquesAbertos, buscarEmbarque } from '../../db/queries/espelho
 
 export function rotasEmbarques(fastify, { db }) {
   fastify.get('/embarques', async (req) => {
-    const { status = 'aberto' } = req.query;
+    const { status } = req.query;
     if (status === 'aberto') return listarEmbarquesAbertos(db);
+    if (status === 'fechado') {
+      return db.prepare('SELECT * FROM embarques WHERE status = ? ORDER BY data_criacao DESC LIMIT 200').all('fechado');
+    }
     return db.prepare('SELECT * FROM embarques ORDER BY data_criacao DESC LIMIT 200').all();
   });
   fastify.get('/embarques/:numero', async (req, reply) => {

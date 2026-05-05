@@ -1,7 +1,63 @@
-import { criarSessao, buscarAtivaPorCamera, buscarPorId, cancelarSessao, encerrarSessao, listarAtivas, listarPorEmbarque, zerarContagem } from '../db/queries/sessoes.js';
+import {
+  criarSessao,
+  buscarAtivaPorCamera,
+  buscarPorId,
+  cancelarSessao,
+  encerrarSessao,
+  listarAtivas,
+  listarPorCaixaNoEmbarque,
+  listarPorEmbarque,
+  zerarContagem,
+} from '../db/queries/sessoes.js';
 import { buscarEmbarque, buscarOP, buscarOperador } from '../db/queries/espelhos.js';
 
-export function criarSessaoService({ db, cameraManagers, registrarEvento, enfileirarSync, gerarUUID, broadcast }) {
+const PREFIXO_CAIXA_SEM_NUMERO = '__SEM_NUMERO__';
+
+export function criarSessaoService({ db, cameraManagers, registrarEvento, enfileirarSync, gerarUUID, broadcast, caixaLabelService }) {
+  function _ehCaixaSemNumero(numeroCaixa) {
+    return String(numeroCaixa ?? '').startsWith(PREFIXO_CAIXA_SEM_NUMERO);
+  }
+
+  function _rotuloCaixa(numeroCaixa) {
+    if (!numeroCaixa) return '-';
+    if (!_ehCaixaSemNumero(numeroCaixa)) return numeroCaixa;
+    const ordem = Number(String(numeroCaixa).slice(PREFIXO_CAIXA_SEM_NUMERO.length));
+    return Number.isFinite(ordem) && ordem > 0 ? `Sem número #${ordem}` : 'Sem número';
+  }
+
+  function _normalizarPayloadEncerramento(payload) {
+    if (typeof payload === 'string') return { numero_caixa: payload };
+    return payload ?? {};
+  }
+
+  function _criarNovaCaixaSemNumero(numeroEmbarque) {
+    const existentes = db.prepare(`
+      SELECT DISTINCT numero_caixa
+        FROM sessoes_contagem
+       WHERE numero_embarque = ?
+         AND numero_caixa LIKE ?
+    `).all(numeroEmbarque, `${PREFIXO_CAIXA_SEM_NUMERO}%`);
+    const proximo = existentes.reduce((maior, row) => {
+      const atual = Number(String(row.numero_caixa).slice(PREFIXO_CAIXA_SEM_NUMERO.length));
+      return Number.isFinite(atual) ? Math.max(maior, atual) : maior;
+    }, 0) + 1;
+    return `${PREFIXO_CAIXA_SEM_NUMERO}${String(proximo).padStart(3, '0')}`;
+  }
+
+  function _resolverCaixaId(sessao, payload) {
+    if (payload.caixa_id && String(payload.caixa_id).trim()) return String(payload.caixa_id).trim();
+    if (payload.criar_caixa_sem_numero) return _criarNovaCaixaSemNumero(sessao.numero_embarque);
+    if (payload.numero_caixa && String(payload.numero_caixa).trim()) return String(payload.numero_caixa).trim();
+    throw new Error('Caixa obrigatória.');
+  }
+
+  function _validarCompatibilidadeCaixa(sessao, caixaId) {
+    const existentes = listarPorCaixaNoEmbarque(db, sessao.numero_embarque, caixaId).filter((row) => row.id !== sessao.id);
+    if (existentes.length === 0) return;
+    const conflito = existentes.find((row) => row.codigo_op !== sessao.codigo_op);
+    if (conflito) throw new Error(`Caixa ${_rotuloCaixa(caixaId)} já vinculada a outra OP neste embarque.`);
+  }
+
   function _validarPreRequisitos({ numero_embarque, codigo_op, codigo_operador }) {
     const e = buscarEmbarque(db, numero_embarque);
     if (!e) throw new Error(`Embarque ${numero_embarque} não encontrado. Aguarde sincronização com ERP.`);
@@ -44,25 +100,38 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
     return atualizada;
   }
 
-  async function encerrar(sessaoId, numeroCaixa) {
+  async function encerrar(sessaoId, payloadInput) {
     const s = buscarPorId(db, sessaoId);
     if (!s) throw new Error(`Sessão ${sessaoId} não existe.`);
     if (s.status !== 'ativa') throw new Error(`Sessão ${sessaoId} já encerrada.`);
-    if (!numeroCaixa || !String(numeroCaixa).trim()) throw new Error('Número da caixa obrigatório.');
-    const existe = db.prepare(
-      `SELECT id FROM sessoes_contagem WHERE numero_embarque = ? AND numero_caixa = ? AND id != ?`
-    ).get(s.numero_embarque, numeroCaixa, sessaoId);
-    if (existe) throw new Error(`Caixa duplicada: já existe sessão com caixa ${numeroCaixa} no embarque ${s.numero_embarque}.`);
+    const payload = _normalizarPayloadEncerramento(payloadInput);
+    const caixaId = _resolverCaixaId(s, payload);
+    _validarCompatibilidadeCaixa(s, caixaId);
 
     const cam = cameraManagers.get(s.camera_id);
     if (cam) await cam.encerrarSessao();
     const encerradaEm = new Date().toISOString();
-    encerrarSessao(db, sessaoId, numeroCaixa, encerradaEm);
+    encerrarSessao(db, sessaoId, caixaId, encerradaEm);
     const final = buscarPorId(db, sessaoId);
     enfileirarSync('sessoes_contagem', final);
-    registrarEvento({ nivel: 'SUCCESS', categoria: 'SESSAO', mensagem: `Sessão ${sessaoId} encerrada (caixa ${numeroCaixa}, total ${final.quantidade_total})`, codigo_operador: s.codigo_operador });
+    registrarEvento({ nivel: 'SUCCESS', categoria: 'SESSAO', mensagem: `Sessão ${sessaoId} encerrada (caixa ${_rotuloCaixa(caixaId)}, total ${final.quantidade_total})`, codigo_operador: s.codigo_operador });
     broadcast('sessao.atualizada', final);
-    return final;
+
+    let etiqueta = null;
+    if (caixaLabelService?.emitirPorEncerramento) {
+      try {
+        etiqueta = await caixaLabelService.emitirPorEncerramento(final);
+      } catch (e) {
+        etiqueta = { status: 'erro', erro: e.message, partes_total: 0 };
+        registrarEvento({
+          nivel: 'WARN',
+          categoria: 'SISTEMA',
+          mensagem: `Etiqueta da caixa ${_rotuloCaixa(caixaId)} não impressa: ${e.message}`,
+          codigo_operador: s.codigo_operador,
+        });
+      }
+    }
+    return { sessao: final, etiqueta };
   }
 
   async function reiniciarContagem(sessaoId) {
@@ -98,5 +167,13 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
   function listarAtivasSnapshot() { return listarAtivas(db); }
   function listarPorEmbarqueSnapshot(numero) { return listarPorEmbarque(db, numero); }
 
-  return { abrir, confirmar, encerrar, reiniciarContagem, reiniciarSessao, listarAtivas: listarAtivasSnapshot, listarPorEmbarque: listarPorEmbarqueSnapshot };
+  return {
+    abrir,
+    confirmar,
+    encerrar,
+    reiniciarContagem,
+    reiniciarSessao,
+    listarAtivas: listarAtivasSnapshot,
+    listarPorEmbarque: listarPorEmbarqueSnapshot,
+  };
 }
