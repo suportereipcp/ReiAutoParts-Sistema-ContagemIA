@@ -45,6 +45,8 @@ import { rotasProgramas } from './http/routes/programas.js';
 import { rotasCalibracao } from './http/routes/calibracao.js';
 import { rotasRelatorios } from './http/routes/relatorios.js';
 import { rotasEventos } from './http/routes/eventos.js';
+import { criarPulseAuditService } from './audit/pulse-audit-service.js';
+import { criarChunkUploader } from './audit/chunk-uploader.js';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -104,7 +106,9 @@ async function main() {
   const wrapEvento = (ev) => {
     const timestamp = ev.timestamp ?? new Date().toISOString();
     const idLocal = registrarEvento(db, { ...ev, timestamp });
-    enfileirarSync('eventos_log', { ...ev, timestamp, id_local: idLocal, origem: 'edge_pc' });
+    const logCompleto = { ...ev, timestamp, id_local: idLocal, origem: 'edge_pc' };
+    enfileirarSync('eventos_log', logCompleto);
+    wsHub.broadcast('evento.novo', logCompleto);
   };
   const registrarDiagnosticoKeyence = criarRegistradorDiagnosticoKeyence({
     logger,
@@ -127,6 +131,14 @@ async function main() {
     enfileirarSync,
   });
 
+  const chunkUploader = criarChunkUploader({ supabase: sb, logger });
+  const pulseAuditService = criarPulseAuditService({
+    config: config.audit,
+    chunkUploader,
+    gerarUUID: randomUUID,
+    logger,
+  });
+
   const sessaoService = criarSessaoService({
     db, cameraManagers,
     registrarEvento: wrapEvento,
@@ -134,12 +146,14 @@ async function main() {
     gerarUUID: randomUUID,
     broadcast: wsHub.broadcast,
     caixaLabelService,
+    pulseAuditService,
   });
   const contagemService = criarContagemService({
     db,
     registrarEvento: wrapEvento,
     enfileirarSync,
     broadcast: wsHub.broadcast,
+    pulseAuditService,
   });
   const calibracaoService = criarCalibracaoService({
     db,
@@ -196,6 +210,16 @@ async function main() {
   rotasEtiquetas(fastify, { db, caixaLabelService, printQueue });
   rotasRelatorios(fastify, { db });
   rotasEventos(fastify, { db });
+
+  if (config.audit.bootRecovery) {
+    const sessoesAtivas = db.prepare(`SELECT * FROM sessoes_contagem WHERE status = 'ativa'`).all();
+    await pulseAuditService.recuperarSessoesAtivas(sessoesAtivas);
+  }
+  pulseAuditService.iniciarRetryLoop();
+
+  fastify.addHook('onClose', async () => {
+    pulseAuditService.pararRetryLoop();
+  });
 
   await fastify.listen({ host: config.http.host, port: config.http.port });
   logger.info({ port: config.http.port }, 'HTTP ouvindo');

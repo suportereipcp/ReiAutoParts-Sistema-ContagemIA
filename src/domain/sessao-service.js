@@ -13,7 +13,7 @@ import { buscarEmbarque, buscarOP, buscarOperador } from '../db/queries/espelhos
 
 const PREFIXO_CAIXA_SEM_NUMERO = '__SEM_NUMERO__';
 
-export function criarSessaoService({ db, cameraManagers, registrarEvento, enfileirarSync, gerarUUID, broadcast, caixaLabelService }) {
+export function criarSessaoService({ db, cameraManagers, registrarEvento, enfileirarSync, gerarUUID, broadcast, caixaLabelService, pulseAuditService }) {
   function _ehCaixaSemNumero(numeroCaixa) {
     return String(numeroCaixa ?? '').startsWith(PREFIXO_CAIXA_SEM_NUMERO);
   }
@@ -94,6 +94,27 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
     db.prepare(`UPDATE sessoes_contagem SET programa_numero = ?, programa_nome = ? WHERE id = ?`)
       .run(programaNumero, programaNome, sessaoId);
     const atualizada = buscarPorId(db, sessaoId);
+
+    if (pulseAuditService) {
+      try {
+        await pulseAuditService.abrir({
+          sessao: atualizada.id,
+          camera: atualizada.camera_id,
+          operador: atualizada.codigo_operador,
+          embarque: atualizada.numero_embarque,
+          op: atualizada.codigo_op,
+          programa: programaNumero,
+          iniciada: atualizada.iniciada_em,
+        });
+      } catch (e) {
+        registrarEvento({
+          nivel: 'WARN',
+          categoria: 'SISTEMA',
+          mensagem: `Falha ao abrir auditoria de pulsos: ${e.message}`,
+        });
+      }
+    }
+
     enfileirarSync('sessoes_contagem', atualizada);
     registrarEvento({ nivel: 'INFO', categoria: 'SESSAO', mensagem: `Sessão ${sessaoId} confirmada com programa ${programaNumero} (${programaNome})`, codigo_operador: s.codigo_operador });
     broadcast('sessao.atualizada', atualizada);
@@ -111,6 +132,19 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
     const cam = cameraManagers.get(s.camera_id);
     if (cam) await cam.encerrarSessao();
     const encerradaEm = new Date().toISOString();
+
+    if (pulseAuditService) {
+      try {
+        await pulseAuditService.fechar(sessaoId, { encerradaEm });
+      } catch (e) {
+        registrarEvento({
+          nivel: 'WARN',
+          categoria: 'SISTEMA',
+          mensagem: `Falha ao fechar auditoria de pulsos: ${e.message}`,
+        });
+      }
+    }
+
     encerrarSessao(db, sessaoId, caixaId, encerradaEm);
     const final = buscarPorId(db, sessaoId);
     enfileirarSync('sessoes_contagem', final);
@@ -156,6 +190,19 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
     const cam = cameraManagers.get(s.camera_id);
     if (cam) await cam.encerrarSessao();
     const encerradaEm = new Date().toISOString();
+
+    if (pulseAuditService) {
+      try {
+        await pulseAuditService.fechar(sessaoId, { encerradaEm });
+      } catch (e) {
+        registrarEvento({
+          nivel: 'WARN',
+          categoria: 'SISTEMA',
+          mensagem: `Falha ao fechar auditoria de pulsos: ${e.message}`,
+        });
+      }
+    }
+
     cancelarSessao(db, sessaoId, encerradaEm);
     const final = buscarPorId(db, sessaoId);
     enfileirarSync('sessoes_contagem', final);

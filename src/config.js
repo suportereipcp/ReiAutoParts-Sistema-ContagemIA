@@ -57,6 +57,14 @@ export function loadConfig(env = process.env) {
       port: Number(env.LABEL_PRINTER_PORT ?? 9100),
       name: env.LABEL_PRINTER_NAME,
     },
+    audit: {
+      baseDir: env.LOG_BASE_DIR ?? 'C:\\ProgramData\\ReiAutoContagem\\logs',
+      flushPulses: Number(env.AUDIT_FLUSH_THRESHOLD_PULSES ?? 50),
+      flushSeconds: Number(env.AUDIT_FLUSH_THRESHOLD_SECONDS ?? 90),
+      retrySeconds: Number(env.AUDIT_RETRY_INTERVAL_SECONDS ?? 60),
+      bootRecovery: String(env.AUDIT_BOOT_RECOVERY_ENABLED ?? 'true').toLowerCase() === 'true',
+      timeZone: env.AUDIT_TIMEZONE ?? 'America/Sao_Paulo',
+    },
   };
 }
 

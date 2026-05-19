@@ -58,7 +58,10 @@
       "Bash(mkdir -p docs/obsidian-vault docs/design-stitch docs/dev)",
       "Bash(mv \"Sistema de Contagem - AutoParts\" docs/obsidian-vault/contents)",
       "Bash(mv stitch_sistema_contagem_rei_autoparts docs/design-stitch/contents)",
-      "Bash(mv estrutura_sistema.md scripts_automacao.md AGENTS.md ARQUITETURA.md DEVELOPER_CONTEXT.md docs/dev/)"
+      "Bash(mv estrutura_sistema.md scripts_automacao.md AGENTS.md ARQUITETURA.md DEVELOPER_CONTEXT.md docs/dev/)",
+      "Bash(curl -I https://github.com)",
+      "Bash(ssh -T git@github.com)",
+      "Bash(ssh-keygen *)"
     ]
   }
 }

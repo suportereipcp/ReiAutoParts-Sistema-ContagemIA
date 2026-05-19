@@ -5,6 +5,7 @@ import { toast } from '../ui/primitives/toast.js';
 import { formatarNumero } from '../infra/formatters.js';
 import { agruparCaixas } from '../domain/caixas.js';
 import { abrirModalEncerrarSessao } from '../ui/composites/modal-encerrar-sessao.js';
+import { abrirModalReimprimir } from '../ui/composites/modal-reimprimir.js';
 
 export async function renderDetalhesCarga(ctx, numero) {
   const el = document.createElement('div');
@@ -28,7 +29,7 @@ export async function renderDetalhesCarga(ctx, numero) {
     <div class="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
       <div class="space-y-3">
         <div class="inline-flex items-center rounded-full bg-secondary-container/50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-on-secondary-container">
-          ${ativas.length} sessão${ativas.length === 1 ? '' : 'ões'} ativa${ativas.length === 1 ? '' : 's'}
+          ${ativas.length} sess${ativas.length === 1 ? 'ão' : 'ões'} ativa${ativas.length === 1 ? '' : 's'}
         </div>
         <div>
           <p class="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-outline">Detalhes da Carga</p>
@@ -106,19 +107,22 @@ export async function renderDetalhesCarga(ctx, numero) {
   }
 
   async function reimprimirCaixa(caixa) {
-    try {
-      const codigoOperador = window.prompt('Código do operador para reimpressão');
-      if (!codigoOperador) return;
-      const etiqueta = await ctx.etiquetasSvc.reimprimirCaixa({
-        numero_embarque: numero,
-        numero_caixa: caixa.numero_caixa,
-        codigo_operador: codigoOperador.trim(),
-      });
-      if (etiqueta?.status === 'erro') toast.erro(`Etiqueta não impressa: ${etiqueta.erro_detalhe ?? 'erro'}`);
-      else toast.info(`Etiqueta ${etiqueta?.status ?? 'pendente'}. Partes: ${etiqueta?.partes_total ?? 0}`);
-    } catch (e) {
-      toast.erro(e.message);
-    }
+    abrirModalReimprimir({
+      numeroCaixa: caixa.numero_caixa_exibicao || caixa.numero_caixa,
+      onConfirmar: async (codigoOperador) => {
+        try {
+          const etiqueta = await ctx.etiquetasSvc.reimprimirCaixa({
+            numero_embarque: numero,
+            numero_caixa: caixa.numero_caixa,
+            codigo_operador: codigoOperador,
+          });
+          if (etiqueta?.status === 'erro') toast.erro(`Etiqueta não impressa: ${etiqueta.erro_detalhe ?? 'erro'}`);
+          else toast.info(`Etiqueta ${etiqueta?.status ?? 'pendente'}. Partes: ${etiqueta?.partes_total ?? 0}`);
+        } catch (e) {
+          toast.erro(e.message);
+        }
+      }
+    });
   }
 
   el.appendChild(TabelaCaixas({ caixas, onReimprimir: reimprimirCaixa }));

@@ -12,7 +12,7 @@ export function SideNav({ titulo = 'Rei AutoParts', subtitulo = '', itens = [], 
     </div>
     <div>
       <h2 class="font-black text-on-surface font-headline text-sm tracking-wide">${titulo}</h2>
-      <p class="text-[10px] uppercase tracking-widest text-primary/60">${subtitulo}</p>
+      ${subtitulo ? `<p class="text-[10px] uppercase tracking-widest text-primary/60">${subtitulo}</p>` : ''}
     </div>
   `;
   aside.appendChild(header);

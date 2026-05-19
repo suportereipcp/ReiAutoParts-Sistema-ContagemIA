@@ -43,7 +43,6 @@ function renderShell(ativo) {
   if (_unsubSyncBadge) { _unsubSyncBadge(); _unsubSyncBadge = null; }
   const side = SideNav({
     titulo: 'Rei AutoParts',
-    subtitulo: 'Inspeção Silenciosa',
     itens: [
       { id: 'inicial', label: 'Inicial', icone: 'dashboard', href: '#/' },
       { id: 'cargas', label: 'Cargas', icone: 'package_2', href: '#/cargas' },

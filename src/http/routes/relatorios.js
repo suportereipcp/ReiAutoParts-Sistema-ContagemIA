@@ -21,23 +21,47 @@ function coletarSessoesDoEmbarque(db, numeroEmbarque) {
 function rotuloCaixa(numeroCaixa) {
   if (!numeroCaixa) return '';
   if (!String(numeroCaixa).startsWith(PREFIXO_CAIXA_SEM_NUMERO)) return numeroCaixa;
-  const ordem = Number(String(numeroCaixa).slice(PREFIXO_CAIXA_SEM_NUMERO.length));
-  return Number.isFinite(ordem) && ordem > 0 ? `Sem número #${ordem}` : 'Sem número';
+  return '';
 }
 
-function formatarCSV(sessoes) {
-  const head = 'numero_caixa,codigo_op,item_codigo,item_descricao,quantidade_total,operador,iniciada_em,encerrada_em\n';
-  const rows = sessoes.map(s => [
-    rotuloCaixa(s.numero_caixa), s.codigo_op, s.item_codigo ?? '', (s.item_descricao ?? '').replaceAll(',', ';'),
-    s.quantidade_total, s.codigo_operador, s.iniciada_em, s.encerrada_em ?? '',
-  ].join(',')).join('\n');
+function formatarData(isoString) {
+  if (!isoString) return '';
+  try {
+    const d = new Date(isoString);
+    if (Number.isNaN(d.getTime())) return isoString;
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const ano = d.getFullYear();
+    const hora = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    const seg = String(d.getSeconds()).padStart(2, '0');
+    return `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
+  } catch {
+    return isoString;
+  }
+}
+
+function formatarCSV(sessoes, embarque) {
+  const mostrarNF = embarque?.status === 'fechado' && embarque?.numero_nota_fiscal;
+  const head = 'numero_caixa,codigo_op,item_codigo,item_descricao,quantidade_total,operador,iniciada_em,encerrada_em' + (mostrarNF ? ',numero_nota_fiscal\n' : '\n');
+  const rows = sessoes.map(s => {
+    const base = [
+      rotuloCaixa(s.numero_caixa), s.codigo_op, s.item_codigo ?? '', (s.item_descricao ?? '').replaceAll(',', ';'),
+      s.quantidade_total, s.codigo_operador, formatarData(s.iniciada_em), formatarData(s.encerrada_em),
+    ];
+    if (mostrarNF) {
+      base.push(embarque.numero_nota_fiscal);
+    }
+    return base.join(',');
+  }).join('\n');
   return head + rows;
 }
 
-async function gerarXLSX(sessoes, numeroEmbarque) {
+async function gerarXLSX(sessoes, numeroEmbarque, embarque) {
   const wb = new ExcelJS.Workbook();
   const sh = wb.addWorksheet(`Embarque ${numeroEmbarque}`);
-  sh.columns = [
+  
+  const columns = [
     { header: 'Caixa', key: 'numero_caixa', width: 12 },
     { header: 'OP', key: 'codigo_op', width: 12 },
     { header: 'Item', key: 'item_codigo', width: 15 },
@@ -47,26 +71,56 @@ async function gerarXLSX(sessoes, numeroEmbarque) {
     { header: 'Início', key: 'iniciada_em', width: 22 },
     { header: 'Fim', key: 'encerrada_em', width: 22 },
   ];
+
+  const mostrarNF = embarque?.status === 'fechado' && embarque?.numero_nota_fiscal;
+  if (mostrarNF) {
+    columns.push({ header: 'Nota Fiscal', key: 'numero_nota_fiscal', width: 15 });
+  }
+
+  sh.columns = columns;
+
   const header = sh.getRow(1);
   header.height = 22;
-  header.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-  header.alignment = { vertical: 'middle', horizontal: 'center' };
-  header.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COR_CABECALHO_ARGB } };
-  header.border = {
-    top: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
-    left: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
-    bottom: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
-    right: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
-  };
-  sessoes.forEach(s => sh.addRow({ ...s, numero_caixa: rotuloCaixa(s.numero_caixa) }));
+  
+  // Style header cells individually to prevent leaking infinitely to the right
+  for (let i = 1; i <= columns.length; i++) {
+    const cell = header.getCell(i);
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COR_CABECALHO_ARGB } };
+    cell.border = {
+      top: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
+      left: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
+      bottom: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
+      right: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
+    };
+  }
+
+  sessoes.forEach(s => {
+    const rowData = {
+      ...s,
+      numero_caixa: rotuloCaixa(s.numero_caixa),
+      iniciada_em: formatarData(s.iniciada_em),
+      encerrada_em: formatarData(s.encerrada_em),
+    };
+    if (mostrarNF) {
+      rowData.numero_nota_fiscal = embarque.numero_nota_fiscal;
+    }
+    sh.addRow(rowData);
+  });
+
   sh.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return;
-    row.alignment = { vertical: 'middle' };
-    row.border = {
-      bottom: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
-    };
-    if (rowNumber % 2 === 0) {
-      row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${COR_LINHA_CLARA}` } };
+    // Style row cells individually to prevent styling leaking infinitely to the right
+    for (let i = 1; i <= columns.length; i++) {
+      const cell = row.getCell(i);
+      cell.alignment = { vertical: 'middle' };
+      cell.border = {
+        bottom: { style: 'thin', color: { argb: `FF${COR_BORDA}` } },
+      };
+      if (rowNumber % 2 === 0) {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${COR_LINHA_CLARA}` } };
+      }
     }
   });
   sh.getColumn('quantidade_total').numFmt = '#,##0';
@@ -104,7 +158,7 @@ function desenharLinhaTabela(doc, y, colunas, valores, { cabecalho = false, alte
   return y + altura;
 }
 
-function gerarPDFBuffer(sessoes, numeroEmbarque) {
+function gerarPDFBuffer(sessoes, numeroEmbarque, embarque) {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 40, size: 'A4' });
     const stream = new PassThrough();
@@ -117,14 +171,19 @@ function gerarPDFBuffer(sessoes, numeroEmbarque) {
 
     const largura = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     doc.rect(doc.page.margins.left, doc.page.margins.top, largura, 74).fill(`#${COR_CABECALHO}`);
-    doc.fillColor('white').font('Helvetica-Bold').fontSize(18).text(`Relatório - Embarque ${numeroEmbarque}`, doc.page.margins.left + 18, doc.page.margins.top + 16);
-    doc.font('Helvetica').fontSize(9).text('Rei AutoParts - Inspeção Silenciosa', doc.page.margins.left + 18, doc.page.margins.top + 44);
+    doc.fillColor('white').font('Helvetica-Bold').fontSize(18).text(`Relatório - Embarque ${numeroEmbarque}`, doc.page.margins.left + 18, doc.page.margins.top + 28);
 
     doc.fillColor('#253238');
     let y = doc.page.margins.top + 96;
     const total = sessoes.reduce((acc, s) => acc + (s.quantidade_total || 0), 0);
     doc.font('Helvetica-Bold').fontSize(10).text(`Total de caixas: ${sessoes.length}`, doc.page.margins.left, y);
     doc.text(`Total de peças: ${total}`, doc.page.margins.left + 150, y);
+    if (embarque?.status === 'fechado' && embarque?.numero_nota_fiscal) {
+      doc.text(`NF: ${embarque.numero_nota_fiscal}`, doc.page.margins.left, y, {
+        width: largura,
+        align: 'right',
+      });
+    }
     y += 30;
 
     const colunas = [
@@ -161,21 +220,22 @@ export function rotasRelatorios(fastify, { db }) {
   fastify.get('/relatorios/embarque/:numero', async (req, reply) => {
     const fmt = String(req.query.fmt ?? 'pdf').toLowerCase();
     const sessoes = coletarSessoesDoEmbarque(db, req.params.numero);
+    const embarque = db.prepare('SELECT * FROM embarques WHERE numero_embarque = ?').get(req.params.numero);
 
     if (fmt === 'csv') {
       reply.header('Content-Type', 'text/csv; charset=utf-8');
       reply.header('Content-Disposition', `attachment; filename=embarque-${req.params.numero}.csv`);
-      return formatarCSV(sessoes);
+      return formatarCSV(sessoes, embarque);
     }
     if (fmt === 'xlsx') {
-      const buf = await gerarXLSX(sessoes, req.params.numero);
+      const buf = await gerarXLSX(sessoes, req.params.numero, embarque);
       reply.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       reply.header('Content-Disposition', `attachment; filename=embarque-${req.params.numero}.xlsx`);
       return reply.send(buf);
     }
     reply.header('Content-Type', 'application/pdf');
     reply.header('Content-Disposition', `attachment; filename=embarque-${req.params.numero}.pdf`);
-    const buf = await gerarPDFBuffer(sessoes, req.params.numero);
+    const buf = await gerarPDFBuffer(sessoes, req.params.numero, embarque);
     return reply.send(buf);
   });
 }

@@ -14,6 +14,11 @@ function setup() {
   return db;
 }
 
+function auditFake() {
+  const chamadas = [];
+  return { chamadas, appendPulso: async (id, p) => { chamadas.push({ id, p }); } };
+}
+
 test('processarPulso incrementa contagem na sessão ativa', () => {
   const db = setup();
   const broadcasts = [];
@@ -51,4 +56,40 @@ test('segundo pulso usa delta absoluto da câmera', () => {
   svc.processarPulso({ cameraId: 1, contagem: 8 });
   const s = buscarAtivaPorCamera(db, 1);
   assert.equal(s.quantidade_total, 8);
+});
+
+test('processarPulso chama pulseAuditService.appendPulso', async () => {
+  const db = setup();
+  const audit = auditFake();
+  const svc = criarContagemService({
+    db,
+    registrarEvento: () => {},
+    enfileirarSync: () => {},
+    broadcast: () => {},
+    pulseAuditService: audit,
+    now: () => '2026-05-19T10:00:01.000Z',
+  });
+
+  await svc.processarPulso({ cameraId: 1, contagem: 1, total_dia: 100, brilho: 50 });
+
+  assert.equal(audit.chamadas.length, 1);
+  assert.equal(audit.chamadas[0].id, 'u1');
+  assert.deepEqual(audit.chamadas[0].p, { t: '2026-05-19T10:00:01.000Z', n: 1, d: 100, b: 50 });
+});
+
+test('processarPulso sem sessao ativa nao chama audit', async () => {
+  const db = setup();
+  db.prepare(`UPDATE sessoes_contagem SET status = 'encerrada' WHERE id = 'u1'`).run();
+  const audit = auditFake();
+  const svc = criarContagemService({
+    db,
+    registrarEvento: () => {},
+    enfileirarSync: () => {},
+    broadcast: () => {},
+    pulseAuditService: audit,
+    now: () => '2026-05-19T10:00:01.000Z',
+  });
+
+  await svc.processarPulso({ cameraId: 1, contagem: 1, total_dia: 100, brilho: 0 });
+  assert.equal(audit.chamadas.length, 0);
 });

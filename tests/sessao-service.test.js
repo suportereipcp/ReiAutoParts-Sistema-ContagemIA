@@ -39,6 +39,7 @@ function setup(overrides = {}) {
     gerarUUID: () => `uuid-fake-${++seq}`,
     broadcast: () => {},
     caixaLabelService: overrides.caixaLabelService,
+    pulseAuditService: overrides.pulseAuditService,
   });
   return { db, svc, fakeCamera1, fakeCamera2, eventos };
 }
@@ -182,3 +183,37 @@ test('reiniciar sessão cancela a sessão ativa e suspende a câmera', async () 
   assert.equal(fakeCamera1.encerramentos, 1);
   assert.equal(fakeCamera1.estado, 'suspensa');
 });
+
+test('confirmar sessao abre auditoria de pulsos', async () => {
+  const chamadasAbrir = [];
+  const audit = { abrir: async (h) => { chamadasAbrir.push(h); } };
+  const { svc } = setup({ pulseAuditService: audit });
+  const s = await svc.abrir({ numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 });
+  await svc.confirmar(s.id, { programaNumero: 2, programaNome: 'PECA-X' });
+
+  assert.equal(chamadasAbrir.length, 1);
+  assert.equal(chamadasAbrir[0].sessao, s.id);
+  assert.equal(chamadasAbrir[0].camera, 1);
+  assert.equal(chamadasAbrir[0].operador, '001');
+  assert.equal(chamadasAbrir[0].programa, 2);
+});
+
+test('encerrar/cancelar sessao fecha auditoria de pulsos', async () => {
+  const chamadasFechar = [];
+  const audit = { abrir: async () => {}, fechar: async (id, o) => { chamadasFechar.push({ id, o }); } };
+  const { svc } = setup({ pulseAuditService: audit });
+  const s = await svc.abrir({ numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 });
+  await svc.confirmar(s.id, { programaNumero: 2, programaNome: 'PECA-X' });
+  await svc.encerrar(s.id, { numero_caixa: 'CX-001' });
+
+  assert.equal(chamadasFechar.length, 1);
+  assert.equal(chamadasFechar[0].id, s.id);
+
+  const s2 = await svc.abrir({ numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 });
+  await svc.confirmar(s2.id, { programaNumero: 2, programaNome: 'PECA-X' });
+  await svc.reiniciarSessao(s2.id);
+
+  assert.equal(chamadasFechar.length, 2);
+  assert.equal(chamadasFechar[1].id, s2.id);
+});
+

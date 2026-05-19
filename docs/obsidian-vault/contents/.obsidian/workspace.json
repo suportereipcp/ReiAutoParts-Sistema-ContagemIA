@@ -49,7 +49,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "tag:#fluxos",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -70,7 +70,8 @@
               "title": "Marcadores"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -179,7 +180,7 @@
       "bases:Criar nova base": false
     }
   },
-  "active": "732e0986f925882a",
+  "active": "494eac178b5c4e02",
   "lastOpenFiles": [
     "app.json",
     "Sem título.canvas",

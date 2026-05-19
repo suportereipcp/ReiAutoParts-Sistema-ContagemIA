@@ -25,6 +25,11 @@ if "%CHROME%"=="" (
     exit /b 1
 )
 
+REM --- Garantir pasta de logs de auditoria -------------------------------
+if not exist "C:\ProgramData\ReiAutoContagem\logs" (
+    mkdir "C:\ProgramData\ReiAutoContagem\logs"
+)
+
 REM --- Subir servidor: PM2 (producao) ou npm start (fallback) ----------
 where pm2 >nul 2>&1
 if %errorlevel%==0 (

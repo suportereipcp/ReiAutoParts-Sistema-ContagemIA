@@ -9,7 +9,6 @@ afterEach(() => limparDOM());
 test('SideNav gera aside fixed w-64', () => {
   const el = SideNav({
     titulo: 'Rei AutoParts',
-    subtitulo: 'Inspeção Silenciosa',
     itens: [
       { id: 'inicial', label: 'Inicial', icone: 'dashboard', href: '#/' },
       { id: 'cargas', label: 'Cargas', icone: 'package_2', href: '#/cargas' },
