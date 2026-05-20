@@ -24,4 +24,15 @@ export function rotasProgramas(fastify, { cameraManagers }) {
       return reply.code(500).send({ erro: `falha ao atualizar programas da camera ${camera}: ${msg}` });
     }
   });
+
+  fastify.post('/programas/revisar', async (req, reply) => {
+    const camera = Number(req.body?.camera);
+    const m = cameraManagers.get(camera);
+    if (!m) return reply.code(404).send({ erro: `camera ${camera} desconhecida` });
+    try {
+      return await m.revisarProgramas();
+    } catch (e) {
+      return reply.code(500).send({ erro: `falha ao revisar programas da camera ${camera}: ${e.message}` });
+    }
+  });
 }

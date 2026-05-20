@@ -78,3 +78,23 @@ test('GET /programas retorna 404 para camera desconhecida', async () => {
   assert.equal(r.statusCode, 404);
   assert.match(r.json().erro, /camera 99 desconhecida/i);
 });
+
+test('POST /programas/revisar revisa apenas camera selecionada', async () => {
+  const chamadas = [];
+  const fastify = await app(new Map([
+    [1, { cameraId: 1, async revisarProgramas() { chamadas.push('c1'); return [{ numero: 1, nome: 'A' }]; } }],
+    [2, { cameraId: 2, async revisarProgramas() { chamadas.push('c2'); return [{ numero: 2, nome: 'B' }]; } }],
+  ]));
+
+  const r = await fastify.inject({ method: 'POST', url: '/programas/revisar', payload: { camera: 2 } });
+
+  assert.equal(r.statusCode, 200);
+  assert.deepEqual(r.json(), [{ numero: 2, nome: 'B' }]);
+  assert.deepEqual(chamadas, ['c2']);
+});
+
+test('POST /programas/revisar retorna 404 para camera desconhecida', async () => {
+  const fastify = await app(new Map());
+  const r = await fastify.inject({ method: 'POST', url: '/programas/revisar', payload: { camera: 99 } });
+  assert.equal(r.statusCode, 404);
+});
