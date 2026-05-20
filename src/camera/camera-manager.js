@@ -166,6 +166,51 @@ export class CameraManager extends EventEmitter {
     return programas;
   }
 
+  async revisarProgramas({ probeExtra = 5 } = {}) {
+    if (this.estado === 'desconectada' || this.estado === 'ativa' || !this.client?.conectado) {
+      return this._listarProgramasMemoria();
+    }
+
+    return this._comLock(async () => {
+      const original = await this._lerProgramaAtual();
+      const numeros = [...this.programas.keys()].sort((a, b) => a - b);
+      const maxConhecido = numeros.length ? numeros[numeros.length - 1] : -1;
+
+      for (const n of numeros) {
+        try {
+          await this.client.enviaComando(`PW,${String(n).padStart(3, '0')}`);
+          const r = await this.client.enviaComando('PNR');
+          const nome = this._normalizarNomePrograma(r.valores?.[0]);
+          if (nome && nome !== '-' && nome !== '(no name)') this.programas.set(n, nome);
+          else this.programas.delete(n);
+        } catch (error) {
+          if (this._erroProgramaInexistente(error)) { this.programas.delete(n); continue; }
+          this.logger.warn?.({ err: error, cameraId: this.cameraId, programa: n }, 'falha ao revisar programa');
+        }
+      }
+
+      for (let n = maxConhecido + 1; n <= maxConhecido + probeExtra && n < this.maxProgramas; n++) {
+        try {
+          await this.client.enviaComando(`PW,${String(n).padStart(3, '0')}`);
+          const r = await this.client.enviaComando('PNR');
+          const nome = this._normalizarNomePrograma(r.valores?.[0]);
+          if (nome && nome !== '-' && nome !== '(no name)') this.programas.set(n, nome);
+        } catch (error) {
+          if (this._erroProgramaInexistente(error)) continue;
+          this.logger.warn?.({ err: error, cameraId: this.cameraId, programa: n }, 'falha ao sondar programa');
+        }
+      }
+
+      if (original != null) {
+        try { await this.client.enviaComando(`PW,${String(original).padStart(3, '0')}`); } catch (_) {}
+      }
+
+      const lista = this._listarProgramasMemoria();
+      if (this.programCache) await this.programCache.salvar(lista);
+      return lista;
+    });
+  }
+
   async _comLock(fn) {
     const anterior = this._lockPromise;
     let liberar;

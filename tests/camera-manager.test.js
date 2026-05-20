@@ -293,6 +293,68 @@ test('descobrirProgramas remove bytes nulos do nome do programa', async () => {
   assert.deepEqual(lista, [{ numero: 0, nome: '2265.3' }]);
 });
 
+function clientComProgramas(mapa) {
+  const client = new FakeClient();
+  let selecionado = 0;
+  client.enviaComando = async (cmd) => {
+    client.comandos.push(cmd);
+    if (cmd.startsWith('PW,')) {
+      selecionado = Number(cmd.slice(3));
+      if (mapa.size && selecionado > Math.max(...mapa.keys()) + 10) {
+        throw new Error('ER:PW:01');
+      }
+      return { tipo: 'resposta', comando: 'PW', valores: [] };
+    }
+    if (cmd === 'PR') return { tipo: 'resposta', comando: 'PR', valores: [String(selecionado)] };
+    if (cmd === 'PNR') return { tipo: 'resposta', comando: 'PNR', valores: [mapa.get(selecionado) ?? ''] };
+    return { tipo: 'resposta', comando: cmd.split(',')[0], valores: [] };
+  };
+  return client;
+}
+
+test('revisarProgramas atualiza renomeacao de programa conhecido', async () => {
+  const client = clientComProgramas(new Map([[0, 'NOVO-NOME'], [1, 'PECA-B']]));
+  const cache = new FakeProgramCache([{ numero: 0, nome: 'ANTIGO' }, { numero: 1, nome: 'PECA-B' }]);
+  const m = new CameraManager({ cameraId: 1, client, programCache: cache });
+  await m.conectar();
+  await m.carregarCacheProgramas();
+  const lista = await m.revisarProgramas({ probeExtra: 0 });
+  assert.deepEqual(lista, [{ numero: 0, nome: 'NOVO-NOME' }, { numero: 1, nome: 'PECA-B' }]);
+  assert.equal(cache.salvarChamadas.length, 1);
+});
+
+test('revisarProgramas remove programa que sumiu', async () => {
+  const client = clientComProgramas(new Map([[0, 'PECA-A']]));
+  const cache = new FakeProgramCache([{ numero: 0, nome: 'PECA-A' }, { numero: 1, nome: 'PECA-B' }]);
+  const m = new CameraManager({ cameraId: 1, client, programCache: cache });
+  await m.conectar();
+  await m.carregarCacheProgramas();
+  const lista = await m.revisarProgramas({ probeExtra: 0 });
+  assert.deepEqual(lista, [{ numero: 0, nome: 'PECA-A' }]);
+});
+
+test('revisarProgramas inclui programa novo via sonda', async () => {
+  const client = clientComProgramas(new Map([[0, 'PECA-A'], [1, 'PECA-B']]));
+  const cache = new FakeProgramCache([{ numero: 0, nome: 'PECA-A' }]);
+  const m = new CameraManager({ cameraId: 1, client, programCache: cache });
+  await m.conectar();
+  await m.carregarCacheProgramas();
+  const lista = await m.revisarProgramas({ probeExtra: 3 });
+  assert.deepEqual(lista, [{ numero: 0, nome: 'PECA-A' }, { numero: 1, nome: 'PECA-B' }]);
+});
+
+test('revisarProgramas e no-op com camera ativa', async () => {
+  const client = clientComProgramas(new Map([[0, 'PECA-A']]));
+  const cache = new FakeProgramCache([{ numero: 0, nome: 'PECA-A' }]);
+  const m = new CameraManager({ cameraId: 1, client, programCache: cache });
+  await m.conectar();
+  await m.carregarCacheProgramas();
+  await m.ativarSessao({ programaNumero: 0 });
+  const antes = cache.salvarChamadas.length;
+  await m.revisarProgramas({ probeExtra: 3 });
+  assert.equal(cache.salvarChamadas.length, antes);
+});
+
 test('_comLock serializa operacoes concorrentes na mesma camera', async () => {
   const client = new FakeClient();
   const m = new CameraManager({ cameraId: 1, client });
