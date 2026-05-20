@@ -131,6 +131,15 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
 
     const cam = cameraManagers.get(s.camera_id);
     if (cam) await cam.encerrarSessao();
+    if (cam?.revisarProgramas) {
+      Promise.resolve()
+        .then(() => cam.revisarProgramas())
+        .catch((e) => registrarEvento({
+          nivel: 'WARN',
+          categoria: 'SISTEMA',
+          mensagem: `Falha ao revisar programas da câmera ${s.camera_id} após encerrar sessão: ${e.message}`,
+        }));
+    }
     const encerradaEm = new Date().toISOString();
 
     if (pulseAuditService) {
