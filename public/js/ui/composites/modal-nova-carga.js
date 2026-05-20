@@ -61,34 +61,91 @@ export async function abrirModalNovaCarga(ctx, opts = {}) {
 }
 
 function renderStageProgram(body, ctx, sessao, modal) {
-  body.innerHTML = '';
+  body.replaceChildren();
+  const PAGINA = 20;
   const stage = document.createElement('div');
   stage.dataset.stage = 'programa';
-  stage.innerHTML = `<p class="text-sm text-on-surface-variant mb-4">Sessão aberta na câmera ${sessao.camera_id}. Selecione o programa.</p>`;
+
+  const intro = document.createElement('p');
+  intro.className = 'text-sm text-on-surface-variant mb-4';
+  intro.textContent = `Sessão aberta na câmera ${sessao.camera_id}. Selecione o programa.`;
+
   const busca = Input({ label: 'Buscar programa', id: 'in-busca-prog' });
+
+  const status = document.createElement('p');
+  status.className = 'text-xs text-on-surface-variant mt-2 mb-1';
+  status.textContent = 'Carregando programas…';
+
   const lista = document.createElement('ul');
-  lista.className = 'space-y-2 max-h-80 overflow-auto';
+  lista.className = 'space-y-2 overflow-auto';
+  lista.style.maxHeight = '15rem';
+
+  stage.appendChild(intro);
   stage.appendChild(busca);
+  stage.appendChild(status);
   stage.appendChild(lista);
   body.appendChild(stage);
 
-  async function refresh(q = '') {
-    lista.innerHTML = '';
-    const progs = await ctx.catalogos.programas(sessao.camera_id, q);
-    for (const p of progs) {
-      const btn = document.createElement('button');
-      btn.className = 'w-full text-left px-4 py-3 rounded-lg bg-surface-container-high hover:bg-secondary-container/40 transition-colors';
-      btn.textContent = `${String(p.numero).padStart(3, '0')} · ${p.nome}`;
-      btn.addEventListener('click', async () => {
-        try {
-          await ctx.sessoesSvc.confirmar(sessao.id, { programaNumero: p.numero, programaNome: p.nome });
-          modal.fechar();
-          window.location.hash = `#/cargas/${encodeURIComponent(sessao.numero_embarque ?? '')}`;
-        } catch (e) { toast.erro(e.message); }
-      });
-      lista.appendChild(btn);
-    }
+  let todos = [];
+  let filtro = '';
+  let visiveis = PAGINA;
+
+  function filtrados() {
+    const f = filtro.toLowerCase();
+    return f ? todos.filter((p) => p.nome.toLowerCase().includes(f)) : todos;
   }
-  busca.querySelector('input').addEventListener('input', (e) => refresh(e.target.value));
-  refresh('');
+
+  function criarItem(p) {
+    const btn = document.createElement('button');
+    btn.className = 'w-full text-left px-4 py-3 rounded-lg bg-surface-container-high hover:bg-secondary-container/40 transition-colors';
+    btn.textContent = `${String(p.numero).padStart(3, '0')} · ${p.nome}`;
+    btn.addEventListener('click', async () => {
+      try {
+        await ctx.sessoesSvc.confirmar(sessao.id, { programaNumero: p.numero, programaNome: p.nome });
+        modal.fechar();
+        window.location.hash = `#/cargas/${encodeURIComponent(sessao.numero_embarque ?? '')}`;
+      } catch (e) { toast.erro(e.message); }
+    });
+    return btn;
+  }
+
+  function render() {
+    const lst = filtrados();
+    const total = lst.length;
+    const itens = lst.slice(0, visiveis).map(criarItem);
+    lista.replaceChildren(...itens);
+    const mostrando = Math.min(visiveis, total);
+    status.textContent = total === 0 ? 'Nenhum programa encontrado.' : `Mostrando ${mostrando} de ${total}`;
+  }
+
+  lista.addEventListener('scroll', () => {
+    if (lista.scrollTop + lista.clientHeight >= lista.scrollHeight - 8) {
+      if (visiveis < filtrados().length) { visiveis += PAGINA; render(); }
+    }
+  });
+
+  let debounce;
+  busca.querySelector('input').addEventListener('input', (e) => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => { filtro = e.target.value; visiveis = PAGINA; render(); }, 150);
+  });
+
+  async function carregar() {
+    try {
+      todos = await ctx.catalogos.programas(sessao.camera_id, '');
+      visiveis = PAGINA;
+      render();
+    } catch (e) { toast.erro(e.message); }
+
+    ctx.catalogos.revisarProgramas(sessao.camera_id)
+      .then((atualizados) => {
+        if (Array.isArray(atualizados)) {
+          todos = atualizados;
+          render();
+        }
+      })
+      .catch(() => {});
+  }
+
+  carregar();
 }
