@@ -33,23 +33,43 @@ export function criarCaixaLabelService({
 
     if (sessoes.length === 0) throw new Error('Caixa sem historico encerrado para etiqueta.');
 
+    const embarque = db.prepare(`SELECT numero_nota_fiscal FROM embarques WHERE numero_embarque = ?`).get(numero_embarque);
+
+    const grupos = new Map();
+    for (const sessao of sessoes) {
+      const chave = String(sessao.item_codigo ?? sessao.codigo_op);
+      if (!grupos.has(chave)) {
+        grupos.set(chave, {
+          codigo_op: sessao.codigo_op,
+          item_codigo: sessao.item_codigo,
+          item_descricao: sessao.item_descricao,
+          quantidade_total: 0,
+          operadores: [],
+          sessao_ids: [],
+        });
+      }
+      const g = grupos.get(chave);
+      g.quantidade_total += Number(sessao.quantidade_total ?? 0);
+      if (!g.operadores.includes(sessao.codigo_operador)) g.operadores.push(sessao.codigo_operador);
+      g.sessao_ids.push(sessao.id);
+    }
+
     return {
       numero_embarque,
       numero_caixa,
       numero_caixa_exibicao: rotuloCaixa(numero_caixa),
+      numero_nota_fiscal: embarque?.numero_nota_fiscal ?? null,
       gerada_em: now(),
       motivo,
       operador_emissao: codigo_operador,
-      linhas: sessoes.map((sessao, index) => ({
+      linhas: [...grupos.values()].map((g, index) => ({
         ordem: index + 1,
-        sessao_id: sessao.id,
-        codigo_op: sessao.codigo_op,
-        item_codigo: sessao.item_codigo,
-        item_descricao: sessao.item_descricao,
-        quantidade_total: sessao.quantidade_total,
-        codigo_operador: sessao.codigo_operador,
-        iniciada_em: sessao.iniciada_em,
-        encerrada_em: sessao.encerrada_em,
+        codigo_op: g.codigo_op,
+        item_codigo: g.item_codigo,
+        item_descricao: g.item_descricao,
+        quantidade_total: g.quantidade_total,
+        operadores: g.operadores,
+        sessao_ids: g.sessao_ids,
       })),
     };
   }
