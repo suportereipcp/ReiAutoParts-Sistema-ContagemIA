@@ -12,6 +12,7 @@ function fakeCtx() {
       embarquesAbertos: async () => [{ numero_embarque: '01' }],
       operadores: async () => [{ codigo: '1807', nome: 'Emilio' }],
       programas: async (c, q) => [{ numero: 1, nome: 'PECA-B' }],
+      revisarProgramas: async (c) => [{ numero: 1, nome: 'PECA-B' }],
       invalidarEmbarques: () => {},
     },
     sessoesSvc: {
