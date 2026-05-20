@@ -293,6 +293,23 @@ test('descobrirProgramas remove bytes nulos do nome do programa', async () => {
   assert.deepEqual(lista, [{ numero: 0, nome: '2265.3' }]);
 });
 
+test('_comLock serializa operacoes concorrentes na mesma camera', async () => {
+  const client = new FakeClient();
+  const m = new CameraManager({ cameraId: 1, client });
+  const ordem = [];
+  const a = m._comLock(async () => {
+    ordem.push('a-inicio');
+    await new Promise((r) => setTimeout(r, 20));
+    ordem.push('a-fim');
+  });
+  const b = m._comLock(async () => {
+    ordem.push('b-inicio');
+    ordem.push('b-fim');
+  });
+  await Promise.all([a, b]);
+  assert.deepEqual(ordem, ['a-inicio', 'a-fim', 'b-inicio', 'b-fim']);
+});
+
 test('descobrirProgramas ignora programa inexistente informado pela camera', async () => {
   const client = new FakeClient();
   const m = new CameraManager({ cameraId: 1, client, maxProgramas: 2 });

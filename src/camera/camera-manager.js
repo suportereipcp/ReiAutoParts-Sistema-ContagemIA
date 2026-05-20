@@ -23,6 +23,7 @@ export class CameraManager extends EventEmitter {
     this.estado = 'desconectada';
     this.programas = new Map();
     this.tentativas = 0;
+    this._lockPromise = Promise.resolve();
 
     client.on('pulso', p => this.emit('pulso', { cameraId, ...p }));
     client.on('linha-processada', linha => this.emit('linha-processada', { cameraId, ...linha }));
@@ -58,19 +59,21 @@ export class CameraManager extends EventEmitter {
 
   async ativarSessao({ programaNumero, formatoOE = 1 }) {
     if (this.estado === 'desconectada') throw new Error('câmera desconectada');
-    const prog = String(programaNumero).padStart(3, '0');
-    try {
-      await this.client.enviaComando(`PW,${prog}`);
-    } catch (error) {
-      const atual = await this._lerProgramaAtual();
-      if (!this._erroProgramaJaSelecionado(error) || atual !== Number(programaNumero)) {
-        throw error;
+    return this._comLock(async () => {
+      const prog = String(programaNumero).padStart(3, '0');
+      try {
+        await this.client.enviaComando(`PW,${prog}`);
+      } catch (error) {
+        const atual = await this._lerProgramaAtual();
+        if (!this._erroProgramaJaSelecionado(error) || atual !== Number(programaNumero)) {
+          throw error;
+        }
       }
-    }
-    await this.client.enviaComando('CTR');
-    await this.client.enviaComando(`OE,${formatoOE}`);
-    this.estado = 'ativa';
-    this.emit('estado', this.estado);
+      await this.client.enviaComando('CTR');
+      await this.client.enviaComando(`OE,${formatoOE}`);
+      this.estado = 'ativa';
+      this.emit('estado', this.estado);
+    });
   }
 
   async encerrarSessao() {
@@ -85,7 +88,11 @@ export class CameraManager extends EventEmitter {
     await this.client.enviaComando('CTR');
   }
 
-  async descobrirProgramas({ force = false } = {}) {
+  async descobrirProgramas(opcoes = {}) {
+    return this._comLock(() => this._descobrirProgramasSemLock(opcoes));
+  }
+
+  async _descobrirProgramasSemLock({ force = false } = {}) {
     if (!force && this.programas.size > 0) return this._listarProgramasMemoria();
 
     const original = await this._lerProgramaAtual();
@@ -157,6 +164,18 @@ export class CameraManager extends EventEmitter {
     }
 
     return programas;
+  }
+
+  async _comLock(fn) {
+    const anterior = this._lockPromise;
+    let liberar;
+    this._lockPromise = new Promise((resolve) => { liberar = resolve; });
+    await anterior;
+    try {
+      return await fn();
+    } finally {
+      liberar();
+    }
   }
 
   async _lerProgramaAtual() {
