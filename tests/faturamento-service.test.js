@@ -104,3 +104,39 @@ test('caixaElegivel retorna true quando todas sessoes sao regular ou aprovada', 
   const { service } = criarServico(db);
   assert.equal(service.caixaElegivel('E1', 'CX1'), true);
 });
+
+test('aprovarSessao transiciona para aprovada', () => {
+  const db = criarDb();
+  db.prepare(`INSERT INTO aprovadores (codigo, nome, ativo, criado_em) VALUES ('APROV1', 'Carlos', 1, datetime('now'))`).run();
+  inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
+  const { service } = criarServico(db);
+  service.aprovarSessao('s1', 'APROV1');
+  const s = db.prepare(`SELECT * FROM sessoes_contagem WHERE id = 's1'`).get();
+  assert.equal(s.faturamento_status, 'aprovada');
+  assert.equal(s.aprovada_por, 'APROV1');
+});
+
+test('reprovarSessao transiciona para reprovada', () => {
+  const db = criarDb();
+  db.prepare(`INSERT INTO aprovadores (codigo, nome, ativo, criado_em) VALUES ('APROV1', 'Carlos', 1, datetime('now'))`).run();
+  inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
+  const { service } = criarServico(db);
+  service.reprovarSessao('s1', 'APROV1');
+  const s = db.prepare(`SELECT * FROM sessoes_contagem WHERE id = 's1'`).get();
+  assert.equal(s.faturamento_status, 'reprovada');
+});
+
+test('aprovarSessao rejeita aprovador invalido', () => {
+  const db = criarDb();
+  inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
+  const { service } = criarServico(db);
+  assert.throws(() => service.aprovarSessao('s1', 'INVALIDO'), /inválido/);
+});
+
+test('aprovarSessao rejeita aprovador inativo', () => {
+  const db = criarDb();
+  db.prepare(`INSERT INTO aprovadores (codigo, nome, ativo, criado_em) VALUES ('INATIVO', 'X', 0, datetime('now'))`).run();
+  inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
+  const { service } = criarServico(db);
+  assert.throws(() => service.aprovarSessao('s1', 'INATIVO'), /inativo/);
+});
