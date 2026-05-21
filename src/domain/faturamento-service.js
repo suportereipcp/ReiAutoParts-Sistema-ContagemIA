@@ -83,9 +83,16 @@ export function criarFaturamentoService({ db, enfileirarSync, registrarEvento, b
     return { etiquetas: totalEtiquetas, caixas: todasCaixas.length, caixas_puladas: caixasPuladas };
   }
 
+  function obterAprovadorValido(codigo) {
+    const aprov = buscarAprovador(db, codigo);
+    if (!aprov || !aprov.ativo) {
+      throw Object.assign(new Error('Aprovador inválido ou inativo.'), { statusCode: 400 });
+    }
+    return aprov;
+  }
+
   function aprovarSessao(sessaoId, codigoAprovador) {
-    const aprov = buscarAprovador(db, codigoAprovador);
-    if (!aprov || !aprov.ativo) throw Object.assign(new Error('Aprovador inválido ou inativo.'), { statusCode: 400 });
+    obterAprovadorValido(codigoAprovador);
     atualizarFaturamentoStatus(db, sessaoId, {
       status: 'aprovada',
       aprovada_por: codigoAprovador,
@@ -96,8 +103,7 @@ export function criarFaturamentoService({ db, enfileirarSync, registrarEvento, b
   }
 
   function reprovarSessao(sessaoId, codigoAprovador) {
-    const aprov = buscarAprovador(db, codigoAprovador);
-    if (!aprov || !aprov.ativo) throw Object.assign(new Error('Aprovador inválido ou inativo.'), { statusCode: 400 });
+    obterAprovadorValido(codigoAprovador);
     atualizarFaturamentoStatus(db, sessaoId, {
       status: 'reprovada',
       aprovada_por: codigoAprovador,

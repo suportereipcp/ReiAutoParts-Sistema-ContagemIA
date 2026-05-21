@@ -109,28 +109,47 @@ test('aprovarSessao transiciona para aprovada', () => {
   const db = criarDb();
   db.prepare(`INSERT INTO aprovadores (codigo, nome, ativo, criado_em) VALUES ('APROV1', 'Carlos', 1, datetime('now'))`).run();
   inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
-  const { service } = criarServico(db);
+  const { service, broadcasts, syncs } = criarServico(db);
   service.aprovarSessao('s1', 'APROV1');
   const s = db.prepare(`SELECT * FROM sessoes_contagem WHERE id = 's1'`).get();
   assert.equal(s.faturamento_status, 'aprovada');
   assert.equal(s.aprovada_por, 'APROV1');
+  assert.equal(s.aprovada_em, '2026-05-01T10:00:00.000Z');
+  assert.equal(syncs.length, 1);
+  assert.equal(syncs[0].tabela, 'sessoes_contagem');
+  assert.deepEqual(syncs[0].payload, { id: 's1' });
+  assert.equal(broadcasts.length, 1);
+  assert.equal(broadcasts[0].tipo, 'sessao.aprovada');
+  assert.deepEqual(broadcasts[0].dados, { sessao_id: 's1' });
 });
 
 test('reprovarSessao transiciona para reprovada', () => {
   const db = criarDb();
   db.prepare(`INSERT INTO aprovadores (codigo, nome, ativo, criado_em) VALUES ('APROV1', 'Carlos', 1, datetime('now'))`).run();
   inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
-  const { service } = criarServico(db);
+  const { service, broadcasts, syncs } = criarServico(db);
   service.reprovarSessao('s1', 'APROV1');
   const s = db.prepare(`SELECT * FROM sessoes_contagem WHERE id = 's1'`).get();
   assert.equal(s.faturamento_status, 'reprovada');
+  assert.equal(s.aprovada_por, 'APROV1');
+  assert.equal(s.aprovada_em, '2026-05-01T10:00:00.000Z');
+  assert.equal(syncs.length, 1);
+  assert.equal(syncs[0].tabela, 'sessoes_contagem');
+  assert.deepEqual(syncs[0].payload, { id: 's1' });
+  assert.equal(broadcasts.length, 1);
+  assert.equal(broadcasts[0].tipo, 'sessao.reprovada');
+  assert.deepEqual(broadcasts[0].dados, { sessao_id: 's1' });
 });
 
 test('aprovarSessao rejeita aprovador invalido', () => {
   const db = criarDb();
   inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
   const { service } = criarServico(db);
-  assert.throws(() => service.aprovarSessao('s1', 'INVALIDO'), /inválido/);
+  assert.throws(() => service.aprovarSessao('s1', 'INVALIDO'), (err) => {
+    assert.match(err.message, /inválido/);
+    assert.equal(err.statusCode, 400);
+    return true;
+  });
 });
 
 test('aprovarSessao rejeita aprovador inativo', () => {
@@ -138,5 +157,32 @@ test('aprovarSessao rejeita aprovador inativo', () => {
   db.prepare(`INSERT INTO aprovadores (codigo, nome, ativo, criado_em) VALUES ('INATIVO', 'X', 0, datetime('now'))`).run();
   inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
   const { service } = criarServico(db);
-  assert.throws(() => service.aprovarSessao('s1', 'INATIVO'), /inativo/);
+  assert.throws(() => service.aprovarSessao('s1', 'INATIVO'), (err) => {
+    assert.match(err.message, /inativo/);
+    assert.equal(err.statusCode, 400);
+    return true;
+  });
+});
+
+test('reprovarSessao rejeita aprovador invalido', () => {
+  const db = criarDb();
+  inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
+  const { service } = criarServico(db);
+  assert.throws(() => service.reprovarSessao('s1', 'INVALIDO'), (err) => {
+    assert.match(err.message, /inválido/);
+    assert.equal(err.statusCode, 400);
+    return true;
+  });
+});
+
+test('reprovarSessao rejeita aprovador inativo', () => {
+  const db = criarDb();
+  db.prepare(`INSERT INTO aprovadores (codigo, nome, ativo, criado_em) VALUES ('INATIVO', 'X', 0, datetime('now'))`).run();
+  inserirSessao(db, 's1', { faturamento_status: 'pendente_aprovacao' });
+  const { service } = criarServico(db);
+  assert.throws(() => service.reprovarSessao('s1', 'INATIVO'), (err) => {
+    assert.match(err.message, /inativo/);
+    assert.equal(err.statusCode, 400);
+    return true;
+  });
 });
