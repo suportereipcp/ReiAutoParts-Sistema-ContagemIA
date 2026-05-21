@@ -4,6 +4,7 @@ const BASE = 'transition-all active:scale-95 font-medium text-sm rounded-lg';
 const VARIANTES = {
   primary: `${BASE} zen-satin text-on-primary px-6 py-3 shadow-lg shadow-primary/20`,
   secondary: `${BASE} text-primary hover:bg-primary-container/50 px-6 py-3`,
+  danger: `${BASE} bg-red-600 hover:bg-red-700 text-white px-6 py-3 shadow-lg shadow-red-600/20`,
   'icon-only': 'p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors',
 };
 

@@ -2,6 +2,7 @@ import { formatarData, formatarHora, formatarNumero } from '../infra/formatters.
 import { rotuloCaixa } from '../domain/caixas.js';
 import { toast } from '../ui/primitives/toast.js';
 import { abrirModalReimpressaoMassa } from '../ui/composites/modal-reimpressao-massa.js';
+import { abrirModalAprovarSessao } from '../ui/composites/modal-aprovar-sessao.js';
 
 export async function renderDetalhesCargaExpedida(ctx, numero) {
   const el = document.createElement('div');
@@ -145,5 +146,111 @@ export async function renderDetalhesCargaExpedida(ctx, numero) {
   }
 
   el.appendChild(tabela);
+
+  const containerSegregadas = document.createElement('div');
+  el.appendChild(containerSegregadas);
+  renderizarSegregadas(containerSegregadas, embarque, ctx);
+
   return el;
+}
+
+export async function renderizarSegregadas(container, embarque, ctx) {
+  container.innerHTML = '';
+  try {
+    const segregadas = await ctx.faturamentoSvc.listarSegregadas(embarque.numero_embarque);
+    if (!segregadas || segregadas.length === 0) {
+      return;
+    }
+
+    const section = document.createElement('section');
+    section.className = 'bg-surface-container-low rounded-xl overflow-hidden zen-shadow-ambient p-6 mt-8 space-y-4';
+
+    const header = document.createElement('div');
+    header.className = 'border-b border-outline-variant/10 pb-4';
+    header.innerHTML = `
+      <h3 class="font-headline font-semibold text-on-surface tracking-tight text-lg">Caixas Segregadas</h3>
+      <p class="text-xs text-on-surface-variant">Sessões aguardando aprovação ou já reprovadas no processo de faturamento.</p>
+    `;
+    section.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'divide-y divide-outline-variant/10';
+
+    segregadas.forEach(sessao => {
+      const row = document.createElement('div');
+      row.className = 'py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 first:pt-0 last:pb-0';
+      row.dataset.sessaoSegregada = sessao.id;
+
+      // Badges classes
+      let badgeClass = 'bg-slate-100 text-slate-800';
+      let badgeText = sessao.status;
+      if (sessao.status === 'pendente_aprovacao') {
+        badgeClass = 'bg-amber-100 text-amber-800';
+        badgeText = 'Pendente';
+      } else if (sessao.status === 'reprovada') {
+        badgeClass = 'bg-red-100 text-red-800';
+        badgeText = 'Reprovada';
+      }
+
+      // Left info
+      const info = document.createElement('div');
+      info.className = 'flex items-center gap-3';
+      info.innerHTML = `
+        <div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center">
+          <span class="material-symbols-outlined text-lg text-outline">inventory_2</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-on-surface">Caixa ${sessao.numero_caixa ?? '—'}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${badgeText}</span>
+          </div>
+          <p class="text-xs text-on-surface-variant">
+            Item: <span class="font-mono font-medium">${sessao.item_codigo ?? sessao.codigo_op ?? '—'}</span>
+            ${sessao.quantidade_total ? ` | Quantidade: ${sessao.quantidade_total} un` : ''}
+          </p>
+        </div>
+      `;
+      row.appendChild(info);
+
+      // Right actions (buttons)
+      const actions = document.createElement('div');
+      actions.className = 'flex items-center gap-2';
+
+      const btnAprovar = document.createElement('button');
+      btnAprovar.className = 'px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-medium hover:opacity-90 transition-opacity';
+      btnAprovar.textContent = 'Aprovar';
+      btnAprovar.addEventListener('click', () => {
+        abrirModalAprovarSessao({
+          sessao,
+          acao: 'aprovar',
+          faturamentoSvc: ctx.faturamentoSvc,
+          onConcluido: () => renderizarSegregadas(container, embarque, ctx)
+        });
+      });
+
+      const btnReprovar = document.createElement('button');
+      // Style: small danger/outline button
+      btnReprovar.className = 'px-3 py-1.5 border border-red-600 text-red-600 hover:bg-red-50 rounded-lg text-xs font-medium transition-colors';
+      btnReprovar.textContent = 'Reprovar';
+      btnReprovar.addEventListener('click', () => {
+        abrirModalAprovarSessao({
+          sessao,
+          acao: 'reprovar',
+          faturamentoSvc: ctx.faturamentoSvc,
+          onConcluido: () => renderizarSegregadas(container, embarque, ctx)
+        });
+      });
+
+      actions.appendChild(btnAprovar);
+      actions.appendChild(btnReprovar);
+      row.appendChild(actions);
+
+      list.appendChild(row);
+    });
+
+    section.appendChild(list);
+    container.appendChild(section);
+  } catch (error) {
+    console.error('Falha ao renderizar caixas segregadas', error);
+  }
 }

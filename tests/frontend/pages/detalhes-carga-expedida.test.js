@@ -6,7 +6,7 @@ import { renderDetalhesCargaExpedida } from '../../../public/js/pages/detalhes-c
 beforeEach(() => criarDOM());
 afterEach(() => limparDOM());
 
-function fakeCtx({ embarque, caixas }) {
+function fakeCtx({ embarque, caixas, segregadas = [] }) {
   return {
     api: {
       get: async (path) => {
@@ -15,6 +15,11 @@ function fakeCtx({ embarque, caixas }) {
         return [];
       },
     },
+    faturamentoSvc: {
+      listarSegregadas: async () => segregadas,
+      previewMassa: async () => ({ caixas: 0, etiquetas: 0 }),
+      reimpressaoMassa: async () => {},
+    }
   };
 }
 
@@ -78,6 +83,7 @@ test('botao Imprimir Etiquetas Finais abre modal apos chamar preview', async () 
       },
     },
     faturamentoSvc: {
+      listarSegregadas: async () => [],
       previewMassa: async (embarque) => {
         previewChamadoCom = embarque;
         return { caixas: 3, etiquetas: 6 };
@@ -103,5 +109,38 @@ test('botao Imprimir Etiquetas Finais abre modal apos chamar preview', async () 
 
   const caixasEl = document.querySelector('[data-display="caixas"]');
   assert.equal(caixasEl.textContent, '3');
+});
+
+test('renderiza secao de caixas segregadas quando existem caixas segregadas', async () => {
+  const ctx = fakeCtx({
+    embarque: { numero_embarque: 'SHP-999' },
+    caixas: [],
+    segregadas: [
+      { id: 'SESS-1', numero_caixa: '10', item_codigo: 'SKU-A', status: 'pendente_aprovacao', quantidade_total: 100 },
+      { id: 'SESS-2', numero_caixa: '11', item_codigo: 'SKU-B', status: 'reprovada', quantidade_total: 200 },
+    ]
+  });
+
+  const el = await renderDetalhesCargaExpedida(ctx, 'SHP-999');
+
+  // Verify "Caixas Segregadas" header
+  assert.match(el.textContent, /Caixas Segregadas/);
+  assert.match(el.textContent, /Sessões aguardando aprovação ou já reprovadas/);
+
+  // Verify Caixas are listed
+  assert.match(el.textContent, /Caixa 10/);
+  assert.match(el.textContent, /Pendente/);
+  assert.match(el.textContent, /SKU-A/);
+
+  assert.match(el.textContent, /Caixa 11/);
+  assert.match(el.textContent, /Reprovada/);
+  assert.match(el.textContent, /SKU-B/);
+
+  // Verify action buttons exist
+  const row1 = el.querySelector('[data-sessao-segregada="SESS-1"]');
+  const btnAprovar = Array.from(row1.querySelectorAll('button')).find(b => b.textContent === 'Aprovar');
+  const btnReprovar = Array.from(row1.querySelectorAll('button')).find(b => b.textContent === 'Reprovar');
+  assert.ok(btnAprovar);
+  assert.ok(btnReprovar);
 });
 
