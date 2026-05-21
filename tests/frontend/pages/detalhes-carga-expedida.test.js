@@ -66,3 +66,42 @@ test('link Exportar Manifesto aponta para XLSX do relatório', async () => {
   const btn = el.querySelector('[data-acao="exportar"]');
   assert.ok(btn);
 });
+
+test('botao Imprimir Etiquetas Finais abre modal apos chamar preview', async () => {
+  let previewChamadoCom = null;
+  const ctx = {
+    api: {
+      get: async (path) => {
+        if (path.startsWith('/embarques/')) return { numero_embarque: 'SHP-999' };
+        if (path.startsWith('/sessoes')) return [];
+        return [];
+      },
+    },
+    faturamentoSvc: {
+      previewMassa: async (embarque) => {
+        previewChamadoCom = embarque;
+        return { caixas: 3, etiquetas: 6 };
+      },
+      reimpressaoMassa: async () => {}
+    }
+  };
+
+  const el = await renderDetalhesCargaExpedida(ctx, 'SHP-999');
+  const btn = el.querySelector('[data-acao="imprimir-massa"]');
+  assert.ok(btn);
+  assert.match(btn.textContent, /Imprimir Etiquetas Finais/);
+
+  // Clique no botão deve chamar previewMassa e abrir o modal no DOM
+  await btn.click();
+
+  assert.equal(previewChamadoCom, 'SHP-999');
+
+  // O modal deve estar no DOM
+  const modalTitle = document.querySelector('h2');
+  assert.ok(modalTitle);
+  assert.equal(modalTitle.textContent, 'Reimpressão em Massa');
+
+  const caixasEl = document.querySelector('[data-display="caixas"]');
+  assert.equal(caixasEl.textContent, '3');
+});
+

@@ -1,5 +1,7 @@
 import { formatarData, formatarHora, formatarNumero } from '../infra/formatters.js';
 import { rotuloCaixa } from '../domain/caixas.js';
+import { toast } from '../ui/primitives/toast.js';
+import { abrirModalReimpressaoMassa } from '../ui/composites/modal-reimpressao-massa.js';
 
 export async function renderDetalhesCargaExpedida(ctx, numero) {
   const el = document.createElement('div');
@@ -57,6 +59,9 @@ export async function renderDetalhesCargaExpedida(ctx, numero) {
         </button>
         <button data-acao="exportar" class="flex items-center gap-2 px-4 py-2 bg-primary-dim text-on-primary rounded-lg text-xs font-medium zen-shadow-ambient hover:opacity-90 transition-opacity">
           <span class="material-symbols-outlined text-sm">download</span><span>Exportar Manifesto</span>
+        </button>
+        <button data-acao="imprimir-massa" class="flex items-center gap-2 px-4 py-2 bg-primary-dim text-on-primary rounded-lg text-xs font-medium zen-shadow-ambient hover:opacity-90 transition-opacity">
+          <span class="material-symbols-outlined text-sm">print</span><span>Imprimir Etiquetas Finais</span>
         </button>
       </div>
     </div>
@@ -121,6 +126,23 @@ export async function renderDetalhesCargaExpedida(ctx, numero) {
   tabela.querySelector('[data-acao="exportar"]').addEventListener('click', () => {
     window.location.href = `/relatorios/embarque/${encodeURIComponent(embarque.numero_embarque)}?fmt=xlsx`;
   });
+
+  const btnImprimirMassa = tabela.querySelector('[data-acao="imprimir-massa"]');
+  if (btnImprimirMassa) {
+    btnImprimirMassa.addEventListener('click', async () => {
+      try {
+        const preview = await ctx.faturamentoSvc.previewMassa(embarque.numero_embarque);
+        abrirModalReimpressaoMassa({
+          embarque: embarque.numero_embarque,
+          preview,
+          faturamentoSvc: ctx.faturamentoSvc,
+          onConcluido: () => {}
+        });
+      } catch (error) {
+        toast.erro(error.message || 'Erro ao carregar dados de reimpressão.');
+      }
+    });
+  }
 
   el.appendChild(tabela);
   return el;
