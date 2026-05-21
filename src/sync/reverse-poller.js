@@ -9,7 +9,7 @@ const TABELAS = [
   { nome: 'operadores', upsert: upsertOperador },
 ];
 
-export function criarPoller({ db, buscarAlteracoes, logger }) {
+export function criarPoller({ db, buscarAlteracoes, logger, faturamentoService }) {
   return {
     async tick() {
       for (const { nome, upsert, estrategia } of TABELAS) {
@@ -20,6 +20,17 @@ export function criarPoller({ db, buscarAlteracoes, logger }) {
           salvarCursor(db, nome, cursor);
           continue;
         }
+
+        if (nome === 'embarques' && faturamentoService) {
+          for (const r of registros) {
+            const local = db.prepare(`SELECT numero_nota_fiscal, finalizada_em FROM embarques WHERE numero_embarque = ?`).get(r.numero_embarque);
+            const nfNova = r.numero_nota_fiscal && (!local || !local.numero_nota_fiscal);
+            const embarqueNovo = !local;
+            if (nfNova) faturamentoService.aoReceberNF(r.numero_embarque);
+            if (embarqueNovo) faturamentoService.notificarEmbarqueNovo(r.numero_embarque);
+          }
+        }
+
         const tx = db.transaction((rows) => {
           for (const r of rows) upsert(db, r);
         });
