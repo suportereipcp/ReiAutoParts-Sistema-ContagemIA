@@ -186,3 +186,50 @@ test('reprovarSessao rejeita aprovador inativo', () => {
     return true;
   });
 });
+
+// --- Task 17: Testes de realocação ---
+
+test('confirmarRealocacao seta embarque_destino e status realocada', () => {
+  const db = criarDb();
+  db.prepare(`INSERT INTO embarques (numero_embarque, status) VALUES ('E2', 'aberto')`).run();
+  inserirSessao(db, 's1', { faturamento_status: 'reprovada' });
+  const { service } = criarServico(db);
+  service.confirmarRealocacao('s1', 'E2');
+  const s = db.prepare(`SELECT * FROM sessoes_contagem WHERE id = 's1'`).get();
+  assert.equal(s.faturamento_status, 'realocada');
+  assert.equal(s.embarque_destino, 'E2');
+});
+
+test('confirmarRealocacao rejeita destino faturado', () => {
+  const db = criarDb();
+  db.prepare(`INSERT INTO embarques (numero_embarque, status, finalizada_em) VALUES ('E2', 'faturado', '2026-05-01T10:00:00.000Z')`).run();
+  inserirSessao(db, 's1', { faturamento_status: 'reprovada' });
+  const { service } = criarServico(db);
+  assert.throws(() => service.confirmarRealocacao('s1', 'E2'), /faturado/);
+});
+
+test('reimpressaoMassa inclui sessoes realocadas para o embarque destino', async () => {
+  const db = criarDb();
+  db.prepare(`INSERT INTO embarques (numero_embarque, status, numero_nota_fiscal) VALUES ('E2', 'faturado', '99999')`).run();
+  db.prepare(`INSERT INTO ordens_producao (codigo_op, item_codigo, item_descricao) VALUES ('OP2', 'IT2', 'Item 2')`).run();
+  db.prepare(`
+    INSERT INTO sessoes_contagem
+      (id, numero_embarque, codigo_op, codigo_operador, camera_id, numero_caixa, quantidade_total,
+       iniciada_em, encerrada_em, status, faturamento_status, embarque_destino)
+    VALUES ('sRealocada', 'E1', 'OP2', 'A', 1, 'CX9', 3,
+      '2026-05-01T08:00:00.000Z', '2026-05-01T09:00:00.000Z', 'encerrada', 'realocada', 'E2')
+  `).run();
+
+  const emitidos = [];
+  const svc = criarFaturamentoService({
+    db,
+    enfileirarSync: () => {},
+    registrarEvento: () => {},
+    broadcast: () => {},
+    caixaLabelService: { emitir: async ({ numero_caixa }) => { emitidos.push(numero_caixa); return { partes_total: 1 }; } },
+    now: () => '2026-05-01T10:00:00.000Z',
+  });
+
+  await svc.reimpressaoMassa('E2', 'A');
+  assert.ok(emitidos.includes('CX9'));
+});

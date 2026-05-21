@@ -4,6 +4,7 @@ import { toast } from '../ui/primitives/toast.js';
 import { Button } from '../ui/primitives/button.js';
 import { abrirModalReimpressaoMassa } from '../ui/composites/modal-reimpressao-massa.js';
 import { abrirModalAprovarSessao } from '../ui/composites/modal-aprovar-sessao.js';
+import { abrirModalRealocarSessao } from '../ui/composites/modal-realocar-sessao.js';
 
 export async function renderDetalhesCargaExpedida(ctx, numero) {
   const el = document.createElement('div');
@@ -247,6 +248,30 @@ export async function renderizarSegregadas(container, embarque, ctx) {
 
       actions.appendChild(btnAprovar);
       actions.appendChild(btnReprovar);
+
+      // Botão Realocar para sessões reprovadas
+      if (sessao.faturamento_status === 'reprovada' || sessao.status === 'reprovada') {
+        const btnRealocar = Button({
+          texto: 'Realocar',
+          variante: 'secondary',
+          size: 'sm',
+          onClick: async () => {
+            try {
+              const embarquesAbertos = await ctx.api.get('/embarques?status=aberto').catch(() => []);
+              abrirModalRealocarSessao({
+                sessao,
+                embarquesAbertos: embarquesAbertos || [],
+                faturamentoSvc: ctx.faturamentoSvc,
+                onConcluido: () => renderizarSegregadas(container, embarque, ctx)
+              });
+            } catch (err) {
+              toast.erro(err.message || 'Erro ao carregar embarques.');
+            }
+          }
+        });
+        actions.appendChild(btnRealocar);
+      }
+
       row.appendChild(actions);
 
       list.appendChild(row);

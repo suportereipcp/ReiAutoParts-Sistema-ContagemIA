@@ -69,6 +69,27 @@ export async function renderDetalhesCarga(ctx, numero) {
   header.appendChild(headerActions);
   el.appendChild(header);
 
+  // Banner de sugestão de realocação (Task 19)
+  if (ctx.faturamentoSvc?.sugerirRealocacoes) {
+    try {
+      const sugestoes = await ctx.faturamentoSvc.sugerirRealocacoes(embarque.numero_embarque);
+      if (sugestoes && sugestoes.length > 0) {
+        const banner = document.createElement('div');
+        banner.dataset.bannerRealocacao = 'true';
+        banner.className = 'rounded-xl bg-amber-50 border border-amber-200 px-6 py-4 flex items-center gap-3';
+        banner.innerHTML = `
+          <span class="material-symbols-outlined text-amber-600 text-xl shrink-0">swap_horiz</span>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-amber-800">
+              <strong>${sugestoes.length}</strong> item(s) reprovado(s) de embarques anteriores podem ser realocados para este embarque.
+            </p>
+          </div>
+        `;
+        el.appendChild(banner);
+      }
+    } catch { /* silencioso se faturamentoSvc não estiver disponível */ }
+  }
+
   if (ativas.length > 0) {
     const paineis = document.createElement('div');
     paineis.dataset.sessoesAtivas = 'true';
