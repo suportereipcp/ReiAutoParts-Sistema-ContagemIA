@@ -1,6 +1,7 @@
 import { formatarData, formatarHora, formatarNumero } from '../infra/formatters.js';
 import { rotuloCaixa } from '../domain/caixas.js';
 import { toast } from '../ui/primitives/toast.js';
+import { Button } from '../ui/primitives/button.js';
 import { abrirModalReimpressaoMassa } from '../ui/composites/modal-reimpressao-massa.js';
 import { abrirModalAprovarSessao } from '../ui/composites/modal-aprovar-sessao.js';
 
@@ -216,29 +217,32 @@ export async function renderizarSegregadas(container, embarque, ctx) {
       const actions = document.createElement('div');
       actions.className = 'flex items-center gap-2';
 
-      const btnAprovar = document.createElement('button');
-      btnAprovar.className = 'px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-medium hover:opacity-90 transition-opacity';
-      btnAprovar.textContent = 'Aprovar';
-      btnAprovar.addEventListener('click', () => {
-        abrirModalAprovarSessao({
-          sessao,
-          acao: 'aprovar',
-          faturamentoSvc: ctx.faturamentoSvc,
-          onConcluido: () => renderizarSegregadas(container, embarque, ctx)
-        });
+      const btnAprovar = Button({
+        texto: 'Aprovar',
+        variante: 'primary',
+        size: 'sm',
+        onClick: () => {
+          abrirModalAprovarSessao({
+            sessao,
+            acao: 'aprovar',
+            faturamentoSvc: ctx.faturamentoSvc,
+            onConcluido: () => renderizarSegregadas(container, embarque, ctx)
+          });
+        }
       });
 
-      const btnReprovar = document.createElement('button');
-      // Style: small danger/outline button
-      btnReprovar.className = 'px-3 py-1.5 border border-red-600 text-red-600 hover:bg-red-50 rounded-lg text-xs font-medium transition-colors';
-      btnReprovar.textContent = 'Reprovar';
-      btnReprovar.addEventListener('click', () => {
-        abrirModalAprovarSessao({
-          sessao,
-          acao: 'reprovar',
-          faturamentoSvc: ctx.faturamentoSvc,
-          onConcluido: () => renderizarSegregadas(container, embarque, ctx)
-        });
+      const btnReprovar = Button({
+        texto: 'Reprovar',
+        variante: 'outline-danger',
+        size: 'sm',
+        onClick: () => {
+          abrirModalAprovarSessao({
+            sessao,
+            acao: 'reprovar',
+            faturamentoSvc: ctx.faturamentoSvc,
+            onConcluido: () => renderizarSegregadas(container, embarque, ctx)
+          });
+        }
       });
 
       actions.appendChild(btnAprovar);

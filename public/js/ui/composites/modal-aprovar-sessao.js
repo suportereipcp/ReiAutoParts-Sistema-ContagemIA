@@ -72,7 +72,7 @@ export function abrirModalAprovarSessao({ sessao, acao, faturamentoSvc, onConclu
 
   // Handle submit logic
   async function handleSubmit() {
-    const codigo = inputEl?.value.trim();
+    const codigo = inputEl?.value?.trim() || '';
     if (!codigo) {
       toast.erro('Código do aprovador é obrigatório.');
       return;

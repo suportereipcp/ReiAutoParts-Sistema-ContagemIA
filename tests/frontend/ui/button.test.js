@@ -34,3 +34,27 @@ test('disabled seta atributo', () => {
   const el = Button({ texto: 'x', disabled: true });
   assert.equal(el.disabled, true);
 });
+
+test('variante danger aplica bg-error e shadow-error/20', () => {
+  const el = Button({ texto: 'Danger', variante: 'danger' });
+  assert.match(el.className, /bg-error/);
+  assert.match(el.className, /shadow-error\/20/);
+});
+
+test('variante outline-danger aplica border-error e text-error', () => {
+  const el = Button({ texto: 'Outline Danger', variante: 'outline-danger' });
+  assert.match(el.className, /border-error/);
+  assert.match(el.className, /text-error/);
+});
+
+test('size sm aplica classes corretas', () => {
+  const el = Button({ texto: 'Small', size: 'sm' });
+  assert.match(el.className, /text-xs/);
+  assert.match(el.className, /px-3 py-1\.5/);
+});
+
+test('size md (default) aplica classes corretas', () => {
+  const el = Button({ texto: 'Medium' });
+  assert.match(el.className, /text-sm/);
+  assert.match(el.className, /px-6 py-3/);
+});

@@ -1,16 +1,29 @@
 import { Icon } from './icon.js';
 
-const BASE = 'transition-all active:scale-95 font-medium text-sm rounded-lg';
-const VARIANTES = {
-  primary: `${BASE} zen-satin text-on-primary px-6 py-3 shadow-lg shadow-primary/20`,
-  secondary: `${BASE} text-primary hover:bg-primary-container/50 px-6 py-3`,
-  danger: `${BASE} bg-red-600 hover:bg-red-700 text-white px-6 py-3 shadow-lg shadow-red-600/20`,
-  'icon-only': 'p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors',
+const SIZES = {
+  md: 'text-sm px-6 py-3',
+  sm: 'text-xs px-3 py-1.5'
 };
 
-export function Button({ texto = '', variante = 'primary', icone, onClick, disabled = false, className = '' } = {}) {
+const VARIANTS = {
+  primary: 'zen-satin text-on-primary shadow-lg shadow-primary/20',
+  secondary: 'text-primary hover:bg-primary-container/50',
+  danger: 'bg-error hover:bg-error/90 text-on-error shadow-lg shadow-error/20',
+  'outline-danger': 'border border-error text-error hover:bg-error/5',
+  'icon-only': 'p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors'
+};
+
+export function Button({ texto = '', variante = 'primary', size = 'md', icone, onClick, disabled = false, className = '' } = {}) {
   const el = document.createElement('button');
-  el.className = `${VARIANTES[variante] ?? VARIANTES.primary} ${className}`.trim();
+
+  if (variante === 'icon-only') {
+    el.className = `${VARIANTS['icon-only']} ${className}`.trim();
+  } else {
+    const sizeClass = SIZES[size] || SIZES.md;
+    const variantClass = VARIANTS[variante] || VARIANTS.primary;
+    el.className = `transition-all active:scale-95 font-medium rounded-lg ${sizeClass} ${variantClass} ${className}`.trim();
+  }
+
   if (icone) {
     const ic = Icon(icone, { className: 'text-lg mr-2' });
     el.appendChild(ic);

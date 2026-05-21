@@ -144,3 +144,49 @@ test('renderiza secao de caixas segregadas quando existem caixas segregadas', as
   assert.ok(btnReprovar);
 });
 
+test('clicar em Aprovar ou Reprovar na lista de segregadas abre o modal no DOM', async () => {
+  const ctx = fakeCtx({
+    embarque: { numero_embarque: 'SHP-999' },
+    caixas: [],
+    segregadas: [
+      { id: 'SESS-1', numero_caixa: '10', item_codigo: 'SKU-A', status: 'pendente_aprovacao', quantidade_total: 100 },
+    ]
+  });
+
+  const el = await renderDetalhesCargaExpedida(ctx, 'SHP-999');
+
+  const row = el.querySelector('[data-sessao-segregada="SESS-1"]');
+  const btnAprovar = Array.from(row.querySelectorAll('button')).find(b => b.textContent === 'Aprovar');
+  assert.ok(btnAprovar);
+
+  // Antes de clicar, não deve ter o modal no DOM (ou pelo menos não com o título de Aprovar)
+  let modalTitle = Array.from(document.querySelectorAll('h2')).find(h => h.textContent === 'Aprovar Sessão');
+  assert.ok(!modalTitle);
+
+  // Clica em Aprovar
+  await btnAprovar.click();
+
+  // Agora o modal de aprovação deve estar no DOM
+  modalTitle = Array.from(document.querySelectorAll('h2')).find(h => h.textContent === 'Aprovar Sessão');
+  assert.ok(modalTitle);
+
+  // Fecha o modal limpando o DOM/fechando
+  const btnCancelar = document.querySelector('[data-btn-cancelar="true"]');
+  if (btnCancelar) btnCancelar.click();
+
+  // Testar Reprovar
+  const btnReprovar = Array.from(row.querySelectorAll('button')).find(b => b.textContent === 'Reprovar');
+  assert.ok(btnReprovar);
+
+  // Clica em Reprovar
+  await btnReprovar.click();
+
+  // Agora o modal de reprovação deve estar no DOM
+  const modalTitleRep = Array.from(document.querySelectorAll('h2')).find(h => h.textContent === 'Reprovar Sessão');
+  assert.ok(modalTitleRep);
+
+  const btnCancelarRep = document.querySelector('[data-btn-cancelar="true"]');
+  if (btnCancelarRep) btnCancelarRep.click();
+});
+
+
