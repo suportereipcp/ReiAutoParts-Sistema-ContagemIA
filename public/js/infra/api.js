@@ -23,7 +23,19 @@ export function criarApi({ base = '', fetch = globalThis.fetch } = {}) {
     }
     return r.json();
   }
-  return { get, post };
+  async function del(path) {
+    const r = await fetch(`${base}${path}`, {
+      method: 'DELETE',
+    });
+    if (!r.ok) {
+      let msg;
+      try { const b = await r.json(); msg = b.erro ?? r.statusText; }
+      catch (_) { msg = r.statusText; }
+      throw new Error(msg);
+    }
+    return r.json();
+  }
+  return { get, post, del };
 }
 
 export const api = criarApi({ base: globalThis.location?.origin ?? '' });

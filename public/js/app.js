@@ -6,6 +6,7 @@ import { criarSessoesState } from './domain/sessoes-state.js';
 import { criarCatalogos } from './domain/catalogos.js';
 import { criarSessoesService } from './domain/sessoes-service.js';
 import { criarEtiquetasService } from './domain/etiquetas-service.js';
+import { criarFaturamentoClienteService } from './domain/faturamento-service.js';
 import { SideNav } from './ui/primitives/sidenav.js';
 import { TopNav } from './ui/primitives/topnav.js';
 import { SyncBadge } from './ui/primitives/badge.js';
@@ -67,6 +68,7 @@ function caminhoPadrao(id) {
 }
 
 const ctx = { api, catalogos, sessoesSvc, etiquetasSvc, sync, sessoes };
+ctx.faturamentoSvc = criarFaturamentoClienteService({ api });
 
 criarRouter({
   root: '#root',

@@ -11,6 +11,9 @@ function ctxComEmbarques(embarques) {
     catalogos: {
       embarques: async () => embarques,
     },
+    faturamentoSvc: {
+      previewMassa: async () => ({ caixas: 0, etiquetas: 0 }),
+    },
   };
 }
 

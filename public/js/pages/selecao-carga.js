@@ -8,9 +8,9 @@ export async function renderSelecaoCarga(ctx) {
   el.className = 'space-y-8';
 
   const lista = await carregarEmbarques(ctx);
-  const abertas = lista.filter((embarque) => embarque.status !== 'fechado');
-  const expedidas = lista.filter((embarque) => embarque.status === 'fechado');
-  const pendentesNota = expedidas.filter((embarque) => !String(embarque.numero_nota_fiscal ?? '').trim()).length;
+  const abertas = lista.filter((embarque) => !embarque.numero_nota_fiscal);
+  const expedidas = lista.filter((embarque) => Boolean(embarque.numero_nota_fiscal));
+  const pendentesNota = abertas.filter((embarque) => embarque.status === 'fechado').length;
   let abaAtiva = abertas.length > 0 ? 'abertas' : 'expedidas';
 
   const header = document.createElement('section');
@@ -185,7 +185,7 @@ export async function renderSelecaoCarga(ctx) {
       bodyTabela.appendChild(tr);
     } else {
       for (const embarque of itens) {
-        bodyTabela.appendChild(expedidasAtivas ? linhaExpedida(embarque) : linhaAberta(embarque));
+        bodyTabela.appendChild(expedidasAtivas ? linhaExpedida(embarque, ctx) : linhaAberta(embarque));
       }
     }
 
@@ -279,7 +279,7 @@ function linhaAberta(embarque) {
   return tr;
 }
 
-function linhaExpedida(embarque) {
+function linhaExpedida(embarque, ctx) {
   const tr = document.createElement('tr');
   tr.dataset.linhaEmbarque = embarque.numero_embarque;
   tr.className = 'hover:bg-surface-container-low/50 transition-colors';
@@ -295,6 +295,7 @@ function linhaExpedida(embarque) {
     <td class="px-8 py-5 text-sm text-on-surface-variant">${escapar(formatarData(embarque.data_criacao) || '—')}</td>
     <td class="px-8 py-5 text-sm text-on-surface-variant">${formatarNumero(embarque.qtd_pecas ?? 0)}</td>
     <td class="px-8 py-5 text-right">
+      <button type="button" data-acao-imprimir="${escaparAttr(embarque.numero_embarque)}" class="rounded-lg bg-primary text-on-primary px-4 py-1.5 text-xs font-semibold hover:bg-primary/90 transition mr-2">Imprimir etiquetas finais</button>
       <button type="button" data-acao-carga="${escaparAttr(embarque.numero_embarque)}" class="rounded-lg border border-primary/20 px-4 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/5">Detalhes</button>
     </td>
   `;
@@ -302,6 +303,26 @@ function linhaExpedida(embarque) {
   tr.querySelector('[data-acao-carga]').addEventListener('click', () => {
     window.location.hash = `#/expedidas/${encodeURIComponent(embarque.numero_embarque)}`;
   });
+
+  tr.querySelector('[data-acao-imprimir]').addEventListener('click', async () => {
+    try {
+      const preview = await ctx.faturamentoSvc.previewMassa(embarque.numero_embarque);
+      try {
+        const { abrirModalReimpressaoMassa } = await import('../ui/composites/modal-reimpressao-massa.js');
+        abrirModalReimpressaoMassa({
+          embarque: embarque.numero_embarque,
+          preview,
+          faturamentoSvc: ctx.faturamentoSvc
+        });
+      } catch (err) {
+        console.error(err);
+        alert('Modal de reimpressão ainda não disponível ou erro ao carregar.');
+      }
+    } catch (err) {
+      alert(`Erro ao carregar preview: ${err.message}`);
+    }
+  });
+
   return tr;
 }
 
