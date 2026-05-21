@@ -50,3 +50,30 @@ test('permite encerrar em caixa sem número', () => {
   document.querySelector('[data-submit-encerrar]').click();
   assert.deepEqual(payload, { criar_caixa_sem_numero: true });
 });
+
+test('exibe aviso e exige confirmacao se embarqueFaturado for true', () => {
+  let payload = null;
+  abrirModalEncerrarSessao({
+    sessao,
+    caixasExistentes: [],
+    embarqueFaturado: true,
+    onConfirmar: (p) => { payload = p; },
+  });
+
+  // Seleciona o modo sem número para evitar validação de número de caixa
+  document.querySelector('[data-input="modo-caixa"][value="sem-numero"]').click();
+
+  // Verifica que o aviso foi renderizado
+  const alert = document.querySelector('[data-input="confirmar-recusa"]');
+  assert.ok(alert, 'Checkbox de confirmação deve estar presente');
+
+  // Clica em confirmar sem marcar o checkbox
+  document.querySelector('[data-submit-encerrar]').click();
+  assert.equal(payload, null, 'onConfirmar não deve ser chamado sem o checkbox marcado');
+  assert.match(document.body.innerHTML, /Você deve confirmar que está ciente do encerramento tardio/);
+
+  // Limpa toast anterior do DOM para evitar falso-positivo se necessário, e marca o checkbox
+  alert.checked = true;
+  document.querySelector('[data-submit-encerrar]').click();
+  assert.deepEqual(payload, { criar_caixa_sem_numero: true }, 'onConfirmar deve ser chamado quando checkbox estiver marcado');
+});

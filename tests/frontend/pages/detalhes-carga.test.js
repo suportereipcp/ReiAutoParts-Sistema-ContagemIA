@@ -105,3 +105,72 @@ test('detalhes da carga renderiza um painel por sessao ativa e isola encerrar po
 
   assert.deepEqual(chamadasEncerrar, ['S2']);
 });
+
+test('detalhes da carga sem faturamento exibe o botao Finalizar Carga', async () => {
+  const ctx = {
+    api: {
+      get: async (path) => {
+        if (path.startsWith('/embarques/')) return { numero_embarque: '03', motorista: 'E', status: 'aberto' };
+        if (path.startsWith('/sessoes')) return [];
+        return [];
+      },
+    },
+    sessoes: { porCamera: () => null, subscribe: () => () => {} },
+    sessoesSvc: { encerrar: async () => ({}), reiniciarContagem: async () => ({}), reiniciarSessao: async () => ({}) },
+    catalogos: {},
+  };
+  const el = await renderDetalhesCarga(ctx, '03');
+  document.body.appendChild(el);
+  const botoes = [...el.querySelectorAll('button')];
+  const btnFinalizar = botoes.find((node) => /Finalizar Carga/.test(node.textContent));
+  assert.ok(btnFinalizar, 'Deve exibir o botão Finalizar Carga quando não faturado');
+});
+
+test('detalhes da carga com faturamento oculta o botao Finalizar Carga e exige confirmacao no encerramento tardio', async () => {
+  const chamadasEncerrar = [];
+  const ctx = {
+    api: {
+      get: async (path) => {
+        if (path.startsWith('/embarques/')) return { numero_embarque: '04', motorista: 'E', status: 'aberto', numero_nota_fiscal: 'NF-123' };
+        if (path.startsWith('/sessoes')) return [
+          { id: 'S3', numero_embarque: '04', camera_id: 1, quantidade_total: 10, status: 'ativa', programa_nome: 'PECA-C', iniciada_em: '2026-04-23T13:00:00Z' },
+        ];
+        return [];
+      },
+    },
+    sessoes: { porCamera: () => null, subscribe: () => () => {} },
+    sessoesSvc: { encerrar: async (id, payload) => { chamadasEncerrar.push({ id, payload }); return {}; } },
+    catalogos: {},
+  };
+  const el = await renderDetalhesCarga(ctx, '04');
+  document.body.appendChild(el);
+
+  const botoes = [...el.querySelectorAll('button')];
+  const btnFinalizar = botoes.find((node) => /Finalizar Carga/.test(node.textContent));
+  assert.equal(btnFinalizar, undefined, 'Não deve exibir o botão Finalizar Carga quando faturado');
+
+  // Abre modal de encerrar
+  const btnEncerrarSessao = el.querySelector('[data-acao-painel="encerrar-sessao"]');
+  assert.ok(btnEncerrarSessao);
+  btnEncerrarSessao.click();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  // Seleciona o modo sem número para evitar validação de número de caixa
+  document.querySelector('[data-input="modo-caixa"][value="sem-numero"]').click();
+
+  // Verifica que o alerta de recusa faturado está no DOM
+  const checkbox = document.querySelector('[data-input="confirmar-recusa"]');
+  assert.ok(checkbox, 'Deve renderizar o checkbox de confirmação no modal para embarque faturado');
+
+  // Tenta confirmar sem marcar
+  document.querySelector('[data-submit-encerrar]').click();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(chamadasEncerrar.length, 0, 'Não deve encerrar se o checkbox não estiver marcado');
+
+  // Marca e confirma
+  checkbox.checked = true;
+  document.querySelector('[data-submit-encerrar]').click();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(chamadasEncerrar.length, 1);
+  assert.equal(chamadasEncerrar[0].id, 'S3');
+});

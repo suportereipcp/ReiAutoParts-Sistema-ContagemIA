@@ -63,7 +63,9 @@ export async function renderDetalhesCarga(ctx, numero) {
   });
   const btnFinalizar = Button({ texto: 'Finalizar Carga', icone: 'check_circle', className: 'px-5 py-3', onClick: () => toast.info('Finalização via Supabase ainda pendente.') });
   headerActions.appendChild(btnNovaSessao);
-  headerActions.appendChild(btnFinalizar);
+  if (!embarque.numero_nota_fiscal) {
+    headerActions.appendChild(btnFinalizar);
+  }
   header.appendChild(headerActions);
   el.appendChild(header);
 
@@ -79,6 +81,7 @@ export async function renderDetalhesCarga(ctx, numero) {
           caixasExistentes: caixas
             .filter((caixa) => caixa.codigo_op === ativa.codigo_op)
             .map((caixa) => ({ id: caixa.id, label: caixa.numero_caixa_exibicao })),
+          embarqueFaturado: Boolean(embarque.numero_nota_fiscal),
           onConfirmar: async (payload) => {
             try {
               const resultado = await ctx.sessoesSvc.encerrar(ativa.id, payload);
