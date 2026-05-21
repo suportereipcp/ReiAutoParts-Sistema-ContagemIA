@@ -19,7 +19,7 @@ import {
   formatarLinhaKeyenceNaoReconhecida,
   formatarRespostaKeyenceSemComando,
 } from './camera/keyence-diagnostics.js';
-import { createSupabase, upsertSessao, upsertEvento, upsertEtiquetaCaixa, upsertEtiquetaCaixaParte, buscarAlteracoes } from './sync/supabase-client.js';
+import { createSupabase, upsertSessao, upsertEvento, upsertEtiquetaCaixa, upsertEtiquetaCaixaParte, buscarAlteracoes, atualizarStatusEmbarque } from './sync/supabase-client.js';
 import { criarCaixaLabelService } from './labels/caixa-label-service.js';
 import { renderizarEtiquetaCaixaZpl } from './labels/zpl-renderer.js';
 import { criarPrintQueue } from './printer/print-queue.js';
@@ -27,6 +27,8 @@ import { criarDisabledTransport } from './printer/transports/disabled.js';
 import { criarTcpTransport } from './printer/transports/tcp.js';
 import { criarSpoolerTransport } from './printer/transports/spooler.js';
 import { rotasEtiquetas } from './http/routes/etiquetas.js';
+import { criarFaturamentoService } from './domain/faturamento-service.js';
+import { rotasFaturamento } from './http/routes/faturamento.js';
 import { criarHealthchecker } from './sync/healthcheck.js';
 import { criarPusher } from './sync/outbox-pusher.js';
 import { criarPoller } from './sync/reverse-poller.js';
@@ -84,24 +86,6 @@ async function main() {
     },
     limite: config.sync.failureThreshold,
   });
-  const pusher = criarPusher({
-    db,
-    enviarBatch: async ({ tabela, payload }) => {
-      if (tabela === 'sessoes_contagem') await upsertSessao(sb, payload);
-      else if (tabela === 'eventos_log') await upsertEvento(sb, { ...payload, origem: 'edge_pc', id_local: payload.id_local });
-      else if (tabela === 'etiquetas_caixa') await upsertEtiquetaCaixa(sb, payload);
-      else if (tabela === 'etiquetas_caixa_partes') await upsertEtiquetaCaixaParte(sb, payload);
-    },
-    logger,
-  });
-  const poller = criarPoller({
-    db,
-    buscarAlteracoes: (tabela, cursor) => buscarAlteracoes(sb, tabela, cursor),
-    logger,
-  });
-  const syncWorker = criarSyncWorker({ healthchecker, pusher, poller, logger });
-  syncWorker.on('estado', ({ novo }) => wsHub.broadcast('sync.status', { estado: novo }));
-
   const enfileirarSync = (tabela, payload) => enfileirar(db, tabela, payload);
   const wrapEvento = (ev) => {
     const timestamp = ev.timestamp ?? new Date().toISOString();
@@ -131,6 +115,34 @@ async function main() {
     enfileirarSync,
   });
 
+  const faturamentoService = criarFaturamentoService({
+    db,
+    enfileirarSync,
+    registrarEvento: wrapEvento,
+    broadcast: wsHub.broadcast,
+    caixaLabelService,
+  });
+
+  const pusher = criarPusher({
+    db,
+    enviarBatch: async ({ tabela, payload }) => {
+      if (tabela === 'sessoes_contagem') await upsertSessao(sb, payload);
+      else if (tabela === 'eventos_log') await upsertEvento(sb, { ...payload, origem: 'edge_pc', id_local: payload.id_local });
+      else if (tabela === 'etiquetas_caixa') await upsertEtiquetaCaixa(sb, payload);
+      else if (tabela === 'etiquetas_caixa_partes') await upsertEtiquetaCaixaParte(sb, payload);
+      else if (tabela === 'embarques_status') await atualizarStatusEmbarque(sb, payload);
+    },
+    logger,
+  });
+  const poller = criarPoller({
+    db,
+    buscarAlteracoes: (tabela, cursor) => buscarAlteracoes(sb, tabela, cursor),
+    faturamentoService,
+    logger,
+  });
+  const syncWorker = criarSyncWorker({ healthchecker, pusher, poller, logger });
+  syncWorker.on('estado', ({ novo }) => wsHub.broadcast('sync.status', { estado: novo }));
+
   const chunkUploader = criarChunkUploader({ supabase: sb, logger });
   const pulseAuditService = criarPulseAuditService({
     config: config.audit,
@@ -147,6 +159,7 @@ async function main() {
     broadcast: wsHub.broadcast,
     caixaLabelService,
     pulseAuditService,
+    faturamentoService,
   });
   const contagemService = criarContagemService({
     db,
@@ -210,6 +223,7 @@ async function main() {
   rotasEtiquetas(fastify, { db, caixaLabelService, printQueue });
   rotasRelatorios(fastify, { db });
   rotasEventos(fastify, { db });
+  rotasFaturamento(fastify, { faturamentoService });
 
   if (config.audit.bootRecovery) {
     const sessoesAtivas = db.prepare(`SELECT * FROM sessoes_contagem WHERE status = 'ativa'`).all();
