@@ -11,6 +11,7 @@ import {
   atualizarFaturamentoStatus,
   finalizarEmbarque,
   buscarEmbarque,
+  listarCaixasRealocadasParaEmbarque,
 } from '../db/queries/faturamento.js';
 
 export function criarFaturamentoService({ db, enfileirarSync, registrarEvento, broadcast, caixaLabelService, now = () => new Date().toISOString() }) {
@@ -42,10 +43,7 @@ export function criarFaturamentoService({ db, enfileirarSync, registrarEvento, b
 
   function previewMassa(numeroEmbarque) {
     const caixas = listarCaixasElegiveisParaMassa(db, numeroEmbarque);
-    const realocadas = db.prepare(`
-      SELECT DISTINCT numero_caixa FROM sessoes_contagem
-      WHERE embarque_destino = ? AND faturamento_status = 'realocada'
-    `).all(numeroEmbarque);
+    const realocadas = listarCaixasRealocadasParaEmbarque(db, numeroEmbarque);
     const todasCaixas = [...new Set([
       ...caixas.map(c => c.numero_caixa),
       ...realocadas.map(c => c.numero_caixa),
@@ -61,10 +59,7 @@ export function criarFaturamentoService({ db, enfileirarSync, registrarEvento, b
 
   async function reimpressaoMassa(numeroEmbarque, codigoOperador) {
     const caixas = listarCaixasElegiveisParaMassa(db, numeroEmbarque);
-    const realocadas = db.prepare(`
-      SELECT DISTINCT numero_caixa FROM sessoes_contagem
-      WHERE embarque_destino = ? AND faturamento_status = 'realocada'
-    `).all(numeroEmbarque);
+    const realocadas = listarCaixasRealocadasParaEmbarque(db, numeroEmbarque);
     const todasCaixas = [...new Set([
       ...caixas.map(c => c.numero_caixa),
       ...realocadas.map(c => c.numero_caixa),
@@ -112,7 +107,7 @@ export function criarFaturamentoService({ db, enfileirarSync, registrarEvento, b
     broadcast('sessao.reprovada', { sessao_id: sessaoId });
   }
 
-  function sugerirRealocacoes(numeroEmbarqueNovo) {
+  function sugerirRealocacoes() {
     return buscarSessoesReprovadas(db);
   }
 
@@ -129,12 +124,16 @@ export function criarFaturamentoService({ db, enfileirarSync, registrarEvento, b
     return buscarSessoesSegregadasPorEmbarque(db, numeroEmbarque);
   }
 
-  function gerenciarAprovadores() {
-    return {
-      listar: () => listarAprovadores(db),
-      inserir: ({ codigo, nome }) => inserirAprovador(db, { codigo, nome }),
-      desativar: (codigo) => desativarAprovador(db, codigo),
-    };
+  function listarAprovadoresAll() {
+    return listarAprovadores(db);
+  }
+
+  function inserirAprovadorNew({ codigo, nome }) {
+    return inserirAprovador(db, { codigo, nome });
+  }
+
+  function desativarAprovadorFn(codigo) {
+    return desativarAprovador(db, codigo);
   }
 
   function notificarEmbarqueNovo(numeroEmbarqueNovo) {
@@ -156,7 +155,9 @@ export function criarFaturamentoService({ db, enfileirarSync, registrarEvento, b
     sugerirRealocacoes,
     confirmarRealocacao,
     listarSegregadas,
-    gerenciarAprovadores,
+    listarAprovadores: listarAprovadoresAll,
+    inserirAprovador: inserirAprovadorNew,
+    desativarAprovador: desativarAprovadorFn,
     notificarEmbarqueNovo,
   };
 }

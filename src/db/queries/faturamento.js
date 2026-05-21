@@ -86,3 +86,10 @@ export function finalizarEmbarque(db, numeroEmbarque, finalizadaEm) {
 export function buscarEmbarque(db, numeroEmbarque) {
   return db.prepare(`SELECT * FROM embarques WHERE numero_embarque = ?`).get(numeroEmbarque);
 }
+
+export function listarCaixasRealocadasParaEmbarque(db, numeroEmbarque) {
+  return db.prepare(`
+    SELECT DISTINCT numero_caixa FROM sessoes_contagem
+    WHERE embarque_destino = ? AND faturamento_status = 'realocada'
+  `).all(numeroEmbarque);
+}
