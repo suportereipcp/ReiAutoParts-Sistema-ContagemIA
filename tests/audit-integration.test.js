@@ -8,6 +8,7 @@ import { upsertEmbarque, upsertOP, upsertOperador } from '../src/db/queries/espe
 import { criarSessaoService } from '../src/domain/sessao-service.js';
 import { criarContagemService } from '../src/domain/contagem-service.js';
 import { criarPulseAuditService } from '../src/audit/pulse-audit-service.js';
+import { dataDeInicio } from '../src/audit/paths.js';
 
 async function tmpDir() { return fs.mkdtemp(path.join(os.tmpdir(), 'audit-integration-')); }
 
@@ -109,7 +110,8 @@ test('fluxo completo de integracao: iniciar sessao -> enviar pulsos -> fechar se
   assert.equal(uploads[1].pulsos_json[0].n, 4);
 
   // Verificar integridade do arquivo .ndjson
-  const ndjsonPath = path.join(logDir, '2026-05-19', 'cam-1', 'sessao-sessao-1.ndjson');
+  const dataPasta = dataDeInicio(s.iniciada_em);
+  const ndjsonPath = path.join(logDir, dataPasta, 'cam-1', 'sessao-sessao-1.ndjson');
   const conteudo = await fs.readFile(ndjsonPath, 'utf8');
   const linhas = conteudo.split('\n').filter(Boolean);
   

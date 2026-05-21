@@ -56,16 +56,16 @@ export function abrirModalEncerrarSessao({ sessao, caixasExistentes = [], embarq
   let alertBox = null;
   if (embarqueFaturado) {
     alertBox = document.createElement('div');
-    alertBox.className = 'rounded-xl bg-error-container/20 border border-error/30 text-on-error-container p-4 space-y-3';
+    alertBox.className = 'rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 p-4 space-y-3';
     alertBox.innerHTML = `
       <div class="text-sm font-semibold flex items-center gap-2">
-        <svg class="w-5 h-5 flex-shrink-0 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-5 h-5 flex-shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
         </svg>
         <span>Atenção: Este embarque já foi faturado! O encerramento tardio pode gerar divergências fiscais.</span>
       </div>
       <label class="flex items-center gap-3 text-sm font-medium cursor-pointer">
-        <input data-input="confirmar-recusa" type="checkbox" class="w-4 h-4 rounded text-error border-error-container focus:ring-error" />
+        <input data-input="confirmar-recusa" type="checkbox" class="w-4 h-4 rounded text-amber-600 border-amber-400 focus:ring-amber-500" />
         <span>Estou ciente e desejo prosseguir com o encerramento tardio.</span>
       </label>
     `;
