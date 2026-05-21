@@ -57,6 +57,10 @@ export function abrirModalReimpressaoMassa({ embarque, preview = {}, faturamento
       }
 
       confirmar.disabled = true;
+      if (inputEl) {
+        inputEl.disabled = true;
+      }
+      cancelar.disabled = true;
 
       try {
         await faturamentoSvc.reimpressaoMassa(embarque, codigo);
@@ -66,6 +70,10 @@ export function abrirModalReimpressaoMassa({ embarque, preview = {}, faturamento
       } catch (error) {
         toast.erro(error.message || 'Erro ao processar reimpressão em massa.');
         confirmar.disabled = false;
+        if (inputEl) {
+          inputEl.disabled = false;
+        }
+        cancelar.disabled = false;
       }
     },
   });

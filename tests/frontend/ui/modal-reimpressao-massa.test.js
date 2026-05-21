@@ -130,3 +130,61 @@ test('processo de reimpressao com erro reabilita botao', async () => {
   // Modal should still be open
   assert.ok(document.querySelector('[data-modal-overlay]'));
 });
+
+test('desabilita input e botao cancelar durante a reimpressao e reabilita no erro', async () => {
+  let resolvePromise;
+  const promise = new Promise((resolve) => {
+    resolvePromise = resolve;
+  });
+
+  const faturamentoSvc = {
+    reimpressaoMassa: async () => {
+      await promise;
+      throw new Error('Falha na comunicação');
+    }
+  };
+
+  abrirModalReimpressaoMassa({
+    embarque: 'SHP-123',
+    preview: { caixas: 5, etiquetas: 10 },
+    faturamentoSvc,
+    onConcluido: () => {}
+  });
+
+  const inputEl = document.getElementById('mmCodigoOp');
+  inputEl.value = 'OPER-777';
+
+  const confirmBtn = Array.from(document.querySelectorAll('button')).find(
+    b => b.textContent.includes('Confirmar Reimpressão')
+  );
+  const cancelBtn = Array.from(document.querySelectorAll('button')).find(
+    b => b.textContent.includes('Cancelar')
+  );
+
+  // Trigger confirm click
+  confirmBtn.click();
+
+  // Wait a microtask/macrotask to allow async/await in the click handler to run up to the first await
+  await new Promise(resolve => setTimeout(resolve, 10));
+
+  // Check that inputEl and cancelBtn are disabled during submission
+  assert.equal(inputEl.disabled, true);
+  assert.equal(cancelBtn.disabled, true);
+  assert.equal(confirmBtn.disabled, true);
+
+  // Resolve the promise to trigger the error
+  resolvePromise();
+
+  // Wait for the click handler's async operations to complete
+  await new Promise(resolve => setTimeout(resolve, 10));
+
+  // Check that toast error occurred, and inputs/buttons are re-enabled
+  const toastEl = document.querySelector('[data-toast]');
+  assert.ok(toastEl);
+  assert.match(toastEl.textContent, /Falha na comunicação/);
+
+  assert.equal(inputEl.disabled, false);
+  assert.equal(cancelBtn.disabled, false);
+  assert.equal(confirmBtn.disabled, false);
+});
+
