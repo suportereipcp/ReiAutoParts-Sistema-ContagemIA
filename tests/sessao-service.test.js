@@ -40,6 +40,7 @@ function setup(overrides = {}) {
     broadcast: () => {},
     caixaLabelService: overrides.caixaLabelService,
     pulseAuditService: overrides.pulseAuditService,
+    faturamentoService: overrides.faturamentoService,
   });
   return { db, svc, fakeCamera1, fakeCamera2, eventos };
 }
@@ -215,5 +216,53 @@ test('encerrar/cancelar sessao fecha auditoria de pulsos', async () => {
 
   assert.equal(chamadasFechar.length, 2);
   assert.equal(chamadasFechar[1].id, s2.id);
+});
+
+test('abrir recusa sessao em embarque faturado', async () => {
+  const faturamentoService = {
+    embarqueFinalizado: (numero) => numero === 'E1',
+    marcarEncerramentoTardio: () => {},
+  };
+  const { svc } = setup({ faturamentoService });
+  await assert.rejects(
+    svc.abrir({ numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 }),
+    /faturado/i
+  );
+});
+
+test('encerrar tardio chama marcarEncerramentoTardio quando embarque faturado', async () => {
+  // Passo 1: abrir+confirmar sessão sem faturamentoService (sem bloqueio)
+  const { db, fakeCamera1, fakeCamera2 } = setup();
+  const svcInit = criarSessaoService({
+    db,
+    cameraManagers: new Map([[1, fakeCamera1], [2, fakeCamera2]]),
+    registrarEvento: () => {},
+    enfileirarSync: () => {},
+    gerarUUID: (() => { let n = 0; return () => `uuid-${++n}`; })(),
+    broadcast: () => {},
+  });
+  const s = await svcInit.abrir({ numero_embarque: 'E1', codigo_op: 'OP1', codigo_operador: '001', camera_id: 1 });
+  await svcInit.confirmar(s.id, { programaNumero: 2, programaNome: 'PECA-X' });
+
+  // Passo 2: criar service com faturamentoService que retorna embarqueFinalizado=true
+  const tardios = [];
+  const svcComFat = criarSessaoService({
+    db,
+    cameraManagers: new Map([[1, fakeCamera1], [2, fakeCamera2]]),
+    registrarEvento: () => {},
+    enfileirarSync: () => {},
+    gerarUUID: () => 'uuid-2',
+    broadcast: () => {},
+    faturamentoService: {
+      embarqueFinalizado: () => true,
+      marcarEncerramentoTardio: (id) => tardios.push(id),
+    },
+  });
+
+  // Passo 3: encerrar a sessão
+  await svcComFat.encerrar(s.id, { numero_caixa: 'CX-TARDIO' });
+
+  // Passo 4: verificar que marcarEncerramentoTardio foi chamado com o id correto
+  assert.deepEqual(tardios, [s.id]);
 });
 

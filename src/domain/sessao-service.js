@@ -13,7 +13,7 @@ import { buscarEmbarque, buscarOP, buscarOperador } from '../db/queries/espelhos
 
 const PREFIXO_CAIXA_SEM_NUMERO = '__SEM_NUMERO__';
 
-export function criarSessaoService({ db, cameraManagers, registrarEvento, enfileirarSync, gerarUUID, broadcast, caixaLabelService, pulseAuditService }) {
+export function criarSessaoService({ db, cameraManagers, registrarEvento, enfileirarSync, gerarUUID, broadcast, caixaLabelService, pulseAuditService, faturamentoService = null }) {
   function _ehCaixaSemNumero(numeroCaixa) {
     return String(numeroCaixa ?? '').startsWith(PREFIXO_CAIXA_SEM_NUMERO);
   }
@@ -62,6 +62,9 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
     const e = buscarEmbarque(db, numero_embarque);
     if (!e) throw new Error(`Embarque ${numero_embarque} não encontrado. Aguarde sincronização com ERP.`);
     if (e.status === 'fechado') throw new Error(`Embarque ${numero_embarque} está fechado.`);
+    if (faturamentoService?.embarqueFinalizado(numero_embarque)) {
+      throw Object.assign(new Error(`Embarque ${numero_embarque} já faturado. Não é possível abrir nova sessão.`), { statusCode: 409 });
+    }
     const op = buscarOP(db, codigo_op);
     if (!op) throw new Error(`OP ${codigo_op} não encontrada.`);
     const op2 = buscarOperador(db, codigo_operador);
@@ -155,6 +158,9 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
     }
 
     encerrarSessao(db, sessaoId, caixaId, encerradaEm);
+    if (faturamentoService?.embarqueFinalizado(s.numero_embarque)) {
+      faturamentoService.marcarEncerramentoTardio(sessaoId);
+    }
     const final = buscarPorId(db, sessaoId);
     enfileirarSync('sessoes_contagem', final);
     registrarEvento({ nivel: 'SUCCESS', categoria: 'SESSAO', mensagem: `Sessão ${sessaoId} encerrada (caixa ${_rotuloCaixa(caixaId)}, total ${final.quantidade_total})`, codigo_operador: s.codigo_operador });
