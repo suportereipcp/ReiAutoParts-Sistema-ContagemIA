@@ -18,6 +18,7 @@ import { renderEmitirRelatorios } from './pages/emitir-relatorios.js';
 import { renderDetalhesCargaExpedida } from './pages/detalhes-carga-expedida.js';
 import { renderRelatoriosCargasAbertas } from './pages/relatorios-cargas-abertas.js';
 import { renderEventos } from './pages/eventos.js';
+import { renderGestaoAprovadores } from './pages/gestao-aprovadores.js';
 
 const api = criarApi({ base: location.origin });
 const catalogos = criarCatalogos({ api });
@@ -49,6 +50,7 @@ function renderShell(ativo) {
       { id: 'cargas', label: 'Cargas', icone: 'package_2', href: '#/cargas' },
       { id: 'relatorios', label: 'Relatórios', icone: 'print', href: '#/relatorios' },
       { id: 'eventos', label: 'Eventos', icone: 'history', href: '#/eventos' },
+      { id: 'aprovadores', label: 'Aprovadores', icone: 'shield_person', href: '#/aprovadores' },
     ],
     ativo,
   });
@@ -64,7 +66,7 @@ function renderShell(ativo) {
 }
 
 function caminhoPadrao(id) {
-  return { inicial: 'Inicial', cargas: 'Cargas', relatorios: 'Relatórios', eventos: 'Eventos' }[id] ?? 'Rei AutoParts';
+  return { inicial: 'Inicial', cargas: 'Cargas', relatorios: 'Relatórios', eventos: 'Eventos', aprovadores: 'Aprovadores' }[id] ?? 'Rei AutoParts';
 }
 
 const ctx = { api, catalogos, sessoesSvc, etiquetasSvc, sync, sessoes };
@@ -82,6 +84,7 @@ criarRouter({
     '/relatorios': async () => { renderShell('relatorios'); return renderEmitirRelatorios(ctx); },
     '/relatorios/abertas': async () => { renderShell('relatorios'); return renderRelatoriosCargasAbertas(ctx); },
     '/eventos': async () => { renderShell('eventos'); return renderEventos(ctx); },
+    '/aprovadores': async () => { renderShell('aprovadores'); return renderGestaoAprovadores(ctx); },
   },
   render: (html) => {
     const root = document.getElementById('root');
