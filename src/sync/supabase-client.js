@@ -27,6 +27,11 @@ export async function upsertEtiquetaCaixaParte(sb, payload) {
   if (error) throw error;
 }
 
+export async function atualizarStatusEmbarque(sb, { numero_embarque, status }) {
+  const { error } = await sb.from('embarques').update({ status }).eq('numero_embarque', numero_embarque);
+  if (error) throw error;
+}
+
 export async function buscarAlteracoes(sb, tabela, cursor, limite = 500) {
   let q = sb.from(tabela).select('*').order('atualizado_em', { ascending: true }).limit(limite);
   if (cursor) q = q.gt('atualizado_em', cursor);
