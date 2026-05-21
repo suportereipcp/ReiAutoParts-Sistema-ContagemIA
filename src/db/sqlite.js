@@ -16,9 +16,11 @@ export function openDatabase(filePath) {
 function runMigrations(db) {
   const migrationsDir = path.join(__dirname, 'migrations');
   const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
-  for (const file of files) {
-    const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+  const applied = db.pragma('user_version', { simple: true });
+  for (let i = applied; i < files.length; i++) {
+    const sql = fs.readFileSync(path.join(migrationsDir, files[i]), 'utf8');
     db.exec(sql);
+    db.pragma(`user_version = ${i + 1}`);
   }
 }
 
