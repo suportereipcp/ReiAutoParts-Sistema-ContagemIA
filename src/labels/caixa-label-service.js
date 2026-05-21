@@ -33,6 +33,10 @@ export function criarCaixaLabelService({
 
     if (sessoes.length === 0) throw new Error('Caixa sem historico encerrado para etiqueta.');
 
+    const temSegregada = sessoes.some(s =>
+      ['pendente_aprovacao', 'reprovada'].includes(s.faturamento_status)
+    );
+
     const embarque = db.prepare(`SELECT numero_nota_fiscal FROM embarques WHERE numero_embarque = ?`).get(numero_embarque);
 
     const grupos = new Map();
@@ -58,7 +62,7 @@ export function criarCaixaLabelService({
       numero_embarque,
       numero_caixa,
       numero_caixa_exibicao: rotuloCaixa(numero_caixa),
-      numero_nota_fiscal: embarque?.numero_nota_fiscal ?? null,
+      numero_nota_fiscal: temSegregada ? null : (embarque?.numero_nota_fiscal ?? null),
       gerada_em: now(),
       motivo,
       operador_emissao: codigo_operador,

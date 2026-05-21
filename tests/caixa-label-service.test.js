@@ -78,3 +78,61 @@ test('falha quando caixa nao tem sessoes encerradas', () => {
   });
   assert.throws(() => service.montarDocumento({ numero_embarque: 'E1', numero_caixa: 'INEXISTENTE', motivo: 'reimpressao', codigo_operador: 'A' }), /sem historico/);
 });
+
+test('montarDocumento reten NF quando caixa tem sessao pendente_aprovacao', () => {
+  const db = new Database(':memory:');
+  db.pragma('foreign_keys = ON');
+  for (const file of ['001_init.sql', '002_reabrir_caixas.sql', '003_etiquetas_caixa.sql', '005_faturamento.sql']) {
+    db.exec(fs.readFileSync(path.join('src', 'db', 'migrations', file), 'utf8'));
+  }
+  db.prepare(`INSERT INTO embarques (numero_embarque, status, numero_nota_fiscal) VALUES ('E1', 'faturado', '12345')`).run();
+  db.prepare(`INSERT INTO ordens_producao (codigo_op, item_codigo, item_descricao) VALUES ('OP1', 'IT1', 'Item 1')`).run();
+  db.prepare(`INSERT INTO operadores (codigo, nome, ativo) VALUES ('A', 'Ana', 1)`).run();
+  db.prepare(`
+    INSERT INTO sessoes_contagem
+      (id, numero_embarque, codigo_op, codigo_operador, camera_id, numero_caixa, quantidade_total,
+       iniciada_em, encerrada_em, status, faturamento_status)
+    VALUES ('s1', 'E1', 'OP1', 'A', 1, 'CX1', 5,
+      '2026-05-01T08:00:00.000Z', '2026-05-01T09:00:00.000Z', 'encerrada', 'pendente_aprovacao')
+  `).run();
+
+  const service = criarCaixaLabelService({
+    db,
+    gerarUUID: () => 'id',
+    renderizar: () => [{ parte_numero: 1, partes_total: 1, payload_zpl: '^XA^XZ' }],
+    printQueue: { processarPendentes: async () => {} },
+    labelsConfig: { widthDots: 1181, heightDots: 709 },
+  });
+
+  const doc = service.montarDocumento({ numero_embarque: 'E1', numero_caixa: 'CX1', motivo: 'reimpressao', codigo_operador: 'A' });
+  assert.equal(doc.numero_nota_fiscal, null);
+});
+
+test('montarDocumento inclui NF quando todas sessoes sao aprovada', () => {
+  const db = new Database(':memory:');
+  db.pragma('foreign_keys = ON');
+  for (const file of ['001_init.sql', '002_reabrir_caixas.sql', '003_etiquetas_caixa.sql', '005_faturamento.sql']) {
+    db.exec(fs.readFileSync(path.join('src', 'db', 'migrations', file), 'utf8'));
+  }
+  db.prepare(`INSERT INTO embarques (numero_embarque, status, numero_nota_fiscal) VALUES ('E1', 'faturado', '12345')`).run();
+  db.prepare(`INSERT INTO ordens_producao (codigo_op, item_codigo, item_descricao) VALUES ('OP1', 'IT1', 'Item 1')`).run();
+  db.prepare(`INSERT INTO operadores (codigo, nome, ativo) VALUES ('A', 'Ana', 1)`).run();
+  db.prepare(`
+    INSERT INTO sessoes_contagem
+      (id, numero_embarque, codigo_op, codigo_operador, camera_id, numero_caixa, quantidade_total,
+       iniciada_em, encerrada_em, status, faturamento_status)
+    VALUES ('s1', 'E1', 'OP1', 'A', 1, 'CX1', 5,
+      '2026-05-01T08:00:00.000Z', '2026-05-01T09:00:00.000Z', 'encerrada', 'aprovada')
+  `).run();
+
+  const service = criarCaixaLabelService({
+    db,
+    gerarUUID: () => 'id',
+    renderizar: () => [{ parte_numero: 1, partes_total: 1, payload_zpl: '^XA^XZ' }],
+    printQueue: { processarPendentes: async () => {} },
+    labelsConfig: { widthDots: 1181, heightDots: 709 },
+  });
+
+  const doc = service.montarDocumento({ numero_embarque: 'E1', numero_caixa: 'CX1', motivo: 'reimpressao', codigo_operador: 'A' });
+  assert.equal(doc.numero_nota_fiscal, '12345');
+});
