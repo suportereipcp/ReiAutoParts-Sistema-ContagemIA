@@ -2,6 +2,7 @@ import {
   upsertEmbarque, upsertOP, upsertOperador,
   lerCursor, salvarCursor,
 } from '../db/queries/espelhos.js';
+import { buscarEmbarque } from '../db/queries/faturamento.js';
 
 const TABELAS = [
   { nome: 'embarques', upsert: upsertEmbarque, estrategia: 'snapshot' },
@@ -23,7 +24,7 @@ export function criarPoller({ db, buscarAlteracoes, logger, faturamentoService }
 
         if (nome === 'embarques' && faturamentoService) {
           for (const r of registros) {
-            const local = db.prepare(`SELECT numero_nota_fiscal, finalizada_em FROM embarques WHERE numero_embarque = ?`).get(r.numero_embarque);
+            const local = buscarEmbarque(db, r.numero_embarque);
             const nfNova = r.numero_nota_fiscal && (!local || !local.numero_nota_fiscal);
             const embarqueNovo = !local;
             if (nfNova) faturamentoService.aoReceberNF(r.numero_embarque);
