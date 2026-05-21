@@ -14,6 +14,7 @@ import {
   buscarSessoesReprovadas,
   atualizarFaturamentoStatus,
   finalizarEmbarque,
+  buscarEmbarque,
 } from '../src/db/queries/faturamento.js';
 
 function criarDb() {
@@ -109,4 +110,17 @@ test('finalizarEmbarque seta finalizada_em e status', () => {
   const e = db.prepare(`SELECT * FROM embarques WHERE numero_embarque = 'E1'`).get();
   assert.equal(e.finalizada_em, '2026-05-01T10:00:00.000Z');
   assert.equal(e.status, 'faturado');
+});
+
+test('buscarEmbarque retorna embarque por numero', () => {
+  const db = criarDb();
+  const e = buscarEmbarque(db, 'E1');
+  assert.equal(e.numero_embarque, 'E1');
+  assert.equal(e.status, 'aberto');
+});
+
+test('buscarEmbarque retorna undefined para embarque inexistente', () => {
+  const db = criarDb();
+  const e = buscarEmbarque(db, 'INEXISTENTE');
+  assert.equal(e, undefined);
 });
