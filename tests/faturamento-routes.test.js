@@ -12,11 +12,9 @@ function criarServico(overrides = {}) {
     reprovarSessao: (id, aprov) => {},
     sugerirRealocacoes: (n) => [],
     confirmarRealocacao: (id, dest) => {},
-    gerenciarAprovadores: () => ({
-      listar: () => [{ codigo: 'A1', nome: 'Ana', ativo: 1 }],
-      inserir: () => {},
-      desativar: () => {},
-    }),
+    listarAprovadores: () => [{ codigo: 'A1', nome: 'Ana', ativo: 1 }],
+    inserirAprovador: () => {},
+    desativarAprovador: () => {},
     ...overrides,
   };
 }

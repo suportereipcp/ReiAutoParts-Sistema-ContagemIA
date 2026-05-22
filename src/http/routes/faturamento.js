@@ -38,19 +38,17 @@ export function rotasFaturamento(fastify, { faturamentoService }) {
     return { ok: true };
   });
 
-  const aprovMgr = faturamentoService.gerenciarAprovadores();
-
-  fastify.get('/faturamento/aprovadores', async () => aprovMgr.listar());
+  fastify.get('/faturamento/aprovadores', async () => faturamentoService.listarAprovadores());
 
   fastify.post('/faturamento/aprovadores', async (req, reply) => {
     const { codigo, nome } = req.body ?? {};
     if (!codigo || !nome) return reply.code(400).send({ error: 'codigo e nome obrigatórios' });
-    aprovMgr.inserir({ codigo, nome });
+    faturamentoService.inserirAprovador({ codigo, nome });
     return reply.code(201).send({ ok: true });
   });
 
   fastify.delete('/faturamento/aprovadores/:codigo', async (req) => {
-    aprovMgr.desativar(req.params.codigo);
+    faturamentoService.desativarAprovador(req.params.codigo);
     return { ok: true };
   });
 }
