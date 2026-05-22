@@ -12,7 +12,7 @@ test('loadConfig lê variáveis obrigatórias', () => {
   assert.equal(cfg.supabase.url, 'https://x');
   assert.equal(cfg.cameras[0].ip, '192.168.0.10');
   assert.equal(cfg.cameras[0].porta, 8500);
-  assert.equal(cfg.camera.programScanMax, 32);
+  assert.equal(cfg.camera.programScanMax, 128);
   assert.equal(cfg.camera.programScanDelayMs, 200);
 });
 

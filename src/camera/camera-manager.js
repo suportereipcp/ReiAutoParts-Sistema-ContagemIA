@@ -125,6 +125,10 @@ export class CameraManager extends EventEmitter {
       throw erroScan;
     }
 
+    if (programasEncontrados.size === 0) {
+      throw new Error(`camera ${this.cameraId}: descoberta retornou 0 programas (câmera possivelmente não pronta); cache preservado`);
+    }
+
     this.programas = programasEncontrados;
     return this._listarProgramasMemoria();
   }

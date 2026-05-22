@@ -225,6 +225,25 @@ test('atualizarProgramas preserva memoria anterior quando refresh forcado falha 
   assert.deepEqual(await m.listarProgramas(), [{ numero: 9, nome: 'CACHE-VALIDO' }]);
 });
 
+test('atualizarProgramas nao sobrescreve cache quando descoberta retorna 0 programas', async () => {
+  const client = new FakeClient();
+  const cache = new FakeProgramCache([{ numero: 0, nome: 'CACHE-BOM' }]);
+  const m = new CameraManager({ cameraId: 1, client, maxProgramas: 3, programCache: cache });
+  await m.carregarCacheProgramas();
+  await m.conectar();
+
+  client.enviaComando = async (cmd) => {
+    client.comandos.push(cmd);
+    if (cmd === 'PR') return { tipo: 'resposta', comando: 'PR', valores: ['0'] };
+    if (cmd === 'PNR') return { tipo: 'resposta', comando: 'PNR', valores: [''] };
+    return { tipo: 'resposta', comando: cmd.split(',')[0], valores: [] };
+  };
+
+  await assert.rejects(() => m.atualizarProgramas(), /0 programas/);
+  assert.deepEqual(cache.salvarChamadas, []);
+  assert.deepEqual(await m.listarProgramas(), [{ numero: 0, nome: 'CACHE-BOM' }]);
+});
+
 test('atualizarProgramas bloqueia camera ativa', async () => {
   const client = new FakeClient();
   const m = new CameraManager({ cameraId: 2, client });

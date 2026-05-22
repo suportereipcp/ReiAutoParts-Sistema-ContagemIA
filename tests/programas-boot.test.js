@@ -51,10 +51,38 @@ test('atualizarCacheProgramasAoConectar mantem cache em disco quando refresh fal
     manager,
     existeSessaoAtiva: () => false,
     logger: { warn: (payload, msg) => avisos.push({ payload, msg }) },
+    tentativas: 3,
+    sleep: async () => {},
   });
 
-  assert.equal(avisos.length, 1);
+  assert.equal(avisos.length, 3);
   assert.match(avisos[0].msg, /falha ao atualizar cache de programas/i);
+});
+
+test('atualizarCacheProgramasAoConectar tenta novamente apos descoberta vazia e sucede', async () => {
+  const chamadas = [];
+  const manager = {
+    cameraId: 1,
+    estado: 'suspensa',
+    async carregarCacheProgramas() { chamadas.push('carregar-cache'); },
+    async atualizarProgramas() {
+      chamadas.push('atualizar-programas');
+      if (chamadas.filter((c) => c === 'atualizar-programas').length === 1) {
+        throw new Error('descoberta retornou 0 programas');
+      }
+      return [{ numero: 1, nome: 'A' }];
+    },
+  };
+
+  await atualizarCacheProgramasAoConectar({
+    manager,
+    existeSessaoAtiva: () => false,
+    logger: { warn() {} },
+    tentativas: 3,
+    sleep: async () => {},
+  });
+
+  assert.deepEqual(chamadas, ['carregar-cache', 'atualizar-programas', 'atualizar-programas']);
 });
 
 test('atualizarCacheProgramasAoConectar nao varre camera desconectada', async () => {
