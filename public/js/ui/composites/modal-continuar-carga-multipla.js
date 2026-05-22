@@ -28,8 +28,13 @@ export function abrirContinuarCargaMultipla({ sessoes = [], onContinuar } = {}) 
 
   const select = document.createElement('select');
   select.dataset.input = 'embarque_selecionado';
-  select.className = 'w-full appearance-none rounded-2xl border-none bg-surface-container-high px-4 py-4 pr-12 text-sm text-on-surface outline-none transition focus:ring-2 focus:ring-primary/20';
-  select.innerHTML = '<option value="" disabled selected>Selecione a carga ativa...</option>';
+  select.className = 'w-full appearance-none rounded-2xl border-none bg-surface-container-high px-4 py-4 text-sm text-on-surface outline-none transition focus:ring-2 focus:ring-primary/20';
+  const optionVazia = document.createElement('option');
+  optionVazia.value = '';
+  optionVazia.disabled = true;
+  optionVazia.selected = true;
+  optionVazia.textContent = 'Selecione a carga ativa...';
+  select.appendChild(optionVazia);
   for (const sessao of sessoes) {
     const option = document.createElement('option');
     option.value = sessao.id;
@@ -37,28 +42,22 @@ export function abrirContinuarCargaMultipla({ sessoes = [], onContinuar } = {}) 
     select.appendChild(option);
   }
 
-  const icon = document.createElement('span');
-  icon.className = 'material-symbols-outlined pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-outline';
-  icon.textContent = 'expand_more';
   selectWrap.appendChild(select);
-  selectWrap.appendChild(icon);
   selectGroup.appendChild(selectWrap);
 
   const opGroup = criarCampo({
     label: 'Ordem de Produção',
     inputAttrs: {
-      placeholder: 'Ex: OP-8829-X',
+      placeholder: '',
       'data-input': 'codigo_op',
     },
   });
   const operadorGroup = criarCampo({
     label: 'Código do Operador',
     inputAttrs: {
-      type: 'password',
-      placeholder: '••••••••',
+      placeholder: '',
       'data-input': 'codigo_operador',
     },
-    adornment: 'visibility',
   });
 
   const campos = document.createElement('div');
@@ -152,53 +151,62 @@ function renderVisualizacao(coluna, sessao) {
   const subtitulo = sessao
     ? `Câmera ${sessao.camera_id ?? '—'} · Embarque ${sessao.numero_embarque ?? '—'}`
     : 'Selecione um embarque para visualizar o item.';
-  const ultimaInspecao = sessao ? rotuloHora(sessao.iniciada_em) : '—';
   const totalAtual = sessao?.quantidade_total ?? 0;
 
-  coluna.innerHTML = `
-    <div class="mb-7 flex items-center justify-between">
-      <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-dim">Visualização da Peça</span>
-      <div class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-secondary">
-        <span class="h-2 w-2 rounded-full bg-secondary"></span>
-        Sistema Ativo
-      </div>
-    </div>
-    <div class="flex flex-1 flex-col">
-      <div class="relative flex-1 overflow-hidden rounded-[24px] border border-outline-variant/10 bg-surface-container-lowest">
-        <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface-container-high via-surface-container-low to-surface-container">
-          <span class="material-symbols-outlined text-[7rem] text-outline-variant/45">precision_manufacturing</span>
-        </div>
-        <button type="button" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-lowest/90 text-primary shadow">
-          <span class="material-symbols-outlined">zoom_in</span>
-        </button>
-        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/95 to-transparent p-6">
-          <h3 class="font-headline text-2xl font-bold tracking-tight text-on-surface">${escapar(titulo)}</h3>
-          <p class="mt-1 text-xs font-light text-on-surface-variant">${escapar(subtitulo)}</p>
-        </div>
-      </div>
-      <div class="mt-6 grid grid-cols-2 gap-4">
-        <div class="rounded-2xl bg-surface-container p-4">
-          <span class="block text-[10px] font-bold uppercase tracking-[0.18em] text-outline">Última Inspeção</span>
-          <span class="mt-1 block text-sm font-medium text-on-surface">${escapar(ultimaInspecao)}</span>
-        </div>
-        <div class="rounded-2xl bg-surface-container p-4">
-          <span class="block text-[10px] font-bold uppercase tracking-[0.18em] text-outline">Contagem Atual</span>
-          <span class="mt-1 block text-sm font-medium text-on-surface">${escapar(`${totalAtual} peças`)}</span>
-        </div>
-      </div>
-    </div>
-    <div data-status-qualidade="true" class="mt-8 border-t border-outline-variant/20 pt-6">
-      <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container">
-          <span class="material-symbols-outlined text-on-secondary-container">verified_user</span>
-        </div>
-        <div>
-          <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-on-surface">Status da Qualidade</p>
-          <p class="text-xs text-on-surface-variant">Lote aprovado para transbordo</p>
-        </div>
-      </div>
-    </div>
-  `;
+  coluna.replaceChildren();
+
+  const wrap = document.createElement('div');
+  wrap.className = 'flex flex-1 flex-col';
+
+  const preview = document.createElement('div');
+  preview.className = 'relative flex-1 overflow-hidden rounded-[24px] border border-outline-variant/10 bg-surface-container-lowest';
+
+  const placeholder = document.createElement('div');
+  placeholder.className = 'absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface-container-high via-surface-container-low to-surface-container';
+  const phIcon = document.createElement('span');
+  phIcon.className = 'material-symbols-outlined text-[7rem] text-outline-variant/45';
+  phIcon.textContent = 'precision_manufacturing';
+  placeholder.appendChild(phIcon);
+  preview.appendChild(placeholder);
+
+  // Imagem mestre do programa (best-effort: cai no placeholder se nao existir)
+  if (sessao?.programa_nome && sessao?.camera_id != null) {
+    const img = document.createElement('img');
+    img.className = 'absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-200';
+    img.alt = '';
+    img.src = `/programas-imagens/camera-${encodeURIComponent(String(sessao.camera_id))}/${encodeURIComponent(sessao.programa_nome)}.bmp`;
+    img.addEventListener('load', () => { img.style.opacity = '1'; });
+    img.addEventListener('error', () => { img.remove(); });
+    preview.appendChild(img);
+  }
+
+  const overlayInfo = document.createElement('div');
+  overlayInfo.className = 'absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-6 pb-6 pt-14';
+  const h3 = document.createElement('h3');
+  h3.className = 'font-headline text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.65)]';
+  h3.textContent = titulo;
+  const pSub = document.createElement('p');
+  pSub.className = 'mt-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white/85 drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)]';
+  pSub.textContent = subtitulo;
+  overlayInfo.appendChild(h3);
+  overlayInfo.appendChild(pSub);
+  preview.appendChild(overlayInfo);
+
+  wrap.appendChild(preview);
+
+  const contagemCard = document.createElement('div');
+  contagemCard.className = 'mt-6 rounded-2xl bg-surface-container p-4';
+  const cLabel = document.createElement('span');
+  cLabel.className = 'block text-[10px] font-bold uppercase tracking-[0.18em] text-outline';
+  cLabel.textContent = 'Contagem Atual';
+  const cVal = document.createElement('span');
+  cVal.className = 'mt-1 block text-sm font-medium text-on-surface';
+  cVal.textContent = `${totalAtual} peças`;
+  contagemCard.appendChild(cLabel);
+  contagemCard.appendChild(cVal);
+  wrap.appendChild(contagemCard);
+
+  coluna.appendChild(wrap);
 }
 
 function criarCampo({ label, inputAttrs = {}, adornment = '' }) {
@@ -230,17 +238,4 @@ function criarCampo({ label, inputAttrs = {}, adornment = '' }) {
   bloco.appendChild(titulo);
   bloco.appendChild(invólucro);
   return bloco;
-}
-
-function rotuloHora(iso) {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  } catch {
-    return '—';
-  }
-}
-
-function escapar(valor) {
-  return String(valor ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }

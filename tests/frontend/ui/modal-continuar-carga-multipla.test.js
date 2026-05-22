@@ -31,7 +31,6 @@ test('ao mudar select, painel de visualização atualiza contexto', () => {
   select.value = 'S2';
   select.dispatchEvent(new Event('change'));
   const painel = document.querySelector('[data-visualizacao]');
-  assert.ok(document.querySelector('[data-status-qualidade]'));
   assert.match(painel.textContent, /Acabamento Sul/);
   assert.match(painel.textContent, /EB-095/);
 });
