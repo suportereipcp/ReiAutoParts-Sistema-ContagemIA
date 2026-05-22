@@ -15,8 +15,10 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
   let opAtual = null;
   let sessaoAberta = null;
 
+  const SHELL_COM_RESUMO = 'grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_22rem] gap-6 items-start';
+  const SHELL_SEM_RESUMO = 'grid grid-cols-1 gap-6 items-start';
   const shell = document.createElement('section');
-  shell.className = 'grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_20rem] gap-6 items-start';
+  shell.className = SHELL_COM_RESUMO;
   el.appendChild(shell);
 
   const principal = document.createElement('div');
@@ -143,6 +145,122 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     lateral.appendChild(titulo);
     lateral.appendChild(preview);
     lateral.appendChild(meta);
+  }
+
+  function esconderResumoSessao() {
+    lateral.replaceChildren();
+    lateral.classList.add('hidden');
+    shell.className = SHELL_SEM_RESUMO;
+  }
+
+  // Foto do operador — origem futura: Supabase Storage.
+  // Contrato: NUNCA lançar e NUNCA bloquear. Retorna a URL pública da foto, ou
+  // null quando não há fonte. Se um dia precisar de signed URL, faça com
+  // try/catch retornando null em qualquer falha (a foto é best-effort).
+  function resolverUrlFotoOperador(_codigoOperador) {
+    // TODO: integrar com Supabase Storage (bucket de fotos de operadores).
+    return null;
+  }
+
+  // Aplica a foto do operador de forma best-effort: se o Supabase estiver
+  // indisponível (offline/erro), a imagem simplesmente não carrega e o
+  // placeholder permanece — a operação de contagem nunca é impedida por isso.
+  function aplicarFotoOperador(container, codigoOperador) {
+    try {
+      // Sem conexão com o Supabase -> nem tenta carregar (edge-first).
+      if (ctx.sync?.atual?.()?.estado === 'OFFLINE') return;
+
+      let url = null;
+      try { url = resolverUrlFotoOperador(codigoOperador); } catch { url = null; }
+      if (!url) return;
+
+      const img = document.createElement('img');
+      img.className = 'h-full w-full object-cover';
+      img.alt = '';
+      img.addEventListener('load', () => { container.replaceChildren(img); });
+      img.addEventListener('error', () => { /* mantém placeholder, sem quebrar a operação */ });
+      img.src = url;
+    } catch {
+      /* best-effort: qualquer falha aqui jamais impede a contagem */
+    }
+  }
+
+  function montarCampoResumo(rotulo, valor) {
+    const wrap = document.createElement('div');
+    const r = document.createElement('p');
+    r.className = 'text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-0.5';
+    r.textContent = rotulo;
+    const v = document.createElement('p');
+    v.className = 'text-base font-bold text-on-surface break-words';
+    const txt = valor == null ? '' : String(valor);
+    v.textContent = txt === '' ? '—' : txt;
+    wrap.appendChild(r);
+    wrap.appendChild(v);
+    return wrap;
+  }
+
+  function renderResumoSessao(programa, onConfirmar) {
+    lateral.replaceChildren();
+
+    const label = document.createElement('p');
+    label.className = 'text-[10px] font-bold uppercase tracking-[0.2em] text-outline';
+    label.textContent = 'Resumo da sessão';
+
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'relative aspect-square w-full rounded-2xl overflow-hidden bg-surface-container-lowest border border-outline-variant/20 flex items-center justify-center';
+    const ph = document.createElement('span');
+    ph.className = 'material-symbols-outlined text-5xl text-primary/50';
+    ph.textContent = 'precision_manufacturing';
+    imgWrap.appendChild(ph);
+    const img = document.createElement('img');
+    img.className = 'absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-200';
+    img.alt = '';
+    img.src = `/programas-imagens/camera-${encodeURIComponent(String(sessaoAberta.camera_id))}/${encodeURIComponent(programa.nome)}.bmp`;
+    img.addEventListener('load', () => { img.style.opacity = '1'; });
+    img.addEventListener('error', () => { img.remove(); });
+    imgWrap.appendChild(img);
+
+    const nomePrograma = document.createElement('p');
+    nomePrograma.className = 'text-sm font-semibold text-on-surface text-center';
+    nomePrograma.textContent = `${String(programa.numero).padStart(3, '0')} · ${programa.nome}`;
+
+    const campos = document.createElement('div');
+    campos.className = 'space-y-3';
+    campos.appendChild(montarCampoResumo('Item', opAtual?.item_codigo));
+    campos.appendChild(montarCampoResumo('Ordem de produção', form.codigo_op));
+    campos.appendChild(montarCampoResumo('Embarque', form.numero_embarque));
+    campos.appendChild(montarCampoResumo('Câmera', sessaoAberta.camera_id));
+
+    const operRow = document.createElement('div');
+    operRow.className = 'flex items-end justify-between gap-3';
+    operRow.appendChild(montarCampoResumo('Operador', form.codigo_operador));
+    // TODO: imagem do operador via Supabase Storage — placeholder reservado por enquanto
+    const operFoto = document.createElement('div');
+    operFoto.dataset.operadorFotoPlaceholder = 'true';
+    operFoto.className = 'shrink-0 h-16 w-16 rounded-lg overflow-hidden border border-dashed border-outline-variant/50 bg-surface-container-low flex flex-col items-center justify-center text-center gap-0.5';
+    const operIcon = document.createElement('span');
+    operIcon.className = 'material-symbols-outlined text-xl text-outline';
+    operIcon.textContent = 'account_circle';
+    const operTxt = document.createElement('span');
+    operTxt.className = 'text-[8px] font-semibold uppercase tracking-wide text-outline leading-none';
+    operTxt.textContent = 'Em breve';
+    operFoto.appendChild(operIcon);
+    operFoto.appendChild(operTxt);
+    operRow.appendChild(operFoto);
+    aplicarFotoOperador(operFoto, form.codigo_operador);
+
+    const confirmar = Button({ texto: 'Confirmar e iniciar contagem', variante: 'primary', onClick: onConfirmar, className: 'w-full' });
+    confirmar.dataset.confirmarPrograma = 'true';
+
+    lateral.appendChild(label);
+    lateral.appendChild(imgWrap);
+    lateral.appendChild(nomePrograma);
+    lateral.appendChild(campos);
+    lateral.appendChild(operRow);
+    lateral.appendChild(confirmar);
+
+    lateral.classList.remove('hidden');
+    shell.className = SHELL_COM_RESUMO;
   }
 
   async function carregarOp(codigo) {
@@ -304,15 +422,6 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     }
     listaWrap.addEventListener('scroll', atualizarFades, { passive: true });
 
-    const resumo = document.createElement('div');
-    resumo.className = 'rounded-2xl bg-surface-container-low p-5 text-sm text-on-surface grid grid-cols-2 gap-4';
-    resumo.innerHTML = `
-      <div><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-1">Embarque</p><p>${form.numero_embarque}</p></div>
-      <div><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-1">Camera</p><p>${sessaoAberta.camera_id}</p></div>
-      <div><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-1">OP</p><p>${form.codigo_op}</p></div>
-      <div><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-1">Operador</p><p>${form.codigo_operador}</p></div>
-    `;
-
     const actions = document.createElement('div');
     actions.className = 'flex flex-wrap gap-3 pt-2';
     const cancelar = Button({
@@ -332,11 +441,37 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     actions.appendChild(cancelar);
 
     principal.appendChild(cabecalho);
-    principal.appendChild(resumo);
     principal.appendChild(busca);
     principal.appendChild(listaHeader);
     principal.appendChild(listaShell);
     principal.appendChild(actions);
+
+    esconderResumoSessao();
+
+    let programaSelecionado = null;
+    let btnSelecionado = null;
+    const REALCE = ['ring-2', 'ring-primary/40', 'bg-surface-container-lowest'];
+
+    async function confirmarSelecionado() {
+      if (!programaSelecionado) return;
+      try {
+        await ctx.sessoesSvc.confirmar(sessaoAberta.id, {
+          programaNumero: programaSelecionado.numero,
+          programaNome: programaSelecionado.nome,
+        });
+        window.location.hash = destinoCarga(form.numero_embarque);
+      } catch (e) {
+        toast.erro(e.message);
+      }
+    }
+
+    function selecionarPrograma(programa, btn) {
+      programaSelecionado = programa;
+      if (btnSelecionado && btnSelecionado !== btn) btnSelecionado.classList.remove(...REALCE);
+      btnSelecionado = btn;
+      btn.classList.add(...REALCE);
+      renderResumoSessao(programa, confirmarSelecionado);
+    }
 
     async function carregarProgramas(q = '') {
       lista.replaceChildren();
@@ -371,9 +506,28 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
           btn.dataset.programaNumero = String(programa.numero);
           btn.className = 'group w-full text-left flex items-center gap-4 px-4 py-3.5 rounded-xl bg-surface-container-low/70 border border-transparent hover:border-outline-variant/40 hover:bg-surface-container-lowest transition-all duration-200';
 
+          const numStr = String(programa.numero).padStart(3, '0');
           const badge = document.createElement('span');
-          badge.className = 'shrink-0 inline-flex items-center justify-center min-w-[3.25rem] h-9 px-2 rounded-lg bg-primary-container text-primary text-sm font-headline font-bold tabular-nums';
-          badge.textContent = String(programa.numero).padStart(3, '0');
+          badge.className = 'relative shrink-0 h-14 w-14 rounded-lg overflow-hidden bg-primary-container flex items-center justify-center';
+          const badgeNum = document.createElement('span');
+          badgeNum.className = 'text-primary text-sm font-headline font-bold tabular-nums';
+          badgeNum.textContent = numStr;
+          badge.appendChild(badgeNum);
+
+          const img = document.createElement('img');
+          img.className = 'absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-200';
+          img.alt = '';
+          img.loading = 'lazy';
+          img.src = `/programas-imagens/camera-${encodeURIComponent(String(sessaoAberta.camera_id))}/${encodeURIComponent(programa.nome)}.bmp`;
+          img.addEventListener('load', () => {
+            img.style.opacity = '1';
+            const tag = document.createElement('span');
+            tag.className = 'absolute bottom-0 inset-x-0 bg-black/55 text-white text-[10px] font-bold text-center tabular-nums leading-tight py-0.5';
+            tag.textContent = numStr;
+            badge.appendChild(tag);
+          });
+          img.addEventListener('error', () => { img.remove(); });
+          badge.appendChild(img);
 
           const meio = document.createElement('span');
           meio.className = 'min-w-0 flex-1';
@@ -394,17 +548,7 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
           btn.appendChild(meio);
           btn.appendChild(seta);
 
-          btn.addEventListener('click', async () => {
-            try {
-              await ctx.sessoesSvc.confirmar(sessaoAberta.id, {
-                programaNumero: programa.numero,
-                programaNome: programa.nome,
-              });
-              window.location.hash = destinoCarga(form.numero_embarque);
-            } catch (e) {
-              toast.erro(e.message);
-            }
-          });
+          btn.addEventListener('click', () => selecionarPrograma(programa, btn));
           lista.appendChild(btn);
         }
         listaWrap.scrollTop = 0;

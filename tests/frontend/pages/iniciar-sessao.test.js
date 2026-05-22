@@ -109,6 +109,14 @@ test('renderIniciarSessao confirma programa e retorna ao detalhe da carga', asyn
   el.querySelector('[data-programa-numero="7"]').click();
   await new Promise((resolve) => setTimeout(resolve, 20));
 
+  // selecionar o programa abre o resumo, mas ainda nao confirma
+  assert.deepEqual(chamadas.confirmar, []);
+  const confirmarBtn = el.querySelector('[data-confirmar-programa]');
+  assert.ok(confirmarBtn);
+
+  confirmarBtn.click();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
   assert.deepEqual(chamadas.confirmar, [{
     id: 'S1',
     payload: { programaNumero: 7, programaNome: 'PECA-A' },
