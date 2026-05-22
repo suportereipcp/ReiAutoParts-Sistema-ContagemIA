@@ -111,42 +111,6 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     });
   }
 
-  function renderItemIdentificado() {
-    lateral.innerHTML = '';
-    const titulo = document.createElement('p');
-    titulo.className = 'text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold';
-    titulo.textContent = 'Item Identificado';
-
-    const preview = document.createElement('div');
-    preview.className = 'aspect-square rounded-2xl bg-surface-container-lowest border border-outline-variant/20 flex flex-col items-center justify-center text-center px-6';
-    preview.innerHTML = `
-      <span class="material-symbols-outlined text-5xl text-primary/60 mb-3">precision_manufacturing</span>
-      <p class="text-sm font-medium text-on-surface">${opAtual?.item_descricao ?? 'Nenhum item carregado'}</p>
-      <p class="text-xs text-on-surface-variant mt-2">${opAtual?.item_codigo ? `Item ${opAtual.item_codigo}` : 'Informe uma OP para carregar o contexto do item.'}</p>
-    `;
-
-    const meta = document.createElement('div');
-    meta.className = 'space-y-2 text-sm';
-    meta.innerHTML = `
-      <div>
-        <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">OP</p>
-        <p class="text-on-surface">${opAtual?.codigo_op ?? '-'}</p>
-      </div>
-      <div>
-        <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Previsto</p>
-        <p class="text-on-surface">${opAtual?.quantidade_prevista ?? '-'}</p>
-      </div>
-      <div>
-        <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Imagem</p>
-        <p class="text-on-surface-variant">O cadastro atual ainda nao fornece foto da peca.</p>
-      </div>
-    `;
-
-    lateral.appendChild(titulo);
-    lateral.appendChild(preview);
-    lateral.appendChild(meta);
-  }
-
   function esconderResumoSessao() {
     lateral.replaceChildren();
     lateral.classList.add('hidden');
@@ -267,12 +231,10 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     const normalizado = String(codigo ?? '').trim();
     if (!normalizado) {
       opAtual = null;
-      renderItemIdentificado();
       return;
     }
     try {
       opAtual = await ctx.catalogos.op(normalizado);
-      renderItemIdentificado();
     } catch {
       opAtual = {
         codigo_op: normalizado,
@@ -280,7 +242,6 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
         item_descricao: 'OP nao encontrada no catalogo local',
         quantidade_prevista: '-',
       };
-      renderItemIdentificado();
     }
   }
 
@@ -323,13 +284,6 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     grid.appendChild(opIn);
     grid.appendChild(operIn);
 
-    const resumo = document.createElement('div');
-    resumo.className = 'rounded-2xl bg-surface-container-low p-5 text-sm text-on-surface-variant';
-    resumo.innerHTML = `
-      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-2">Estado do Fluxo</p>
-      <p>A sessao so segue para a carga depois que o programa for confirmado. Se o operador desistir no meio, a tela seguinte passa a oferecer cancelamento imediato da sessao.</p>
-    `;
-
     const actions = document.createElement('div');
     actions.className = 'flex flex-wrap gap-3 pt-2';
     const continuar = Button({
@@ -368,7 +322,6 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     principal.appendChild(embarqueIn);
     principal.appendChild(grid);
     principal.appendChild(cameraIn);
-    principal.appendChild(resumo);
     principal.appendChild(actions);
   }
 
@@ -579,7 +532,7 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
   }
 
   renderFormulario();
-  renderItemIdentificado();
+  esconderResumoSessao();
   if (numeroEmbarque) {
     await carregarOp(form.codigo_op);
   }

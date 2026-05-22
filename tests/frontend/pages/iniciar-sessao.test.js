@@ -57,7 +57,7 @@ function criarCtx() {
   };
 }
 
-test('renderIniciarSessao preenche embarque fixo e carrega contexto do item', async () => {
+test('renderIniciarSessao preenche embarque fixo e exibe o item no resumo ao escolher programa', async () => {
   const { ctx } = criarCtx();
   const el = await renderIniciarSessao(ctx, { numeroEmbarque: '01' });
   document.body.appendChild(el);
@@ -71,7 +71,18 @@ test('renderIniciarSessao preenche embarque fixo e carrega contexto do item', as
   op.dispatchEvent(new Event('change'));
   await new Promise((resolve) => setTimeout(resolve, 20));
 
-  assert.match(el.textContent, /Eixo de Transmissao/);
+  // No formulario o contexto do item nao deve aparecer (area removida)
+  assert.doesNotMatch(el.textContent, /IT-001/);
+
+  el.querySelector('[data-input="codigo_operador"]').value = '1807';
+  el.querySelector('[data-input="camera_id"]').value = '1';
+  el.querySelector('[data-submit-abrir-sessao]').click();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  el.querySelector('[data-programa-numero="7"]').click();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  // O item so aparece no resumo, apos escolher o programa
   assert.match(el.textContent, /IT-001/);
 });
 
