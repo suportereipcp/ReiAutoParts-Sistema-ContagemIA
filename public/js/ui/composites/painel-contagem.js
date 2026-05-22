@@ -7,7 +7,9 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
   el.dataset.painelSessao = 'true';
   el.dataset.sessaoId = sessao.id;
   el.dataset.cameraId = String(sessao.camera_id);
-  el.className = `overflow-hidden rounded-[28px] border border-surface-container bg-surface-container-lowest zen-shadow-ambient ${tema.sombra}`.trim();
+  el.className = 'zen-card-flutuante overflow-hidden rounded-[28px] border border-surface-container bg-surface-container-lowest';
+  // Escalona a flutuacao entre as cameras para um efeito mais organico
+  el.style.animationDelay = Number(sessao.camera_id) === 1 ? '0s' : '-3.5s';
   el.innerHTML = `
     <div class="border-b border-surface-container ${tema.faixa}">
       <div class="flex items-center justify-between gap-3 px-6 py-4">
@@ -39,9 +41,9 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
             <dt class="text-[10px] font-bold uppercase tracking-[0.18em] text-outline">Início</dt>
             <dd class="mt-1 text-lg font-semibold text-on-surface">${formatarHora(sessao.iniciada_em) || '—'}</dd>
           </div>
-          <div data-sessao-meta="status" class="rounded-2xl bg-surface-container-low px-4 py-4">
-            <dt class="text-[10px] font-bold uppercase tracking-[0.18em] text-outline">Status</dt>
-            <dd class="mt-1 text-lg font-semibold ${tema.textoStatus}">Em contagem</dd>
+          <div data-sessao-meta="tempo" class="rounded-2xl bg-surface-container-low px-4 py-4">
+            <dt class="text-[10px] font-bold uppercase tracking-[0.18em] text-outline">Tempo</dt>
+            <dd data-tempo class="mt-1 text-lg font-semibold tabular-nums ${tema.textoStatus}">${formatarDuracao(sessao.iniciada_em)}</dd>
           </div>
         </dl>
       </div>
@@ -75,7 +77,30 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
     }
     el.appendChild(actions);
   }
+
+  // Cronometro do tempo de sessao: atualiza a cada segundo e se auto-limpa
+  // quando o painel sai da tela (evita vazamento de intervalo).
+  const tempoEl = el.querySelector('[data-tempo]');
+  if (tempoEl) {
+    const timer = setInterval(() => {
+      if (!el.isConnected) { clearInterval(timer); return; }
+      tempoEl.textContent = formatarDuracao(sessao.iniciada_em);
+    }, 1000);
+    timer.unref?.();
+  }
+
   return el;
+}
+
+function formatarDuracao(desde) {
+  const inicio = desde ? new Date(desde).getTime() : NaN;
+  if (!Number.isFinite(inicio)) return '00:00:00';
+  const totalSeg = Math.max(0, Math.floor((Date.now() - inicio) / 1000));
+  const h = Math.floor(totalSeg / 3600);
+  const m = Math.floor((totalSeg % 3600) / 60);
+  const s = totalSeg % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
 function obterTema(cameraId) {
@@ -84,13 +109,11 @@ function obterTema(cameraId) {
       faixa: 'bg-secondary-container/35',
       badge: 'bg-secondary-container text-on-secondary-container',
       textoStatus: 'text-secondary',
-      sombra: 'shadow-secondary/10',
     };
   }
   return {
     faixa: 'bg-primary-container/45',
     badge: 'bg-primary-container text-primary-dim',
     textoStatus: 'text-primary',
-    sombra: 'shadow-primary/10',
   };
 }

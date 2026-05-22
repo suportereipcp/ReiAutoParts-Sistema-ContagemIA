@@ -55,6 +55,37 @@ test('detalhes da carga abre a tela dedicada para nova sessao no mesmo embarque'
   assert.equal(window.location.hash, '#/cargas/01/nova-sessao');
 });
 
+test('detalhes da carga avisa e bloqueia nova sessao quando todas as cameras estao em uso', async () => {
+  const ctx = {
+    api: {
+      get: async (path) => {
+        if (path.startsWith('/embarques/')) return { numero_embarque: '05', motorista: 'E', status: 'aberto' };
+        if (path.startsWith('/sessoes')) return [
+          { id: 'S1', numero_embarque: '05', camera_id: 1, quantidade_total: 1, status: 'ativa', programa_nome: 'A', iniciada_em: '2026-04-23T13:00:00Z' },
+          { id: 'S2', numero_embarque: '05', camera_id: 2, quantidade_total: 2, status: 'ativa', programa_nome: 'B', iniciada_em: '2026-04-23T13:05:00Z' },
+        ];
+        return [];
+      },
+    },
+    sessoes: { porCamera: () => null, subscribe: () => () => {} },
+    sessoesSvc: { encerrar: async () => ({}), reiniciarContagem: async () => ({}), reiniciarSessao: async () => ({}) },
+    catalogos: {},
+  };
+  window.location.hash = '#/cargas/05';
+  const el = await renderDetalhesCarga(ctx, '05');
+  document.body.appendChild(el);
+  const botao = [...el.querySelectorAll('button')].find((node) => /Nova Sessão/.test(node.textContent));
+  botao.click();
+
+  const modal = document.body.querySelector('[data-modal-cameras-em-uso]');
+  assert.ok(modal);
+  assert.match(modal.textContent, /Todas as câmeras de contagem estão em uso/);
+  assert.match(modal.textContent, /Atenciosamente, Rei AutoParts!/);
+  assert.notEqual(window.location.hash, '#/cargas/05/nova-sessao');
+
+  modal.remove();
+});
+
 test('detalhes da carga renderiza um painel por sessao ativa e isola encerrar por camera', async () => {
   const chamadasEncerrar = [];
   const ctx = {
@@ -124,6 +155,32 @@ test('detalhes da carga sem faturamento exibe o botao Finalizar Carga', async ()
   const botoes = [...el.querySelectorAll('button')];
   const btnFinalizar = botoes.find((node) => /Finalizar Carga/.test(node.textContent));
   assert.ok(btnFinalizar, 'Deve exibir o botão Finalizar Carga quando não faturado');
+});
+
+test('detalhes da carga avisa faturamento pendente ao clicar em Finalizar Carga', async () => {
+  const ctx = {
+    api: {
+      get: async (path) => {
+        if (path.startsWith('/embarques/')) return { numero_embarque: '03', motorista: 'E', status: 'aberto' };
+        if (path.startsWith('/sessoes')) return [];
+        return [];
+      },
+    },
+    sessoes: { porCamera: () => null, subscribe: () => () => {} },
+    sessoesSvc: { encerrar: async () => ({}), reiniciarContagem: async () => ({}), reiniciarSessao: async () => ({}) },
+    catalogos: {},
+  };
+  const el = await renderDetalhesCarga(ctx, '03');
+  document.body.appendChild(el);
+  const btnFinalizar = [...el.querySelectorAll('button')].find((node) => /Finalizar Carga/.test(node.textContent));
+  btnFinalizar.click();
+
+  const modal = document.body.querySelector('[data-modal-faturamento-pendente]');
+  assert.ok(modal);
+  assert.match(modal.textContent, /Faturamento do Embarque Pendente/);
+  assert.match(modal.textContent, /O Embarque 03 não pode ser finalizado/);
+
+  modal.remove();
 });
 
 test('detalhes da carga com faturamento oculta o botao Finalizar Carga e exige confirmacao no encerramento tardio', async () => {
