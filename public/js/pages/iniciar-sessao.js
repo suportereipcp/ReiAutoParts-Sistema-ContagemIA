@@ -266,8 +266,43 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     `;
 
     const busca = Input({ label: 'Buscar programa', id: 'sessao-busca-programa' });
+
+    const listaHeader = document.createElement('div');
+    listaHeader.className = 'flex items-center justify-between px-1 pt-2';
+    const listaHeaderTitulo = document.createElement('p');
+    listaHeaderTitulo.className = 'text-[10px] font-bold uppercase tracking-[0.2em] text-outline';
+    listaHeaderTitulo.textContent = 'Programas da câmera';
+    const contador = document.createElement('span');
+    contador.className = 'text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant tabular-nums';
+    listaHeader.appendChild(listaHeaderTitulo);
+    listaHeader.appendChild(contador);
+
     const lista = document.createElement('div');
-    lista.className = 'space-y-3';
+    lista.className = 'space-y-2.5 py-1';
+
+    const listaWrap = document.createElement('div');
+    listaWrap.className = 'zen-scroll overflow-y-auto pr-2 -mr-1';
+    listaWrap.style.maxHeight = 'min(26rem, 50vh)';
+    listaWrap.appendChild(lista);
+
+    const topFade = document.createElement('div');
+    topFade.className = 'pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-surface-container-lowest to-transparent opacity-0 transition-opacity duration-200';
+    const bottomFade = document.createElement('div');
+    bottomFade.className = 'pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-surface-container-lowest to-transparent opacity-0 transition-opacity duration-200';
+
+    const listaShell = document.createElement('div');
+    listaShell.className = 'relative';
+    listaShell.appendChild(topFade);
+    listaShell.appendChild(listaWrap);
+    listaShell.appendChild(bottomFade);
+
+    function atualizarFades() {
+      const { scrollTop, scrollHeight, clientHeight } = listaWrap;
+      const temOverflow = scrollHeight - clientHeight > 4;
+      topFade.style.opacity = scrollTop > 4 ? '1' : '0';
+      bottomFade.style.opacity = temOverflow && scrollTop + clientHeight < scrollHeight - 4 ? '1' : '0';
+    }
+    listaWrap.addEventListener('scroll', atualizarFades, { passive: true });
 
     const resumo = document.createElement('div');
     resumo.className = 'rounded-2xl bg-surface-container-low p-5 text-sm text-on-surface grid grid-cols-2 gap-4';
@@ -299,34 +334,66 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     principal.appendChild(cabecalho);
     principal.appendChild(resumo);
     principal.appendChild(busca);
-    principal.appendChild(lista);
+    principal.appendChild(listaHeader);
+    principal.appendChild(listaShell);
     principal.appendChild(actions);
 
     async function carregarProgramas(q = '') {
-      lista.innerHTML = '<p class="text-sm text-on-surface-variant">Carregando programas da camera...</p>';
+      lista.replaceChildren();
+      contador.textContent = '';
+      const carregando = document.createElement('p');
+      carregando.className = 'text-sm text-on-surface-variant px-1';
+      carregando.textContent = 'Carregando programas da camera...';
+      lista.appendChild(carregando);
       try {
         const programas = await ctx.catalogos.programas(sessaoAberta.camera_id, q);
-        lista.innerHTML = '';
+        lista.replaceChildren();
+        contador.textContent = `${programas.length} ${programas.length === 1 ? 'programa' : 'programas'}`;
         if (programas.length === 0) {
           const vazio = document.createElement('div');
           vazio.dataset.programasVazio = 'true';
-          vazio.className = 'rounded-2xl border border-dashed border-outline-variant/40 bg-surface-container-low px-5 py-6 space-y-3';
-          vazio.innerHTML = `
-            <p class="text-sm font-semibold text-on-surface">Nenhum programa disponivel nesta camera.</p>
-            <p class="text-xs text-on-surface-variant">Se voce acabou de trocar o IP no .env, reinicie o backend para recarregar a configuracao da camera.</p>
-          `;
+          vazio.className = 'rounded-2xl border border-dashed border-outline-variant/40 bg-surface-container-low px-5 py-6 space-y-2';
+          const vazioTitulo = document.createElement('p');
+          vazioTitulo.className = 'text-sm font-semibold text-on-surface';
+          vazioTitulo.textContent = 'Nenhum programa disponivel nesta camera.';
+          const vazioDica = document.createElement('p');
+          vazioDica.className = 'text-xs text-on-surface-variant';
+          vazioDica.textContent = 'Se voce acabou de trocar o IP no .env, reinicie o backend para recarregar a configuracao da camera.';
+          vazio.appendChild(vazioTitulo);
+          vazio.appendChild(vazioDica);
           lista.appendChild(vazio);
+          atualizarFades();
           return;
         }
         for (const programa of programas) {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.dataset.programaNumero = String(programa.numero);
-          btn.className = 'w-full text-left px-5 py-4 rounded-2xl bg-surface-container-high hover:bg-secondary-container/30 transition-colors';
-          btn.innerHTML = `
-            <p class="text-sm font-semibold text-on-surface">${String(programa.numero).padStart(3, '0')} · ${programa.nome}</p>
-            <p class="text-xs text-on-surface-variant mt-1">Confirma o programa e leva o operador para o workspace da carga.</p>
-          `;
+          btn.className = 'group w-full text-left flex items-center gap-4 px-4 py-3.5 rounded-xl bg-surface-container-low/70 border border-transparent hover:border-outline-variant/40 hover:bg-surface-container-lowest transition-all duration-200';
+
+          const badge = document.createElement('span');
+          badge.className = 'shrink-0 inline-flex items-center justify-center min-w-[3.25rem] h-9 px-2 rounded-lg bg-primary-container text-primary text-sm font-headline font-bold tabular-nums';
+          badge.textContent = String(programa.numero).padStart(3, '0');
+
+          const meio = document.createElement('span');
+          meio.className = 'min-w-0 flex-1';
+          const nome = document.createElement('span');
+          nome.className = 'block text-sm font-semibold text-on-surface truncate';
+          nome.textContent = programa.nome;
+          const sub = document.createElement('span');
+          sub.className = 'block text-xs text-on-surface-variant mt-0.5';
+          sub.textContent = 'Confirma o programa e leva o operador para o workspace da carga.';
+          meio.appendChild(nome);
+          meio.appendChild(sub);
+
+          const seta = document.createElement('span');
+          seta.className = 'material-symbols-outlined text-outline-variant text-xl shrink-0 -translate-x-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200';
+          seta.textContent = 'arrow_forward';
+
+          btn.appendChild(badge);
+          btn.appendChild(meio);
+          btn.appendChild(seta);
+
           btn.addEventListener('click', async () => {
             try {
               await ctx.sessoesSvc.confirmar(sessaoAberta.id, {
@@ -340,6 +407,8 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
           });
           lista.appendChild(btn);
         }
+        listaWrap.scrollTop = 0;
+        atualizarFades();
       } catch (e) {
         lista.innerHTML = '';
         const erro = document.createElement('div');
