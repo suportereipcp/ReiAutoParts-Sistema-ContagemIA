@@ -139,3 +139,51 @@ h1, h2, h3, .font-headline { font-family: var(--font-headline); }
 @media (prefers-reduced-motion: reduce) {
   .zen-glow-ativas { animation: none; }
 }
+
+/* ── Indicadores de conexão (Internet / Supabase) ───────────────────── */
+
+/* Brilho pulsante em loop — usa --conn-accent para colorir por estado */
+@keyframes zen-conn-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 transparent,
+                0 0 5px color-mix(in srgb, var(--conn-accent) 28%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--conn-accent) 15%, transparent),
+                0 0 16px color-mix(in srgb, var(--conn-accent) 62%, transparent);
+  }
+}
+.zen-conn-glow { animation: zen-conn-glow 2.4s ease-in-out infinite; }
+
+/* Alerta vermelho mais rápido para desconexão */
+@keyframes zen-conn-alert {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--conn-accent) 55%, transparent),
+                0 0 8px color-mix(in srgb, var(--conn-accent) 50%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px transparent, 0 0 4px transparent;
+  }
+}
+.zen-conn-alert { animation: zen-conn-alert 1.1s ease-in-out infinite; }
+
+/* Órbita girando — reforça a ideia de conexão ativa */
+@keyframes zen-conn-orbit { to { transform: rotate(360deg); } }
+.zen-conn-orbit { animation: zen-conn-orbit 8s linear infinite; transform-origin: 50% 50%; }
+
+/* Sincronizando (estado RECOVERY do Supabase) */
+@keyframes zen-conn-sync { to { transform: rotate(360deg); } }
+.zen-conn-sync { animation: zen-conn-sync 1.3s linear infinite; transform-origin: 50% 50%; }
+
+/* Ponto de status respirando */
+@keyframes zen-conn-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.78); }
+}
+.zen-conn-dot-pulse { animation: zen-conn-dot 1.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zen-conn-glow, .zen-conn-alert, .zen-conn-orbit, .zen-conn-sync, .zen-conn-dot-pulse {
+    animation: none;
+  }
+}

@@ -9,7 +9,7 @@ import { criarEtiquetasService } from './domain/etiquetas-service.js';
 import { criarFaturamentoClienteService } from './domain/faturamento-service.js';
 import { SideNav } from './ui/primitives/sidenav.js';
 import { TopNav } from './ui/primitives/topnav.js';
-import { SyncBadge } from './ui/primitives/badge.js';
+import { criarIndicadoresConexao } from './ui/composites/indicadores-conexao.js';
 import { renderDashboard } from './pages/dashboard.js';
 import { renderIniciarSessao } from './pages/iniciar-sessao.js';
 import { renderSelecaoCarga } from './pages/selecao-carga.js';
@@ -38,11 +38,11 @@ async function pollHealth() {
 setInterval(pollHealth, 5000);
 pollHealth();
 
-let _unsubSyncBadge = null;
+let _indicadores = null;
 function renderShell(ativo) {
   const shell = document.getElementById('shell');
   shell.innerHTML = '';
-  if (_unsubSyncBadge) { _unsubSyncBadge(); _unsubSyncBadge = null; }
+  if (_indicadores?.destruir) { _indicadores.destruir(); _indicadores = null; }
   const side = SideNav({
     titulo: 'Rei AutoParts',
     itens: [
@@ -54,15 +54,10 @@ function renderShell(ativo) {
     ],
     ativo,
   });
-  let badge = SyncBadge(sync.atual().estado);
-  const top = TopNav({ caminho: [caminhoPadrao(ativo)], badge });
+  _indicadores = criarIndicadoresConexao(sync);
+  const top = TopNav({ caminho: [caminhoPadrao(ativo)], badge: _indicadores });
   shell.appendChild(side);
   shell.appendChild(top);
-  _unsubSyncBadge = sync.subscribe(() => {
-    const novoBadge = SyncBadge(sync.atual().estado);
-    badge.replaceWith(novoBadge);
-    badge = novoBadge;
-  });
 }
 
 function caminhoPadrao(id) {
