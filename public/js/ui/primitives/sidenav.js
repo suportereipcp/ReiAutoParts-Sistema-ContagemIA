@@ -5,16 +5,12 @@ export function SideNav({ titulo = 'Rei AutoParts', subtitulo = '', itens = [], 
   aside.className = 'fixed left-0 top-0 h-full w-64 bg-surface-container-low flex flex-col py-6 px-4 z-50';
 
   const header = document.createElement('div');
-  header.className = 'flex items-center gap-3 px-2 mb-10';
-  header.innerHTML = `
-    <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
-      <span class="material-symbols-outlined">factory</span>
-    </div>
-    <div>
-      <h2 class="font-black text-on-surface font-headline text-sm tracking-wide">${titulo}</h2>
-      ${subtitulo ? `<p class="text-[10px] uppercase tracking-widest text-primary/60">${subtitulo}</p>` : ''}
-    </div>
-  `;
+  header.className = 'flex items-center justify-center px-2 mb-10';
+  const logo = document.createElement('img');
+  logo.src = '/logo.png';
+  logo.alt = titulo;
+  logo.className = 'h-10 w-auto object-contain';
+  header.appendChild(logo);
   aside.appendChild(header);
 
   const nav = document.createElement('nav');
