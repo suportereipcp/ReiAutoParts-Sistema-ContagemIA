@@ -49,6 +49,85 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     return [1, 2].filter((cameraId) => !ocupadas.has(cameraId));
   }
 
+  function mostrarModalCameraDesconectada(cameraId) {
+    document.querySelector('[data-camera-desconectada-modal]')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.dataset.cameraDesconectadaModal = 'true';
+    overlay.className = 'fixed inset-0 z-50 flex items-center justify-center px-4';
+    overlay.style.background = 'rgba(0,0,0,0.45)';
+
+    const card = document.createElement('div');
+    card.className = 'w-full max-w-md overflow-hidden rounded-2xl';
+    card.style.cssText = 'background:#1a0505;border:1.5px solid rgba(239,68,68,0.35);box-shadow:0 32px 80px rgba(185,28,28,0.30);';
+
+    const body = document.createElement('div');
+    body.className = 'px-6 py-5 space-y-4';
+
+    const headerRow = document.createElement('div');
+    headerRow.className = 'flex items-center gap-3';
+    const iconWrap = document.createElement('div');
+    iconWrap.className = 'shrink-0 h-11 w-11 rounded-xl flex items-center justify-center';
+    iconWrap.style.background = 'rgba(239,68,68,0.18)';
+    const icon = document.createElement('span');
+    icon.className = 'material-symbols-outlined text-2xl';
+    icon.style.color = '#f87171';
+    icon.textContent = 'videocam_off';
+    iconWrap.appendChild(icon);
+    const label = document.createElement('p');
+    label.className = 'text-[10px] font-bold uppercase tracking-[0.2em]';
+    label.style.color = '#f87171';
+    label.textContent = `Câmera ${Number(cameraId)} · Erro de conexão`;
+    headerRow.appendChild(iconWrap);
+    headerRow.appendChild(label);
+
+    const titulo = document.createElement('p');
+    titulo.className = 'text-xl font-bold leading-tight';
+    titulo.style.color = '#fca5a5';
+    titulo.textContent = 'Dispositivo desconectado!';
+
+    const desc = document.createElement('p');
+    desc.className = 'text-sm leading-relaxed';
+    desc.style.cssText = 'color:#fca5a5;opacity:0.85;';
+    desc.textContent = 'Por favor verificar se as luzes da câmera ou se seu flash está funcionando.';
+
+    const rodape = document.createElement('div');
+    rodape.className = 'flex justify-end pt-1';
+    const contato = document.createElement('p');
+    contato.className = 'text-xs font-bold';
+    contato.style.color = '#ef4444';
+    contato.textContent = 'Entre em contato com a Liderança ou PCP';
+    rodape.appendChild(contato);
+
+    body.appendChild(headerRow);
+    body.appendChild(titulo);
+    body.appendChild(desc);
+    body.appendChild(rodape);
+
+    const track = document.createElement('div');
+    track.className = 'h-1 overflow-hidden';
+    track.style.background = 'rgba(239,68,68,0.15)';
+    const bar = document.createElement('div');
+    bar.dataset.cameraDesconectadaProgress = 'true';
+    bar.className = 'h-full';
+    bar.style.cssText = 'background:#ef4444;transform-origin:left;animation:camera-desconectada-progress 3000ms linear forwards;';
+    track.appendChild(bar);
+
+    card.appendChild(body);
+    card.appendChild(track);
+    overlay.appendChild(card);
+
+    if (!document.getElementById('camera-desconectada-progress-style')) {
+      const style = document.createElement('style');
+      style.id = 'camera-desconectada-progress-style';
+      style.textContent = '@keyframes camera-desconectada-progress { from { transform: scaleX(1); } to { transform: scaleX(0); } }';
+      document.head.appendChild(style);
+    }
+
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.remove(), 3000);
+  }
+
   function mostrarModalCameraOcupada({ cameraId, camerasDisponiveis }) {
     document.querySelector('[data-camera-ocupada-modal]')?.remove();
 
@@ -92,7 +171,16 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     setTimeout(() => overlay.remove(), 2000);
   }
 
+  function erroCameraDesconectada(mensagem) {
+    return /c[aâ]mera\s+\d+\s+desconectada/i.test(String(mensagem ?? ''))
+      || /c[aâ]mera\s+desconectada/i.test(String(mensagem ?? ''));
+  }
+
   async function tratarErroAbrirSessao(error) {
+    if (erroCameraDesconectada(error.message)) {
+      mostrarModalCameraDesconectada(extrairCameraDaMensagem(error.message, form.camera_id));
+      return;
+    }
     if (!erroCameraOcupada(error.message)) {
       toast.erro(error.message);
       return;
