@@ -22,3 +22,9 @@ Screenshot_*.png
 # OS
 .DS_Store
 Thumbs.db
+
+# Brainstorm visual companion
+.superpowers/
+
+# Artefatos do Playwright MCP
+.playwright-mcp/
