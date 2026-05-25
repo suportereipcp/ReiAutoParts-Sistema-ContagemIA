@@ -433,8 +433,35 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
     listaHeaderTitulo.textContent = 'Programas da câmera';
     const contador = document.createElement('span');
     contador.className = 'text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant tabular-nums';
+
+    const headerDireita = document.createElement('div');
+    headerDireita.className = 'flex items-center gap-3';
+    const btnAtualizar = Button({
+      texto: 'Atualizar',
+      variante: 'secondary',
+      size: 'sm',
+      icone: 'refresh',
+      onClick: async () => {
+        const icone = btnAtualizar.querySelector('.material-symbols-outlined');
+        btnAtualizar.disabled = true;
+        icone?.classList.add('animate-spin');
+        try {
+          await ctx.catalogos.revisarProgramas(sessaoAberta.camera_id, 0);
+          await carregarProgramas(busca.querySelector('input').value);
+          toast.info('Programas atualizados a partir da camera.');
+        } catch (e) {
+          toast.erro(e.message);
+        } finally {
+          btnAtualizar.disabled = false;
+          icone?.classList.remove('animate-spin');
+        }
+      },
+    });
+    btnAtualizar.dataset.atualizarProgramas = 'true';
+    headerDireita.appendChild(contador);
+    headerDireita.appendChild(btnAtualizar);
     listaHeader.appendChild(listaHeaderTitulo);
-    listaHeader.appendChild(contador);
+    listaHeader.appendChild(headerDireita);
 
     const lista = document.createElement('div');
     lista.className = 'space-y-2.5 py-1';
@@ -506,12 +533,28 @@ export async function renderIniciarSessao(ctx, { numeroEmbarque = '' } = {}) {
       }
     }
 
+    let trocaProgramaTimer = null;
+    let programaNaCamera = null;
+    function trocarProgramaNaCamera(programa) {
+      if (programa.numero === programaNaCamera) return;
+      clearTimeout(trocaProgramaTimer);
+      trocaProgramaTimer = setTimeout(async () => {
+        try {
+          await ctx.catalogos.selecionarPrograma(sessaoAberta.camera_id, programa.numero);
+          programaNaCamera = programa.numero;
+        } catch (e) {
+          toast.erro(e.message);
+        }
+      }, 300);
+    }
+
     function selecionarPrograma(programa, btn) {
       programaSelecionado = programa;
       if (btnSelecionado && btnSelecionado !== btn) btnSelecionado.classList.remove(...REALCE);
       btnSelecionado = btn;
       btn.classList.add(...REALCE);
       renderResumoSessao(programa, confirmarSelecionado);
+      trocarProgramaNaCamera(programa);
     }
 
     async function carregarProgramas(q = '') {

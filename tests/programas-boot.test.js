@@ -1,26 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { atualizarCacheProgramasAoConectar } from '../src/camera/programas-boot.js';
+import { carregarCacheProgramasAoConectar } from '../src/camera/programas-boot.js';
 
-test('atualizarCacheProgramasAoConectar carrega cache e atualiza camera livre', async () => {
-  const chamadas = [];
-  const manager = {
-    cameraId: 1,
-    estado: 'suspensa',
-    async carregarCacheProgramas() { chamadas.push('carregar-cache'); },
-    async atualizarProgramas() { chamadas.push('atualizar-programas'); return [{ numero: 1, nome: 'A' }]; },
-  };
-
-  await atualizarCacheProgramasAoConectar({
-    manager,
-    existeSessaoAtiva: () => false,
-    logger: { warn() {} },
-  });
-
-  assert.deepEqual(chamadas, ['carregar-cache', 'atualizar-programas']);
-});
-
-test('atualizarCacheProgramasAoConectar nao varre camera com sessao ativa no banco', async () => {
+test('carregarCacheProgramasAoConectar carrega cache e nao varre a camera', async () => {
   const chamadas = [];
   const manager = {
     cameraId: 1,
@@ -29,76 +11,28 @@ test('atualizarCacheProgramasAoConectar nao varre camera com sessao ativa no ban
     async atualizarProgramas() { chamadas.push('atualizar-programas'); },
   };
 
-  await atualizarCacheProgramasAoConectar({
+  await carregarCacheProgramasAoConectar({
     manager,
-    existeSessaoAtiva: () => true,
     logger: { warn() {} },
   });
 
   assert.deepEqual(chamadas, ['carregar-cache']);
 });
 
-test('atualizarCacheProgramasAoConectar mantem cache em disco quando refresh falha', async () => {
+test('carregarCacheProgramasAoConectar registra aviso quando carga do cache falha', async () => {
   const avisos = [];
   const manager = {
     cameraId: 2,
     estado: 'suspensa',
-    async carregarCacheProgramas() {},
-    async atualizarProgramas() { throw new Error('timeout comando PNR'); },
+    async carregarCacheProgramas() { throw new Error('cache corrompido'); },
+    async atualizarProgramas() { throw new Error('nao deveria varrer'); },
   };
 
-  await atualizarCacheProgramasAoConectar({
+  await carregarCacheProgramasAoConectar({
     manager,
-    existeSessaoAtiva: () => false,
     logger: { warn: (payload, msg) => avisos.push({ payload, msg }) },
-    tentativas: 3,
-    sleep: async () => {},
   });
 
-  assert.equal(avisos.length, 3);
-  assert.match(avisos[0].msg, /falha ao atualizar cache de programas/i);
-});
-
-test('atualizarCacheProgramasAoConectar tenta novamente apos descoberta vazia e sucede', async () => {
-  const chamadas = [];
-  const manager = {
-    cameraId: 1,
-    estado: 'suspensa',
-    async carregarCacheProgramas() { chamadas.push('carregar-cache'); },
-    async atualizarProgramas() {
-      chamadas.push('atualizar-programas');
-      if (chamadas.filter((c) => c === 'atualizar-programas').length === 1) {
-        throw new Error('descoberta retornou 0 programas');
-      }
-      return [{ numero: 1, nome: 'A' }];
-    },
-  };
-
-  await atualizarCacheProgramasAoConectar({
-    manager,
-    existeSessaoAtiva: () => false,
-    logger: { warn() {} },
-    tentativas: 3,
-    sleep: async () => {},
-  });
-
-  assert.deepEqual(chamadas, ['carregar-cache', 'atualizar-programas', 'atualizar-programas']);
-});
-
-test('atualizarCacheProgramasAoConectar nao varre camera desconectada', async () => {
-  const chamadas = [];
-  const manager = {
-    cameraId: 1,
-    estado: 'desconectada',
-    async carregarCacheProgramas() { chamadas.push('carregar-cache'); },
-    async atualizarProgramas() { chamadas.push('atualizar-programas'); },
-  };
-
-  await atualizarCacheProgramasAoConectar({
-    manager,
-    existeSessaoAtiva: () => false,
-    logger: { warn() {} },
-  });
-
-  assert.deepEqual(chamadas, ['carregar-cache']);
+  assert.equal(avisos.length, 1);
+  assert.match(avisos[0].msg, /falha ao carregar cache local de programas/i);
 });

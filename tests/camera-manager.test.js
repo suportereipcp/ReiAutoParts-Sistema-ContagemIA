@@ -141,7 +141,7 @@ test('descobrirProgramas respeita intervalo entre trocas de programa', async () 
 
   await m.descobrirProgramas();
 
-  assert.deepEqual(esperas, [200, 200]);
+  assert.deepEqual(esperas, [200, 200, 200]);
 });
 
 test('listarProgramas carrega cache local e nao varre camera fisica', async () => {
@@ -372,6 +372,23 @@ test('revisarProgramas e no-op com camera ativa', async () => {
   const antes = cache.salvarChamadas.length;
   await m.revisarProgramas({ probeExtra: 3 });
   assert.equal(cache.salvarChamadas.length, antes);
+});
+
+test('revisarProgramas com cache vazio dispara descoberta completa (bootstrap)', async () => {
+  const client = clientComProgramas(new Map([[0, 'PROG_000'], [2, 'PROG_002']]));
+  const cache = new FakeProgramCache([]);
+  const m = new CameraManager({ cameraId: 2, client, maxProgramas: 3, programCache: cache });
+  await m.conectar();
+  await m.carregarCacheProgramas();
+
+  const lista = await m.revisarProgramas({ probeExtra: 0 });
+
+  assert.deepEqual(lista, [
+    { numero: 0, nome: 'PROG_000' },
+    { numero: 2, nome: 'PROG_002' },
+  ]);
+  assert.ok(client.comandos.includes('PW,001'));
+  assert.equal(cache.salvarChamadas.length, 1);
 });
 
 test('_comLock serializa operacoes concorrentes na mesma camera', async () => {

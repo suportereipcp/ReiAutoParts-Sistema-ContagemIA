@@ -76,6 +76,21 @@ export class CameraManager extends EventEmitter {
     });
   }
 
+  async selecionarPrograma({ programaNumero }) {
+    if (this.estado === 'desconectada') throw new Error('câmera desconectada');
+    if (this.estado === 'ativa') throw new Error('Câmera com sessão ativa; encerre antes de trocar o programa.');
+    return this._comLock(async () => {
+      const prog = String(programaNumero).padStart(3, '0');
+      try {
+        await this.client.enviaComando(`PW,${prog}`);
+      } catch (error) {
+        // Código 3 = programa já ativo ou câmera ainda concluindo a troca;
+        // a troca é efetuada mesmo assim. Demais códigos são falha real.
+        if (!this._erroProgramaJaSelecionado(error)) throw error;
+      }
+    });
+  }
+
   async encerrarSessao() {
     if (this.estado !== 'ativa') return;
     await this.client.enviaComando('OE,0');
@@ -103,6 +118,7 @@ export class CameraManager extends EventEmitter {
       const prog = String(n).padStart(3, '0');
       try {
         await this.client.enviaComando(`PW,${prog}`);
+        await this._aguardarTrocaPrograma();
         const r = await this.client.enviaComando('PNR');
         const nome = this._normalizarNomePrograma(r.valores?.[0]);
         if (nome && nome !== '-' && nome !== '(no name)') {
@@ -112,9 +128,6 @@ export class CameraManager extends EventEmitter {
         if (this._erroProgramaInexistente(error)) continue;
         erroScan = error;
         break;
-      }
-      if (this.intervaloDescobertaMs > 0 && n < this.maxProgramas - 1) {
-        await this.sleep(this.intervaloDescobertaMs);
       }
     }
     if (original != null) {
@@ -176,13 +189,21 @@ export class CameraManager extends EventEmitter {
     }
 
     return this._comLock(async () => {
-      const original = await this._lerProgramaAtual();
       const numeros = [...this.programas.keys()].sort((a, b) => a - b);
-      const maxConhecido = numeros.length ? numeros[numeros.length - 1] : -1;
+
+      if (numeros.length === 0) {
+        const lista = await this._descobrirProgramasSemLock({ force: true });
+        if (this.programCache) await this.programCache.salvar(lista);
+        return lista;
+      }
+
+      const original = await this._lerProgramaAtual();
+      const maxConhecido = numeros[numeros.length - 1];
 
       for (const n of numeros) {
         try {
           await this.client.enviaComando(`PW,${String(n).padStart(3, '0')}`);
+          await this._aguardarTrocaPrograma();
           const r = await this.client.enviaComando('PNR');
           const nome = this._normalizarNomePrograma(r.valores?.[0]);
           if (nome && nome !== '-' && nome !== '(no name)') this.programas.set(n, nome);
@@ -196,6 +217,7 @@ export class CameraManager extends EventEmitter {
       for (let n = maxConhecido + 1; n <= maxConhecido + probeExtra && n < this.maxProgramas; n++) {
         try {
           await this.client.enviaComando(`PW,${String(n).padStart(3, '0')}`);
+          await this._aguardarTrocaPrograma();
           const r = await this.client.enviaComando('PNR');
           const nome = this._normalizarNomePrograma(r.valores?.[0]);
           if (nome && nome !== '-' && nome !== '(no name)') this.programas.set(n, nome);
@@ -232,6 +254,10 @@ export class CameraManager extends EventEmitter {
       const r = await this.client.enviaComando('PR');
       return Number(r.valores?.[0] ?? 0);
     } catch (_) { return null; }
+  }
+
+  async _aguardarTrocaPrograma() {
+    if (this.intervaloDescobertaMs > 0) await this.sleep(this.intervaloDescobertaMs);
   }
 
   buscarProgramas(filtro) {

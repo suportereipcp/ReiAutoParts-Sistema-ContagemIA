@@ -13,7 +13,7 @@ import { buscarAtivaPorCamera } from './db/queries/sessoes.js';
 import { KeyenceClient } from './camera/keyence-client.js';
 import { CameraManager } from './camera/camera-manager.js';
 import { ProgramCache } from './camera/program-cache.js';
-import { atualizarCacheProgramasAoConectar } from './camera/programas-boot.js';
+import { carregarCacheProgramasAoConectar } from './camera/programas-boot.js';
 import {
   criarRegistradorDiagnosticoKeyence,
   formatarLinhaKeyenceNaoReconhecida,
@@ -177,9 +177,8 @@ async function main() {
   });
   const rotearPulsoCamera = criarRoteadorPulsoCamera({ calibracaoService, contagemService });
 
-  const atualizarProgramasDaCamera = (manager) => atualizarCacheProgramasAoConectar({
+  const atualizarProgramasDaCamera = (manager) => carregarCacheProgramasAoConectar({
     manager,
-    existeSessaoAtiva: (cameraId) => Boolean(buscarAtivaPorCamera(db, cameraId)),
     logger,
   });
 
