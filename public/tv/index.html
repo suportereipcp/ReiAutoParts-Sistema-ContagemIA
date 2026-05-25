@@ -3,21 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>TV — Rei AutoParts</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/tokens.css">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      'surface': '#f8f9fa', 'surface-container-low': '#f1f4f6', 'surface-container': '#eaeff1',
+      'surface-container-high': '#e3e9ec', 'surface-container-lowest': '#ffffff',
+      'on-surface': '#2b3437', 'on-surface-variant': '#586064',
+      'primary': '#516169', 'primary-dim': '#45555d', 'primary-container': '#d5e5ef', 'on-primary': '#f0f9ff',
+      'secondary': '#40665d', 'secondary-container': '#c1ebdf', 'on-secondary-container': '#325950',
+      'error-container': '#fe8983', 'on-error-container': '#752121', 'error': '#9f403d', 'on-error': '#fff7f6',
+      'outline': '#737c7f', 'outline-variant': '#abb3b7',
+    } } } };
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter&family=Manrope:wght@300;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-  <style>body { background: var(--background); color: var(--on-surface); }</style>
 </head>
-<body class="min-h-screen p-16">
-  <header class="flex justify-between items-center mb-12">
-    <div>
-      <p class="text-[10px] uppercase tracking-[0.3em] text-outline font-bold mb-2">Expedição</p>
-      <h1 class="text-5xl font-headline font-light">Rei AutoParts</h1>
-    </div>
-    <div id="sync-slot"></div>
+<body class="min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-40 bg-surface-container/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 zen-shadow-ambient">
+    <img src="/logo.png" alt="Rei AutoParts" class="h-10 w-auto object-contain">
+    <div id="sync-slot" class="flex items-center gap-4"></div>
   </header>
-  <main id="painel" class="flex items-center justify-center min-h-[60vh]"></main>
+  <main id="painel" class="flex items-start justify-center min-h-screen pt-24 px-16 pb-16"></main>
   <script type="module" src="/js/tv-app.js"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@ import { criarApi } from './infra/api.js';
 import { criarWS } from './infra/ws.js';
 import { criarSessoesState } from './domain/sessoes-state.js';
 import { criarSyncState } from './domain/sync-state.js';
-import { SyncBadge } from './ui/primitives/badge.js';
+import { criarIndicadoresConexao } from './ui/composites/indicadores-conexao.js';
 import { renderTV } from './tv-render.js';
 
 const api = criarApi({ base: location.origin });
@@ -21,11 +21,8 @@ async function rerender() {
   painel.appendChild(el);
 }
 sessoes.subscribe(rerender);
-sync.subscribe(() => {
-  const slot = document.getElementById('sync-slot');
-  slot.innerHTML = '';
-  slot.appendChild(SyncBadge(sync.atual().estado));
-});
+
+document.getElementById('sync-slot').appendChild(criarIndicadoresConexao(sync));
 
 async function bootstrap() {
   try {
