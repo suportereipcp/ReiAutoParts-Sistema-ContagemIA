@@ -106,8 +106,9 @@ export async function renderDetalhesCarga(ctx, numero) {
     const paineis = document.createElement('div');
     paineis.dataset.sessoesAtivas = 'true';
     paineis.className = 'grid gap-5 xl:grid-cols-2';
-    for (const ativa of ativas) {
-      paineis.appendChild(PainelContagem({
+    const ordenadas = [...ativas].sort((a, b) => Number(b.camera_id) - Number(a.camera_id));
+    for (const ativa of ordenadas) {
+      const painel = PainelContagem({
         sessao: ativa,
         onEncerrar: () => abrirModalEncerrarSessao({
           sessao: ativa,
@@ -137,7 +138,9 @@ export async function renderDetalhesCarga(ctx, numero) {
             recarregar();
           } catch (e) { toast.erro(e.message); }
         },
-      }));
+      });
+      if (ordenadas.length === 1) painel.classList.add('xl:col-start-2');
+      paineis.appendChild(painel);
     }
     el.appendChild(paineis);
   }
