@@ -15,7 +15,11 @@ export function criarSessoesState() {
       notifica();
     },
     aplicaAtualizacao(sessao) {
-      porCam.set(sessao.camera_id, sessao);
+      if (sessao.status === 'ativa' || sessao.status === 'ativa-sem-programa') {
+        porCam.set(sessao.camera_id, sessao);
+      } else {
+        porCam.delete(sessao.camera_id);
+      }
       notifica();
     },
     porCamera(id) { return porCam.get(id); },
