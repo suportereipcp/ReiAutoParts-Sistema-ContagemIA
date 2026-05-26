@@ -106,7 +106,8 @@ export async function renderDetalhesCarga(ctx, numero) {
     const paineis = document.createElement('div');
     paineis.dataset.sessoesAtivas = 'true';
     paineis.className = 'grid gap-5 xl:grid-cols-2';
-    const ordenadas = [...ativas].sort((a, b) => Number(b.camera_id) - Number(a.camera_id));
+    // Câmera 1 sempre à esquerda, câmera 2 à direita (ordem crescente por id).
+    const ordenadas = [...ativas].sort((a, b) => Number(a.camera_id) - Number(b.camera_id));
     for (const ativa of ordenadas) {
       const painel = PainelContagem({
         sessao: ativa,

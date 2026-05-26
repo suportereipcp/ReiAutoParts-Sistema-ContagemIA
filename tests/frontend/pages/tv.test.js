@@ -35,3 +35,16 @@ test('renderTV ativa a imagem ao vivo em cada painel', () => {
   assert.match(imgs[0].getAttribute('src'), /\/cameras\/1\/live-image/);
   assert.match(imgs[1].getAttribute('src'), /\/cameras\/2\/live-image/);
 });
+
+test('renderTV mantém câmera 1 à esquerda mesmo se a sessão da câmera 2 vier primeiro', () => {
+  const sessoes = {
+    todas: () => [
+      { id: 'b', camera_id: 2, quantidade_total: 20, programa_nome: 'PECA-B' },
+      { id: 'a', camera_id: 1, quantidade_total: 10, programa_nome: 'PECA-A' },
+    ],
+  };
+  const el = renderTV({ sessoes });
+  const paineis = el.querySelectorAll('[data-sessao-id]');
+  assert.equal(paineis[0].dataset.cameraId, '1');
+  assert.equal(paineis[1].dataset.cameraId, '2');
+});
