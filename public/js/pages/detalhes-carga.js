@@ -140,7 +140,10 @@ export async function renderDetalhesCarga(ctx, numero) {
           } catch (e) { toast.erro(e.message); }
         },
       });
-      if (ordenadas.length === 1) painel.classList.add('xl:col-start-2');
+      // Painel sozinho mantém o lado da sua câmera (1 = esquerda, 2 = direita).
+      if (ordenadas.length === 1) {
+        painel.classList.add(Number(ativa.camera_id) === 2 ? 'xl:col-start-2' : 'xl:col-start-1');
+      }
       paineis.appendChild(painel);
     }
     el.appendChild(paineis);
