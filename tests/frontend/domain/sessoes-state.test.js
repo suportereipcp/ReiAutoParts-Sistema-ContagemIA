@@ -23,11 +23,23 @@ test('incrementa quantidade_total por evento WS', () => {
   assert.equal(s.porCamera(1).quantidade_total, 8);
 });
 
-test('sessao.atualizada substitui registro', () => {
+test('aplicaAtualizacao substitui o registro quando a sessão segue ativa', () => {
+  const s = criarSessoesState();
+  s.carregarAtivas([{ id: 'a', camera_id: 1, quantidade_total: 5, status: 'ativa', programa_nome: 'PECA-A' }]);
+  s.aplicaAtualizacao({ id: 'a', camera_id: 1, quantidade_total: 5, status: 'ativa', programa_nome: 'PECA-B' });
+  assert.equal(s.porCamera(1).programa_nome, 'PECA-B');
+  assert.equal(s.porCamera(1).status, 'ativa');
+});
+
+test('aplicaAtualizacao remove a sessão quando encerrada ou cancelada', () => {
   const s = criarSessoesState();
   s.carregarAtivas([{ id: 'a', camera_id: 1, quantidade_total: 5, status: 'ativa' }]);
-  s.aplicaAtualizacao({ id: 'a', camera_id: 1, quantidade_total: 5, status: 'encerrada' });
-  assert.equal(s.porCamera(1).status, 'encerrada');
+  s.aplicaAtualizacao({ id: 'a', camera_id: 1, status: 'encerrada' });
+  assert.equal(s.porCamera(1), undefined);
+
+  s.carregarAtivas([{ id: 'b', camera_id: 2, quantidade_total: 0, status: 'ativa' }]);
+  s.aplicaAtualizacao({ id: 'b', camera_id: 2, status: 'cancelada' });
+  assert.equal(s.porCamera(2), undefined);
 });
 
 test('notifica subscribers', () => {
