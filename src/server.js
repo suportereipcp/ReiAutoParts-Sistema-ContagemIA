@@ -39,6 +39,7 @@ import { criarCalibracaoService } from './domain/calibracao-service.js';
 import { criarRoteadorPulsoCamera } from './domain/camera-pulse-router.js';
 import { criarWSHub } from './http/ws-hub.js';
 import { rotaHealth } from './http/routes/health.js';
+import { rotasCameras } from './http/routes/cameras.js';
 import { rotasEmbarques } from './http/routes/embarques.js';
 import { rotasOPs } from './http/routes/ops.js';
 import { rotasOperadores } from './http/routes/operadores.js';
@@ -213,6 +214,7 @@ async function main() {
   }
 
   rotaHealth(fastify, { db, syncWorker, cameraManagers });
+  rotasCameras(fastify, { cameras: config.cameras });
   rotasEmbarques(fastify, { db });
   rotasOPs(fastify, { db });
   rotasOperadores(fastify, { db });
