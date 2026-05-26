@@ -87,12 +87,22 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
     // espaço restante do card (flex-1) → acompanha a resolução do monitor/TV. O
     // padding cria uma borda que reduz um pouco o vídeo sem quebrar o fill. A
     // imagem fica numa moldura arredondada com vinheta e selo "AO VIVO".
+    // Cor do LED/brilho por câmera: 1 = verde, 2 = cinza.
+    const ledColor = Number(sessao.camera_id) === 1 ? '#23A854' : '#A8B0B4';
+
     const area = document.createElement('div');
     area.dataset.cameraLive = 'true';
-    area.className = 'relative flex flex-1 min-h-[180px] border-t border-surface-container bg-on-surface p-3 sm:p-4';
+    area.className = 'relative flex flex-1 min-h-[180px] items-stretch border-t border-surface-container bg-on-surface p-3 sm:p-4';
+
+    // Moldura com caminho de LED correndo na borda (tv-led-frame) + sombra/brilho
+    // na cor da câmera. O LED aparece na faixa de 3px entre a moldura e o vídeo.
+    const ledWrap = document.createElement('div');
+    ledWrap.className = 'tv-led-frame relative flex-1 overflow-hidden rounded-2xl bg-black';
+    ledWrap.style.setProperty('--tv-led-color', ledColor);
+    ledWrap.style.boxShadow = `0 0 22px -6px ${ledColor}, 0 18px 44px -16px rgba(0,0,0,0.78)`;
 
     const frame = document.createElement('div');
-    frame.className = 'relative h-full w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05),0_12px_32px_-14px_rgba(0,0,0,0.7)]';
+    frame.className = 'absolute inset-[3px] z-10 overflow-hidden rounded-[13px] bg-black ring-1 ring-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]';
 
     const img = document.createElement('img');
     img.dataset.cameraLiveImg = 'true';
@@ -110,9 +120,9 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
     const ponto = document.createElement('span');
     ponto.className = 'relative flex h-2 w-2';
     const pontoPing = document.createElement('span');
-    pontoPing.className = 'absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75';
+    pontoPing.className = 'absolute inline-flex h-full w-full animate-ping rounded-full bg-[#23A854] opacity-75';
     const pontoCore = document.createElement('span');
-    pontoCore.className = 'relative inline-flex h-2 w-2 rounded-full bg-red-500';
+    pontoCore.className = 'relative inline-flex h-2 w-2 rounded-full bg-[#23A854]';
     ponto.appendChild(pontoPing);
     ponto.appendChild(pontoCore);
     const seloTexto = document.createElement('span');
@@ -160,7 +170,8 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
     frame.appendChild(vinheta);
     frame.appendChild(selo);
     frame.appendChild(placeholder);
-    area.appendChild(frame);
+    ledWrap.appendChild(frame);
+    area.appendChild(ledWrap);
     el.appendChild(area);
 
     // Polling do JPEG ao vivo; auto-limpa quando o painel sai da tela

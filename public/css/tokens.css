@@ -187,3 +187,35 @@ h1, h2, h3, .font-headline { font-family: var(--font-headline); }
     animation: none;
   }
 }
+
+/* ── Moldura de vídeo da câmera (TV): caminho de LED correndo na borda ─────
+   A cor vem de --tv-led-color (verde na câmera 1, cinza na câmera 2). Um setor
+   de cor percorre a borda arredondada via ângulo animado do conic-gradient. */
+@property --tv-led-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes tv-led-rotate { to { --tv-led-angle: 360deg; } }
+
+.tv-led-frame::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--tv-led-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--tv-led-color, #23A854) 35%, transparent) 18deg,
+    var(--tv-led-color, #23A854) 40deg,
+    color-mix(in srgb, var(--tv-led-color, #23A854) 35%, transparent) 62deg,
+    transparent 90deg,
+    transparent 360deg
+  );
+  animation: tv-led-rotate 3.6s linear infinite;
+  z-index: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-led-frame::before { animation: none; }
+}
