@@ -92,7 +92,7 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
 
     const area = document.createElement('div');
     area.dataset.cameraLive = 'true';
-    area.className = 'relative flex flex-1 min-h-[180px] items-stretch border-t border-surface-container bg-on-surface p-3 sm:p-4';
+    area.className = 'relative flex flex-1 min-h-[180px] items-stretch border-t border-surface-container bg-[#F7F9FA] p-3 sm:p-4';
 
     // Moldura com caminho de LED correndo na borda (tv-led-frame) + sombra/brilho
     // na cor da câmera. O LED aparece na faixa de 3px entre a moldura e o vídeo.
