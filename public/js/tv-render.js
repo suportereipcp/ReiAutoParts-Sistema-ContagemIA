@@ -9,6 +9,6 @@ export function renderTV({ sessoes }) {
     el.innerHTML = '<p class="text-6xl font-headline text-outline">Nenhuma sessão ativa</p>';
     return el;
   }
-  for (const s of ativas) el.appendChild(PainelContagem({ sessao: s }));
+  for (const s of ativas) el.appendChild(PainelContagem({ sessao: s, liveImage: true }));
   return el;
 }
