@@ -83,49 +83,84 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
   }
 
   if (liveImage) {
-    // A área da imagem cresce para ocupar o espaço restante do card (flex-1),
-    // após o cabeçalho e os detalhes. Assim a imagem preenche de forma uniforme
-    // em qualquer resolução, sem altura fixa que sobra em telas grandes.
-    // object-cover preenche toda a área (corta de leve o topo/base; as linhas
-    // de contagem ficam no centro e permanecem visíveis). min-h piso para telas
-    // muito baixas.
+    // Moldura de vídeo "industrial": a área (bezel escuro) cresce para ocupar o
+    // espaço restante do card (flex-1) → acompanha a resolução do monitor/TV. O
+    // padding cria uma borda que reduz um pouco o vídeo sem quebrar o fill. A
+    // imagem fica numa moldura arredondada com vinheta e selo "AO VIVO".
     const area = document.createElement('div');
     area.dataset.cameraLive = 'true';
-    area.className = 'relative flex flex-1 min-h-[180px] items-center justify-center overflow-hidden border-t border-surface-container bg-black/80';
+    area.className = 'relative flex flex-1 min-h-[180px] border-t border-surface-container bg-on-surface p-3 sm:p-4';
+
+    const frame = document.createElement('div');
+    frame.className = 'relative h-full w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05),0_12px_32px_-14px_rgba(0,0,0,0.7)]';
 
     const img = document.createElement('img');
     img.dataset.cameraLiveImg = 'true';
     img.className = 'h-full w-full object-cover';
     img.alt = `Imagem ao vivo da câmera ${sessao.camera_id}`;
 
-    // Controla o ritmo do polling: só pede o próximo quadro quando o anterior
-    // termina (load/erro). Evita acumular requisições quando a câmera/rede não
-    // acompanham a taxa-alvo — o FPS efetivo vira o máximo sustentável.
-    let carregando = true;
-    img.src = `/cameras/${sessao.camera_id}/live-image?${Date.now()}`;
+    // Vinheta sutil para profundidade (não bloqueia interação).
+    const vinheta = document.createElement('div');
+    vinheta.className = 'pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/15';
+
+    // Selo "AO VIVO" com ponto pulsante (oculto quando a câmera está indisponível).
+    const selo = document.createElement('div');
+    selo.dataset.cameraLiveBadge = 'true';
+    selo.className = 'pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/55 px-3 py-1 ring-1 ring-white/10 backdrop-blur-sm';
+    const ponto = document.createElement('span');
+    ponto.className = 'relative flex h-2 w-2';
+    const pontoPing = document.createElement('span');
+    pontoPing.className = 'absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75';
+    const pontoCore = document.createElement('span');
+    pontoCore.className = 'relative inline-flex h-2 w-2 rounded-full bg-red-500';
+    ponto.appendChild(pontoPing);
+    ponto.appendChild(pontoCore);
+    const seloTexto = document.createElement('span');
+    seloTexto.className = 'text-[10px] font-bold uppercase tracking-[0.22em] text-white/90';
+    seloTexto.textContent = 'Ao vivo';
+    selo.appendChild(ponto);
+    selo.appendChild(seloTexto);
 
     const placeholder = document.createElement('div');
     placeholder.dataset.cameraLivePlaceholder = 'true';
     // `flex` é adicionado só quando o placeholder está visível; mantê-lo junto de
     // `hidden` não esconde nada no Tailwind (`.flex` vence `.hidden` por ordem).
-    placeholder.className = 'hidden absolute inset-0 items-center justify-center text-sm font-medium text-outline';
-    placeholder.textContent = 'Câmera indisponível';
+    placeholder.className = 'hidden absolute inset-0 flex-col items-center justify-center gap-2 text-sm font-medium text-white/60';
+    const placeholderIcone = document.createElement('span');
+    placeholderIcone.className = 'material-symbols-outlined text-3xl text-white/40';
+    placeholderIcone.textContent = 'videocam_off';
+    const placeholderTexto = document.createElement('span');
+    placeholderTexto.textContent = 'Câmera indisponível';
+    placeholder.appendChild(placeholderIcone);
+    placeholder.appendChild(placeholderTexto);
+
+    // Controla o ritmo do polling: só pede o próximo quadro quando o anterior
+    // termina (load/erro). Evita acumular requisições quando a câmera/rede não
+    // acompanham a taxa-alvo — o FPS efetivo vira o máximo sustentável.
+    let carregando = true;
 
     img.addEventListener('error', () => {
       carregando = false;
       img.classList.add('hidden');
+      selo.classList.add('hidden');
       placeholder.classList.remove('hidden');
       placeholder.classList.add('flex');
     });
     img.addEventListener('load', () => {
       carregando = false;
       img.classList.remove('hidden');
+      selo.classList.remove('hidden');
       placeholder.classList.add('hidden');
       placeholder.classList.remove('flex');
     });
 
-    area.appendChild(img);
-    area.appendChild(placeholder);
+    img.src = `/cameras/${sessao.camera_id}/live-image?${Date.now()}`;
+
+    frame.appendChild(img);
+    frame.appendChild(vinheta);
+    frame.appendChild(selo);
+    frame.appendChild(placeholder);
+    area.appendChild(frame);
     el.appendChild(area);
 
     // Polling do JPEG ao vivo; auto-limpa quando o painel sai da tela
