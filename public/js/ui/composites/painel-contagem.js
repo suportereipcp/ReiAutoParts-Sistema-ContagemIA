@@ -1,7 +1,7 @@
 import { formatarHora, formatarNumero } from '../../infra/formatters.js';
 import { Button } from '../primitives/button.js';
 
-export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onReiniciarSessao } = {}) {
+export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onReiniciarSessao, liveImage = false } = {}) {
   const tema = obterTema(sessao.camera_id);
   const el = document.createElement('section');
   el.dataset.painelSessao = 'true';
@@ -76,6 +76,45 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
       actions.appendChild(btn);
     }
     el.appendChild(actions);
+  }
+
+  if (liveImage) {
+    const area = document.createElement('div');
+    area.dataset.cameraLive = 'true';
+    area.className = 'relative border-t border-surface-container bg-black/5';
+
+    const img = document.createElement('img');
+    img.dataset.cameraLiveImg = 'true';
+    img.className = 'block w-full h-auto object-contain';
+    img.alt = `Imagem ao vivo da câmera ${sessao.camera_id}`;
+    img.src = `/cameras/${sessao.camera_id}/live-image?${Date.now()}`;
+
+    const placeholder = document.createElement('div');
+    placeholder.dataset.cameraLivePlaceholder = 'true';
+    placeholder.className = 'hidden absolute inset-0 flex items-center justify-center text-sm font-medium text-outline';
+    placeholder.textContent = 'Câmera indisponível';
+
+    img.addEventListener('error', () => {
+      img.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+    });
+    img.addEventListener('load', () => {
+      img.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+    });
+
+    area.appendChild(img);
+    area.appendChild(placeholder);
+    el.appendChild(area);
+
+    // Polling do JPEG ao vivo; auto-limpa quando o painel sai da tela
+    // (mesmo padrão do cronômetro de tempo abaixo).
+    const PERIODO_MS = 1000;
+    const timerImg = setInterval(() => {
+      if (!el.isConnected) { clearInterval(timerImg); return; }
+      img.src = `/cameras/${sessao.camera_id}/live-image?${Date.now()}`;
+    }, PERIODO_MS);
+    timerImg.unref?.();
   }
 
   // Cronometro do tempo de sessao: atualiza a cada segundo e se auto-limpa
