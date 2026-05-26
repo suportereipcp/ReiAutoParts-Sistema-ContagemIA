@@ -91,16 +91,20 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
 
     const placeholder = document.createElement('div');
     placeholder.dataset.cameraLivePlaceholder = 'true';
-    placeholder.className = 'hidden absolute inset-0 flex items-center justify-center text-sm font-medium text-outline';
+    // `flex` é adicionado só quando o placeholder está visível; mantê-lo junto de
+    // `hidden` não esconde nada no Tailwind (`.flex` vence `.hidden` por ordem).
+    placeholder.className = 'hidden absolute inset-0 items-center justify-center text-sm font-medium text-outline';
     placeholder.textContent = 'Câmera indisponível';
 
     img.addEventListener('error', () => {
       img.classList.add('hidden');
       placeholder.classList.remove('hidden');
+      placeholder.classList.add('flex');
     });
     img.addEventListener('load', () => {
       img.classList.remove('hidden');
       placeholder.classList.add('hidden');
+      placeholder.classList.remove('flex');
     });
 
     area.appendChild(img);

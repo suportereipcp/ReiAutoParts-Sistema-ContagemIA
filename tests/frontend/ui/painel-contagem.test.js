@@ -48,7 +48,20 @@ test('evento de erro na imagem revela o placeholder', () => {
   const img = el.querySelector('[data-camera-live-img]');
   const placeholder = el.querySelector('[data-camera-live-placeholder]');
   assert.ok(placeholder.classList.contains('hidden'), 'placeholder começa oculto');
+  assert.ok(!placeholder.classList.contains('flex'), 'placeholder começa sem flex');
   img.dispatchEvent(new Event('error'));
   assert.ok(img.classList.contains('hidden'), 'img some no erro');
   assert.ok(!placeholder.classList.contains('hidden'), 'placeholder aparece no erro');
+  assert.ok(placeholder.classList.contains('flex'), 'placeholder ganha flex ao aparecer');
+});
+
+test('evento de load esconde o placeholder e mostra a imagem (recuperação)', () => {
+  const el = PainelContagem({ sessao: { id: 'x', quantidade_total: 0, camera_id: 1, programa_nome: 'PECA-A' }, liveImage: true });
+  const img = el.querySelector('[data-camera-live-img]');
+  const placeholder = el.querySelector('[data-camera-live-placeholder]');
+  img.dispatchEvent(new Event('error'));
+  img.dispatchEvent(new Event('load'));
+  assert.ok(!img.classList.contains('hidden'), 'img volta a aparecer no load');
+  assert.ok(placeholder.classList.contains('hidden'), 'placeholder some no load');
+  assert.ok(!placeholder.classList.contains('flex'), 'placeholder perde flex no load');
 });
