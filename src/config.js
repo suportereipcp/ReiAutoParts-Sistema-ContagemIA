@@ -20,8 +20,8 @@ export function loadConfig(env = process.env) {
       anonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     },
     cameras: [
-      { id: 1, ip: env.CAMERA_1_IP, porta: Number(env.CAMERA_1_PORTA ?? 8500) },
-      { id: 2, ip: env.CAMERA_2_IP, porta: Number(env.CAMERA_2_PORTA ?? 8500) },
+      { id: 1, ip: env.CAMERA_1_IP, porta: Number(env.CAMERA_1_PORTA ?? 8500), portaImagem: Number(env.CAMERA_1_PORTA_IMAGEM ?? 80) },
+      { id: 2, ip: env.CAMERA_2_IP, porta: Number(env.CAMERA_2_PORTA ?? 8500), portaImagem: Number(env.CAMERA_2_PORTA_IMAGEM ?? 80) },
     ],
     camera: {
       programScanMax: Number(env.CAMERA_PROGRAM_SCAN_MAX ?? 128),

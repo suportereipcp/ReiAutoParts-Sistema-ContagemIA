@@ -61,3 +61,26 @@ test('loadConfig carrega configuracao de etiquetas e impressora', () => {
   assert.equal(cfg.printer.host, '192.168.0.50');
   assert.equal(cfg.printer.port, 9100);
 });
+
+test('loadConfig define porta de imagem da camera com default 80', () => {
+  const cfg = loadConfig({
+    NEXT_PUBLIC_SUPABASE_URL: 'https://x',
+    SUPABASE_SERVICE_ROLE_KEY: 'key',
+    CAMERA_1_IP: '192.168.0.10',
+    CAMERA_2_IP: '192.168.0.11',
+  });
+  assert.equal(cfg.cameras[0].portaImagem, 80);
+  assert.equal(cfg.cameras[1].portaImagem, 80);
+});
+
+test('loadConfig permite sobrescrever a porta de imagem da camera', () => {
+  const cfg = loadConfig({
+    NEXT_PUBLIC_SUPABASE_URL: 'https://x',
+    SUPABASE_SERVICE_ROLE_KEY: 'key',
+    CAMERA_1_IP: '192.168.0.10',
+    CAMERA_2_IP: '192.168.0.11',
+    CAMERA_1_PORTA_IMAGEM: '8080',
+  });
+  assert.equal(cfg.cameras[0].portaImagem, 8080);
+  assert.equal(cfg.cameras[1].portaImagem, 80);
+});
