@@ -80,16 +80,17 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
 
   if (liveImage) {
     // Área de altura responsiva (relativa à viewport, com piso e teto) para a
-    // imagem não dominar a tela nem empurrar os detalhes da sessão. A imagem é
-    // centralizada com object-contain (mostra o frame inteiro, com letterbox).
-    // clamp escala entre HD (~30vh≈230px) e 4K (teto 480px).
+    // imagem preencher a largura do painel sem dominar a tela nem empurrar os
+    // detalhes da sessão. object-cover preenche toda a área (corta de leve o
+    // topo/base; as linhas de contagem ficam no centro e permanecem visíveis).
+    // clamp escala de HD (~38vh) a 4K/TV (teto 600px).
     const area = document.createElement('div');
     area.dataset.cameraLive = 'true';
-    area.className = 'relative flex items-center justify-center overflow-hidden border-t border-surface-container bg-black/80 h-[clamp(150px,30vh,480px)]';
+    area.className = 'relative flex items-center justify-center overflow-hidden border-t border-surface-container bg-black/80 h-[clamp(200px,38vh,600px)]';
 
     const img = document.createElement('img');
     img.dataset.cameraLiveImg = 'true';
-    img.className = 'max-h-full max-w-full object-contain';
+    img.className = 'h-full w-full object-cover';
     img.alt = `Imagem ao vivo da câmera ${sessao.camera_id}`;
     img.src = `/cameras/${sessao.camera_id}/live-image?${Date.now()}`;
 
