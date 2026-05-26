@@ -106,7 +106,10 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
 
     const img = document.createElement('img');
     img.dataset.cameraLiveImg = 'true';
-    img.className = 'h-full w-full object-cover';
+    // object-contain mostra o frame inteiro (inclui a seta de direção desenhada
+    // pela câmera, que na câmera 1 fica no topo). Letterbox preto combina com a
+    // moldura. object-cover cortaria o topo/base e esconderia a seta.
+    img.className = 'h-full w-full object-contain';
     img.alt = `Imagem ao vivo da câmera ${sessao.camera_id}`;
 
     // Vinheta sutil para profundidade (não bloqueia interação).
