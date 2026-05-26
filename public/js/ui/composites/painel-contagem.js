@@ -97,6 +97,11 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
     img.dataset.cameraLiveImg = 'true';
     img.className = 'h-full w-full object-cover';
     img.alt = `Imagem ao vivo da câmera ${sessao.camera_id}`;
+
+    // Controla o ritmo do polling: só pede o próximo quadro quando o anterior
+    // termina (load/erro). Evita acumular requisições quando a câmera/rede não
+    // acompanham a taxa-alvo — o FPS efetivo vira o máximo sustentável.
+    let carregando = true;
     img.src = `/cameras/${sessao.camera_id}/live-image?${Date.now()}`;
 
     const placeholder = document.createElement('div');
@@ -107,11 +112,13 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
     placeholder.textContent = 'Câmera indisponível';
 
     img.addEventListener('error', () => {
+      carregando = false;
       img.classList.add('hidden');
       placeholder.classList.remove('hidden');
       placeholder.classList.add('flex');
     });
     img.addEventListener('load', () => {
+      carregando = false;
       img.classList.remove('hidden');
       placeholder.classList.add('hidden');
       placeholder.classList.remove('flex');
@@ -122,10 +129,16 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
     el.appendChild(area);
 
     // Polling do JPEG ao vivo; auto-limpa quando o painel sai da tela
-    // (mesmo padrão do cronômetro de tempo abaixo).
-    const PERIODO_MS = 1000;
+    // (mesmo padrão do cronômetro de tempo abaixo). Alvo de ~30 FPS, mas na
+    // prática fica limitado à taxa em que a câmera atualiza o iliveimage.jpg e
+    // à banda; a guarda `carregando` pula o tick se o quadro anterior ainda não
+    // chegou, então o FPS efetivo é o máximo sustentável sem acumular.
+    const FPS_ALVO = 30;
+    const PERIODO_MS = Math.max(16, Math.round(1000 / FPS_ALVO));
     const timerImg = setInterval(() => {
       if (!el.isConnected) { clearInterval(timerImg); return; }
+      if (carregando) return;
+      carregando = true;
       img.src = `/cameras/${sessao.camera_id}/live-image?${Date.now()}`;
     }, PERIODO_MS);
     timerImg.unref?.();
