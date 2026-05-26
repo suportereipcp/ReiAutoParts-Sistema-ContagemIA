@@ -8,6 +8,10 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
   el.dataset.sessaoId = sessao.id;
   el.dataset.cameraId = String(sessao.camera_id);
   el.className = 'zen-card-flutuante overflow-hidden rounded-[28px] border border-surface-container bg-surface-container-lowest';
+  // No modo TV (liveImage) o card vira coluna flex e ocupa toda a altura
+  // disponível, para a imagem preencher o espaço restante de forma uniforme
+  // em qualquer resolução (HD/FullHD/2K/4K).
+  if (liveImage) el.className += ' flex flex-col h-full';
   // Escalona a flutuacao entre as cameras para um efeito mais organico
   el.style.animationDelay = Number(sessao.camera_id) === 1 ? '0s' : '-3.5s';
   el.innerHTML = `
@@ -79,14 +83,15 @@ export function PainelContagem({ sessao, onEncerrar, onReiniciarContagem, onRein
   }
 
   if (liveImage) {
-    // Área de altura responsiva (relativa à viewport, com piso e teto) para a
-    // imagem preencher a largura do painel sem dominar a tela nem empurrar os
-    // detalhes da sessão. object-cover preenche toda a área (corta de leve o
-    // topo/base; as linhas de contagem ficam no centro e permanecem visíveis).
-    // clamp escala de HD (~38vh) a 4K/TV (teto 600px).
+    // A área da imagem cresce para ocupar o espaço restante do card (flex-1),
+    // após o cabeçalho e os detalhes. Assim a imagem preenche de forma uniforme
+    // em qualquer resolução, sem altura fixa que sobra em telas grandes.
+    // object-cover preenche toda a área (corta de leve o topo/base; as linhas
+    // de contagem ficam no centro e permanecem visíveis). min-h piso para telas
+    // muito baixas.
     const area = document.createElement('div');
     area.dataset.cameraLive = 'true';
-    area.className = 'relative flex items-center justify-center overflow-hidden border-t border-surface-container bg-black/80 h-[clamp(200px,38vh,600px)]';
+    area.className = 'relative flex flex-1 min-h-[180px] items-center justify-center overflow-hidden border-t border-surface-container bg-black/80';
 
     const img = document.createElement('img');
     img.dataset.cameraLiveImg = 'true';

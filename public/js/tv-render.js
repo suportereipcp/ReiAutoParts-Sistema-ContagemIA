@@ -2,7 +2,7 @@ import { PainelContagem } from './ui/composites/painel-contagem.js';
 
 export function renderTV({ sessoes }) {
   const el = document.createElement('div');
-  el.className = 'grid grid-cols-2 gap-12 w-full';
+  el.className = 'grid grid-cols-2 gap-8 w-full h-full';
   // Câmera 1 sempre à esquerda, câmera 2 à direita (ordem crescente por id).
   const ativas = [...sessoes.todas()].sort((a, b) => Number(a.camera_id) - Number(b.camera_id));
   if (ativas.length === 0) {
