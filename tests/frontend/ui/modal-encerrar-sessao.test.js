@@ -8,72 +8,108 @@ afterEach(() => limparDOM());
 
 const sessao = {
   id: 'S1',
-  codigo_op: 'OP1',
+  codigo_op: 'OP-A',
   numero_embarque: 'E1',
   programa_nome: 'PECA-X',
 };
 
-test('permite encerrar em nova caixa numerada', () => {
-  let payload = null;
-  abrirModalEncerrarSessao({
-    sessao,
-    caixasExistentes: [],
-    onConfirmar: (p) => { payload = p; },
-  });
-  document.querySelector('[data-input="modo-caixa"][value="nova"]').click();
-  document.querySelector('[data-input="numero_caixa"]').value = 'CX-009';
-  document.querySelector('[data-submit-encerrar]').click();
-  assert.deepEqual(payload, { numero_caixa: 'CX-009' });
+const sessoesEmbarqueComCaixas = [
+  { id: 'S0', numero_caixa: 'CX-001', codigo_op: 'OP-A', programa_nome: 'PECA-X', quantidade_total: 50, encerrada_em: '2026-05-28T10:00:00Z', status: 'encerrada' },
+];
+
+test('exibe tres botoes quando o embarque ja tem caixas', () => {
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: sessoesEmbarqueComCaixas, onConfirmar: () => {} });
+  assert.ok(document.querySelector('[data-acao-caixa-existente]'));
+  assert.ok(document.querySelector('[data-acao-nova-numerada]'));
+  assert.ok(document.querySelector('[data-acao-sem-numero]'));
 });
 
-test('permite encerrar em caixa existente', () => {
-  let payload = null;
-  abrirModalEncerrarSessao({
-    sessao,
-    caixasExistentes: [{ id: 'CX-001', label: 'CX-001' }],
-    onConfirmar: (p) => { payload = p; },
-  });
-  document.querySelector('[data-input="modo-caixa"][value="existente"]').click();
-  document.querySelector('[data-input="caixa_id"]').value = 'CX-001';
-  document.querySelector('[data-submit-encerrar]').click();
-  assert.deepEqual(payload, { caixa_id: 'CX-001' });
+test('oculta botao Caixa existente quando nao ha caixas no embarque', () => {
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: [], onConfirmar: () => {} });
+  assert.equal(document.querySelector('[data-acao-caixa-existente]'), null);
+  assert.ok(document.querySelector('[data-acao-nova-numerada]'));
+  assert.ok(document.querySelector('[data-acao-sem-numero]'));
 });
 
-test('permite encerrar em caixa sem número', () => {
+test('clicar em Nova caixa sem numero chama onConfirmar com a flag direta', () => {
   let payload = null;
-  abrirModalEncerrarSessao({
-    sessao,
-    caixasExistentes: [],
-    onConfirmar: (p) => { payload = p; },
-  });
-  document.querySelector('[data-input="modo-caixa"][value="sem-numero"]').click();
-  document.querySelector('[data-submit-encerrar]').click();
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: [], onConfirmar: (p) => { payload = p; } });
+  document.querySelector('[data-acao-sem-numero]').click();
   assert.deepEqual(payload, { criar_caixa_sem_numero: true });
 });
 
-test('exibe aviso e exige confirmacao se embarqueFaturado for true', () => {
+test('clicar em Nova caixa numerada troca estado, mostra input e Confirmar/Voltar', () => {
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: [], onConfirmar: () => {} });
+  document.querySelector('[data-acao-nova-numerada]').click();
+  assert.ok(document.querySelector('[data-input="numero_caixa"]'));
+  assert.ok(document.querySelector('[data-acao-confirmar-numerada]'));
+  assert.ok(document.querySelector('[data-acao-voltar-numerada]'));
+  assert.equal(document.querySelector('[data-acao-sem-numero]'), null);
+});
+
+test('Confirmar de Nova numerada chama onConfirmar com numero_caixa', () => {
   let payload = null;
-  abrirModalEncerrarSessao({
-    sessao,
-    caixasExistentes: [],
-    embarqueFaturado: true,
-    onConfirmar: (p) => { payload = p; },
-  });
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: [], onConfirmar: (p) => { payload = p; } });
+  document.querySelector('[data-acao-nova-numerada]').click();
+  document.querySelector('[data-input="numero_caixa"]').value = 'CX-077';
+  document.querySelector('[data-acao-confirmar-numerada]').click();
+  assert.deepEqual(payload, { numero_caixa: 'CX-077' });
+});
 
-  // Seleciona o modo sem número para evitar validação de número de caixa
-  document.querySelector('[data-input="modo-caixa"][value="sem-numero"]').click();
+test('Voltar de Nova numerada restaura os tres botoes', () => {
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: sessoesEmbarqueComCaixas, onConfirmar: () => {} });
+  document.querySelector('[data-acao-nova-numerada]').click();
+  document.querySelector('[data-acao-voltar-numerada]').click();
+  assert.ok(document.querySelector('[data-acao-caixa-existente]'));
+  assert.ok(document.querySelector('[data-acao-nova-numerada]'));
+  assert.ok(document.querySelector('[data-acao-sem-numero]'));
+});
 
-  // Verifica que o aviso foi renderizado
-  const alert = document.querySelector('[data-input="confirmar-recusa"]');
-  assert.ok(alert, 'Checkbox de confirmação deve estar presente');
+test('Caixa existente abre Modal 2 e selecao la chama onConfirmar com caixa_id', () => {
+  let payload = null;
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: sessoesEmbarqueComCaixas, onConfirmar: (p) => { payload = p; } });
+  document.querySelector('[data-acao-caixa-existente]').click();
+  const linhaCx = document.querySelector('[data-linha-caixa-opcao]');
+  assert.ok(linhaCx);
+  linhaCx.click();
+  document.querySelector('[data-acao-concluir]').click();
+  assert.deepEqual(payload, { caixa_id: 'CX-001' });
+});
 
-  // Clica em confirmar sem marcar o checkbox
-  document.querySelector('[data-submit-encerrar]').click();
-  assert.equal(payload, null, 'onConfirmar não deve ser chamado sem o checkbox marcado');
-  assert.match(document.body.innerHTML, /Você deve confirmar que está ciente do encerramento tardio/);
+test('Voltar no Modal 2 reabre o Modal 1', () => {
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: sessoesEmbarqueComCaixas, onConfirmar: () => {} });
+  document.querySelector('[data-acao-caixa-existente]').click();
+  document.querySelector('[data-acao-voltar]').click();
+  assert.ok(document.querySelector('[data-acao-caixa-existente]'));
+});
 
-  // Limpa toast anterior do DOM para evitar falso-positivo se necessário, e marca o checkbox
-  alert.checked = true;
-  document.querySelector('[data-submit-encerrar]').click();
-  assert.deepEqual(payload, { criar_caixa_sem_numero: true }, 'onConfirmar deve ser chamado quando checkbox estiver marcado');
+test('Voltar no Modal 3 reabre o Modal 2', () => {
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: sessoesEmbarqueComCaixas, onConfirmar: () => {} });
+  document.querySelector('[data-acao-caixa-existente]').click();
+  document.querySelector('[data-linha-caixa-opcao]').click();
+  document.querySelector('[data-acao-voltar]').click();
+  assert.ok(document.querySelector('[data-linha-caixa-opcao]'));
+});
+
+test('aviso de faturado bloqueia acoes ate checkbox ser marcado', () => {
+  let payload = null;
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: [], embarqueFaturado: true, onConfirmar: (p) => { payload = p; } });
+  assert.ok(document.querySelector('[data-input="confirmar-recusa"]'));
+  document.querySelector('[data-acao-sem-numero]').click();
+  assert.equal(payload, null);
+  document.querySelector('[data-input="confirmar-recusa"]').checked = true;
+  document.querySelector('[data-acao-sem-numero]').click();
+  assert.deepEqual(payload, { criar_caixa_sem_numero: true });
+});
+
+test('estado do checkbox faturado e preservado ao voltar do Modal 2', () => {
+  let payload = null;
+  abrirModalEncerrarSessao({ sessao, sessoesDoEmbarque: sessoesEmbarqueComCaixas, embarqueFaturado: true, onConfirmar: (p) => { payload = p; } });
+  document.querySelector('[data-input="confirmar-recusa"]').checked = true;
+  document.querySelector('[data-input="confirmar-recusa"]').dispatchEvent(new Event('change'));
+  document.querySelector('[data-acao-caixa-existente]').click();
+  document.querySelector('[data-acao-voltar]').click();
+  assert.equal(document.querySelector('[data-input="confirmar-recusa"]').checked, true);
+  document.querySelector('[data-acao-sem-numero]').click();
+  assert.deepEqual(payload, { criar_caixa_sem_numero: true });
 });
