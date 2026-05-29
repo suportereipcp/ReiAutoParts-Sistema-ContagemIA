@@ -29,7 +29,7 @@ export function loadConfig(env = process.env) {
     },
     http: {
       host: env.HTTP_HOST ?? '127.0.0.1',
-      port: Number(env.HTTP_PORT ?? 3000),
+      port: Number(env.PORT ?? env.HTTP_PORT ?? 3000),
     },
     sync: {
       pollerIntervalMs: Number(env.SYNC_POLLER_MS ?? 30000),

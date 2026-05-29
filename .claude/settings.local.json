@@ -61,7 +61,14 @@
       "Bash(mv estrutura_sistema.md scripts_automacao.md AGENTS.md ARQUITETURA.md DEVELOPER_CONTEXT.md docs/dev/)",
       "Bash(curl -I https://github.com)",
       "Bash(ssh -T git@github.com)",
-      "Bash(ssh-keygen *)"
+      "Bash(ssh-keygen *)",
+      "Bash(dir *)",
+      "Bash(claude --version)",
+      "Bash(mkdir -p \"C:/Users/emiliojv/.claude/skills/claude-automation-recommender\")",
+      "Bash(cp \"C:/Users/emiliojv/.claude/plugins/cache/claude-plugins-official/claude-code-setup/1.0.0/skills/claude-automation-recommender/SKILL.md\" \"C:/Users/emiliojv/.claude/skills/claude-automation-recommender/SKILL.md\")",
+      "Bash(mkdir -p \"C:/Users/emiliojv/.claude/skills/claude-md-improver\")",
+      "Bash(cp \"C:/Users/emiliojv/.claude/plugins/cache/claude-plugins-official/claude-md-management/1.0.0/skills/claude-md-improver/SKILL.md\" \"C:/Users/emiliojv/.claude/skills/claude-md-improver/SKILL.md\")",
+      "Bash(mkdir -p \"C:/Users/emiliojv/.claude/skills/skill-creator\")"
     ]
   }
 }

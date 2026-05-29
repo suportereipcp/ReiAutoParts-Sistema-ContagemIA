@@ -28,3 +28,6 @@ Thumbs.db
 
 # Artefatos do Playwright MCP
 .playwright-mcp/
+
+# Plugins pack (download from Release)
+.claude/plugins-pack/

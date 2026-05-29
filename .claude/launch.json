@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Dev Server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--watch", "--watch-path=src", "--watch-path=.env", "src/server.js"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "Fake Keyence",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/fake-keyence.js"],
+      "port": 8500
+    },
+    {
+      "name": "Test Watch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--test", "--watch", "tests/**/*.test.js"]
+    }
+  ]
+}
