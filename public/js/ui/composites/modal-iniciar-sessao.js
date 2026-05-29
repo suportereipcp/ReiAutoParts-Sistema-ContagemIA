@@ -38,7 +38,7 @@ function criarCampo(label, dataInput, opcoes, { placeholder = 'Selecione...', pr
   return { campo, select };
 }
 
-export function abrirModalIniciarSessao({ numeroEmbarque, embarques = [], ops = [], operadores = [], camerasLivres = [], onConfirmar } = {}) {
+export function abrirModalIniciarSessao({ numeroEmbarque, embarques = [], ops = [], operadores = [], camerasLivres = [], camerasConfig = [], onConfirmar } = {}) {
   const subtitle = numeroEmbarque
     ? `Embarque ${numeroEmbarque}`
     : 'Selecione o embarque e preencha os dados para iniciar.';
@@ -69,8 +69,17 @@ export function abrirModalIniciarSessao({ numeroEmbarque, embarques = [], ops = 
   const { campo: campoOperador, select: selectOperador } = criarCampo('Operador', 'codigo_operador', operadores.map(o => ({ value: o.codigo, text: `${o.codigo} — ${o.nome}` })), { placeholder: 'Selecione o operador...' });
   stage.appendChild(campoOperador);
 
-  // Camera field — botões (só câmeras configuradas aparecem)
-  let cameraSelecionada = camerasLivres.length === 1 ? String(camerasLivres[0].id) : '';
+  // Camera field — botões ordenados por slot (da config)
+  // Se camerasConfig foi fornecido, usa ordem dos slots; senão fallback para camerasLivres
+  const livresSet = new Set(camerasLivres.map(c => Number(c.id)));
+  const slotsBotoes = camerasConfig.length > 0
+    ? camerasConfig.map(cfg => ({ slot: cfg.slot, camera_id: cfg.camera_id, label: cfg.label || '', livre: livresSet.has(cfg.camera_id) }))
+    : camerasLivres.map(c => ({ slot: c.id, camera_id: c.id, label: '', livre: true }));
+
+  let cameraSelecionada = '';
+  const livresSlots = slotsBotoes.filter(s => s.livre);
+  if (livresSlots.length === 1) cameraSelecionada = String(livresSlots[0].camera_id);
+
   const campoCamera = document.createElement('div');
   campoCamera.className = 'block';
   const cameraLabel = document.createElement('span');
@@ -81,22 +90,31 @@ export function abrirModalIniciarSessao({ numeroEmbarque, embarques = [], ops = 
   const cameraBtns = document.createElement('div');
   cameraBtns.className = 'flex items-center gap-3 mt-2';
 
-  for (const cam of camerasLivres) {
+  const BTN_ATIVO = 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-primary text-on-primary shadow-md';
+  const BTN_INATIVO = 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-surface-container-high text-on-surface hover:bg-surface-container';
+  const BTN_DESABILITADO = 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold bg-surface-container-high text-outline/40 cursor-not-allowed opacity-50';
+
+  for (const slotInfo of slotsBotoes) {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.dataset.cameraBtn = String(cam.id);
-    btn.className = cameraSelecionada === String(cam.id)
-      ? 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-primary text-on-primary shadow-md'
-      : 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-surface-container-high text-on-surface hover:bg-surface-container';
-    btn.textContent = String(cam.id);
-    btn.addEventListener('click', () => {
-      cameraSelecionada = String(cam.id);
-      for (const b of cameraBtns.querySelectorAll('[data-camera-btn]')) {
-        b.className = b.dataset.cameraBtn === cameraSelecionada
-          ? 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-primary text-on-primary shadow-md'
-          : 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-surface-container-high text-on-surface hover:bg-surface-container';
-      }
-    });
+    btn.dataset.cameraBtn = String(slotInfo.camera_id);
+    if (slotInfo.label) btn.title = slotInfo.label;
+
+    if (!slotInfo.livre) {
+      btn.className = BTN_DESABILITADO;
+      btn.disabled = true;
+    } else {
+      btn.className = cameraSelecionada === String(slotInfo.camera_id) ? BTN_ATIVO : BTN_INATIVO;
+      btn.addEventListener('click', () => {
+        cameraSelecionada = String(slotInfo.camera_id);
+        for (const b of cameraBtns.querySelectorAll('[data-camera-btn]')) {
+          if (b.disabled) continue;
+          b.className = b.dataset.cameraBtn === cameraSelecionada ? BTN_ATIVO : BTN_INATIVO;
+        }
+      });
+    }
+
+    btn.textContent = String(slotInfo.slot);
     cameraBtns.appendChild(btn);
   }
   campoCamera.appendChild(cameraBtns);

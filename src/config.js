@@ -1,4 +1,7 @@
-import 'dotenv/config';
+// Carrega .env apenas se existir (fallback para dev local).
+// Em produção, usar variáveis de ambiente do sistema Windows.
+import { config as dotenvConfig } from 'dotenv';
+dotenvConfig({ path: '.env' });
 
 const REQUIRED = [
   'NEXT_PUBLIC_SUPABASE_URL',

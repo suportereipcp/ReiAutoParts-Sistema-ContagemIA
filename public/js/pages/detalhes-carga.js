@@ -74,15 +74,17 @@ export async function renderDetalhesCarga(ctx, numero) {
       variante: 'primary',
       className: 'px-5 py-3',
       onClick: async () => {
-        const [ops, operadores] = await Promise.all([
+        const [ops, operadores, camerasConfig] = await Promise.all([
           ctx.catalogos.ops().catch(() => []),
           ctx.catalogos.operadores().catch(() => []),
+          ctx.api.get('/cameras/config').catch(() => []),
         ]);
         abrirModalIniciarSessao({
           numeroEmbarque: numero,
           ops,
           operadores,
           camerasLivres: camerasLivresDetalhe.map(id => ({ id })),
+          camerasConfig,
           onConfirmar: async (dados) => {
             await ctx.sessoesSvc.abrir(dados);
             recarregar();
