@@ -1,5 +1,6 @@
 import { renderConfiguradorGrupos } from './configurador-grupos.js';
 import { renderConfiguradorUsuarios } from './configurador-usuarios.js';
+import { renderConfiguradorCameras } from './configurador-cameras.js';
 
 export async function renderConfigurador(ctx) {
   const el = document.createElement('div');
@@ -23,6 +24,7 @@ export async function renderConfigurador(ctx) {
   const abas = [
     { id: 'grupos', label: 'Grupos de Acesso', icone: 'folder_shared' },
     { id: 'usuarios', label: 'Usuários', icone: 'group' },
+    { id: 'cameras', label: 'Cameras', icone: 'videocam' },
   ];
 
   const conteudo = document.createElement('div');
@@ -43,8 +45,10 @@ export async function renderConfigurador(ctx) {
     conteudo.innerHTML = '';
     if (id === 'grupos') {
       renderConfiguradorGrupos(ctx, conteudo);
-    } else {
+    } else if (id === 'usuarios') {
       renderConfiguradorUsuarios(ctx, conteudo);
+    } else if (id === 'cameras') {
+      renderConfiguradorCameras(ctx, conteudo);
     }
   }
 
