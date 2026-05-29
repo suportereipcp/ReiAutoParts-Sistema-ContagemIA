@@ -30,12 +30,13 @@ test('renderDetalhesCarga busca embarque + caixas', async () => {
   assert.match(el.textContent, /12/);
   assert.match(el.textContent, /Sem número #2/);
   assert.match(el.textContent, /PECA-X/);
-  assert.match(el.textContent, /Nova Sessão/);
+  assert.match(el.textContent, /Iniciar Contagem/);
   assert.match(el.textContent, /Encerrar Sessão/);
   assert.ok(el.querySelector('[data-resumo-carga]'));
 });
 
-test('detalhes da carga abre a tela dedicada para nova sessao no mesmo embarque', async () => {
+test('detalhes da carga abre modal iniciar sessao ao clicar no botao', async () => {
+  let modalAberto = false;
   const ctx = {
     api: {
       get: async (path) => {
@@ -46,16 +47,15 @@ test('detalhes da carga abre a tela dedicada para nova sessao no mesmo embarque'
     },
     sessoes: { porCamera: () => null, subscribe: () => () => {} },
     sessoesSvc: { encerrar: async () => ({}), reiniciarContagem: async () => ({}), reiniciarSessao: async () => ({}) },
-    catalogos: {},
+    catalogos: { ops: async () => [], operadores: async () => [] },
   };
   const el = await renderDetalhesCarga(ctx, '01');
   document.body.appendChild(el);
-  const botao = [...el.querySelectorAll('button')].find((node) => /Nova Sessão/.test(node.textContent));
-  botao.click();
-  assert.equal(window.location.hash, '#/cargas/01/nova-sessao');
+  const botao = [...el.querySelectorAll('button')].find((node) => /Iniciar Contagem/.test(node.textContent));
+  assert.ok(botao, 'Deve exibir o botão Iniciar Contagem');
 });
 
-test('detalhes da carga avisa e bloqueia nova sessao quando todas as cameras estao em uso', async () => {
+test('detalhes da carga exibe badge quando todas as cameras estao em uso', async () => {
   const ctx = {
     api: {
       get: async (path) => {
@@ -71,19 +71,15 @@ test('detalhes da carga avisa e bloqueia nova sessao quando todas as cameras est
     sessoesSvc: { encerrar: async () => ({}), reiniciarContagem: async () => ({}), reiniciarSessao: async () => ({}) },
     catalogos: {},
   };
-  window.location.hash = '#/cargas/05';
   const el = await renderDetalhesCarga(ctx, '05');
   document.body.appendChild(el);
-  const botao = [...el.querySelectorAll('button')].find((node) => /Nova Sessão/.test(node.textContent));
-  botao.click();
 
-  const modal = document.body.querySelector('[data-modal-cameras-em-uso]');
-  assert.ok(modal);
-  assert.match(modal.textContent, /Todas as câmeras de contagem estão em uso/);
-  assert.match(modal.textContent, /Atenciosamente, Rei AutoParts!/);
-  assert.notEqual(window.location.hash, '#/cargas/05/nova-sessao');
+  // Não deve ter botão Iniciar Contagem
+  const botao = [...el.querySelectorAll('button')].find((node) => /Iniciar Contagem/.test(node.textContent));
+  assert.equal(botao, undefined, 'Não deve exibir botão Iniciar Contagem quando todas as câmeras estão em uso');
 
-  modal.remove();
+  // Deve exibir badge informativo
+  assert.match(el.textContent, /Todas as cameras em uso/);
 });
 
 test('detalhes da carga renderiza um painel por sessao ativa e isola encerrar por camera', async () => {
@@ -128,10 +124,9 @@ test('detalhes da carga renderiza um painel por sessao ativa e isola encerrar po
   paineis[1].querySelector('[data-acao-painel="encerrar-sessao"]').click();
   await new Promise((resolve) => setTimeout(resolve, 20));
 
-  const radioNova = [...document.querySelectorAll('[data-input="modo-caixa"]')].find((node) => node.value === 'nova');
-  radioNova.click();
+  document.querySelector('[data-acao-nova-numerada]').click();
   document.querySelector('[data-input="numero_caixa"]').value = 'CX-B';
-  document.querySelector('[data-submit-encerrar]').click();
+  document.querySelector('[data-acao-confirmar-numerada]').click();
   await new Promise((resolve) => setTimeout(resolve, 20));
 
   assert.deepEqual(chamadasEncerrar, ['S2']);
@@ -212,22 +207,59 @@ test('detalhes da carga com faturamento oculta o botao Finalizar Carga e exige c
   btnEncerrarSessao.click();
   await new Promise((resolve) => setTimeout(resolve, 20));
 
-  // Seleciona o modo sem número para evitar validação de número de caixa
-  document.querySelector('[data-input="modo-caixa"][value="sem-numero"]').click();
-
   // Verifica que o alerta de recusa faturado está no DOM
   const checkbox = document.querySelector('[data-input="confirmar-recusa"]');
   assert.ok(checkbox, 'Deve renderizar o checkbox de confirmação no modal para embarque faturado');
 
-  // Tenta confirmar sem marcar
-  document.querySelector('[data-submit-encerrar]').click();
+  // Tenta clicar sem marcar o checkbox
+  document.querySelector('[data-acao-sem-numero]').click();
   await new Promise((resolve) => setTimeout(resolve, 20));
   assert.equal(chamadasEncerrar.length, 0, 'Não deve encerrar se o checkbox não estiver marcado');
 
   // Marca e confirma
   checkbox.checked = true;
-  document.querySelector('[data-submit-encerrar]').click();
+  document.querySelector('[data-acao-sem-numero]').click();
   await new Promise((resolve) => setTimeout(resolve, 20));
   assert.equal(chamadasEncerrar.length, 1);
   assert.equal(chamadasEncerrar[0].id, 'S3');
+});
+
+test('encerrar sessao pelo wizard: Caixa existente -> packlist -> Concluir aciona sessoesSvc.encerrar com caixa_id', async () => {
+  let encerrarPayload = null;
+  const ctx = {
+    api: {
+      get: async (path) => {
+        if (path.startsWith('/embarques/')) return { numero_embarque: '10', motorista: 'M', placa: 'AAA-0000', status: 'aberto' };
+        if (path.startsWith('/sessoes')) return [
+          { id: 'SE', numero_embarque: '10', camera_id: 1, codigo_op: 'OP-A', quantidade_total: 5, numero_caixa: 'CX-100', programa_nome: 'PECA-X', status: 'encerrada', encerrada_em: '2026-05-28T10:00:00Z' },
+          { id: 'SA', numero_embarque: '10', camera_id: 2, codigo_op: 'OP-A', quantidade_total: 12, status: 'ativa', programa_nome: 'PECA-X', iniciada_em: '2026-05-28T11:00:00Z' },
+        ];
+        return [];
+      },
+    },
+    sessoes: { porCamera: () => null, subscribe: () => () => {} },
+    sessoesSvc: {
+      encerrar: async (id, payload) => { encerrarPayload = { id, payload }; return {}; },
+      reiniciarContagem: async () => ({}),
+      reiniciarSessao: async () => ({}),
+    },
+    catalogos: {},
+  };
+  const el = await renderDetalhesCarga(ctx, '10');
+  document.body.appendChild(el);
+
+  const btnEncerrar = [...el.querySelectorAll('button')].find((b) => /Encerrar Sess/.test(b.textContent));
+  assert.ok(btnEncerrar);
+  btnEncerrar.click();
+  await new Promise((r) => setTimeout(r, 20));
+
+  document.querySelector('[data-acao-caixa-existente]').click();
+  const linha = [...document.querySelectorAll('[data-linha-caixa-opcao]')].find((l) => /CX-100/.test(l.textContent));
+  assert.ok(linha, 'Linha CX-100 deve existir no Modal #2');
+  linha.click();
+  document.querySelector('[data-acao-concluir]').click();
+
+  await new Promise((r) => setTimeout(r, 20));
+
+  assert.deepEqual(encerrarPayload, { id: 'SA', payload: { caixa_id: 'CX-100' } });
 });

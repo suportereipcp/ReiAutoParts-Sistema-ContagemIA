@@ -6,6 +6,8 @@ import { formatarNumero } from '../infra/formatters.js';
 import { agruparCaixas } from '../domain/caixas.js';
 import { abrirModalEncerrarSessao } from '../ui/composites/modal-encerrar-sessao.js';
 import { abrirModalReimprimir } from '../ui/composites/modal-reimprimir.js';
+import { abrirModalIniciarSessao } from '../ui/composites/modal-iniciar-sessao.js';
+import { toastCentralizado } from '../ui/primitives/toast-centralizado.js';
 
 const CAMERAS = [1, 2];
 
@@ -60,22 +62,44 @@ export async function renderDetalhesCarga(ctx, numero) {
     </div>
   `;
   const headerActions = header.querySelector('[data-header-actions]');
-  const btnNovaSessao = Button({
-    texto: 'Nova Sessão',
-    variante: 'secondary',
-    className: 'bg-surface-container-high hover:bg-surface-container px-5 py-3',
-    onClick: async () => {
-      const ocupadas = new Set(ativas.map((s) => Number(s.camera_id)));
-      const todasEmUso = CAMERAS.every((cam) => ocupadas.has(cam));
-      if (todasEmUso) {
-        mostrarModalCamerasEmUso();
-        return;
-      }
-      window.location.hash = `#/cargas/${encodeURIComponent(numero)}/nova-sessao`;
-    },
-  });
+  const ocupadas = new Set(ativas.map((s) => Number(s.camera_id)));
+  const camerasLivresDetalhe = CAMERAS.filter((cam) => !ocupadas.has(cam));
+  const todasEmUso = camerasLivresDetalhe.length === 0;
+
+  let btnNovaSessao;
+  if (!todasEmUso && !embarque.numero_nota_fiscal) {
+    btnNovaSessao = Button({
+      texto: 'Iniciar Contagem',
+      icone: 'play_arrow',
+      variante: 'primary',
+      className: 'px-5 py-3',
+      onClick: async () => {
+        const [ops, operadores] = await Promise.all([
+          ctx.catalogos.ops().catch(() => []),
+          ctx.catalogos.operadores().catch(() => []),
+        ]);
+        abrirModalIniciarSessao({
+          numeroEmbarque: numero,
+          ops,
+          operadores,
+          camerasLivres: camerasLivresDetalhe.map(id => ({ id })),
+          onConfirmar: async (dados) => {
+            await ctx.sessoesSvc.abrir(dados);
+            recarregar();
+          },
+        });
+      },
+    });
+  } else if (todasEmUso && !embarque.numero_nota_fiscal) {
+    btnNovaSessao = document.createElement('span');
+    btnNovaSessao.className = 'inline-flex items-center gap-2 rounded-full bg-amber-100 px-4 py-2 text-xs font-bold text-amber-800';
+    btnNovaSessao.innerHTML = '<span class="material-symbols-outlined text-sm">videocam_off</span>Todas as cameras em uso';
+  } else {
+    btnNovaSessao = null;
+  }
+
   const btnFinalizar = Button({ texto: 'Finalizar Carga', icone: 'check_circle', className: 'px-5 py-3', onClick: () => mostrarModalFaturamentoPendente(embarque.numero_embarque) });
-  headerActions.appendChild(btnNovaSessao);
+  if (btnNovaSessao) headerActions.appendChild(btnNovaSessao);
   if (!embarque.numero_nota_fiscal) {
     headerActions.appendChild(btnFinalizar);
   }
@@ -113,9 +137,7 @@ export async function renderDetalhesCarga(ctx, numero) {
         sessao: ativa,
         onEncerrar: () => abrirModalEncerrarSessao({
           sessao: ativa,
-          caixasExistentes: caixas
-            .filter((caixa) => caixa.codigo_op === ativa.codigo_op)
-            .map((caixa) => ({ id: caixa.id, label: caixa.numero_caixa_exibicao })),
+          sessoesDoEmbarque: sessoes,
           embarqueFaturado: Boolean(embarque.numero_nota_fiscal),
           onConfirmar: async (payload) => {
             try {
@@ -189,16 +211,7 @@ export async function renderDetalhesCarga(ctx, numero) {
   return el;
 }
 
-// Paletas dos modais de aviso centrais
-const PALETA_CAMERAS = {
-  borda: 'border-amber-300',
-  sombra: 'shadow-[0_24px_70px_rgba(146,64,14,0.28)]',
-  gradiente: 'from-amber-400 to-orange-500',
-  iconBg: 'bg-amber-100 text-amber-600',
-  tagCor: 'text-amber-600',
-  tituloCor: 'text-amber-700',
-  track: 'bg-amber-100',
-};
+// Paleta do modal de aviso central
 const PALETA_FATURAMENTO = {
   borda: 'border-cyan-300',
   sombra: 'shadow-[0_24px_70px_rgba(8,47,73,0.30)]',
@@ -286,19 +299,6 @@ function mostrarModalAviso({ dataAttr, paleta, icone, tag, titulo, mensagem, ass
 
   document.body.appendChild(overlay);
   setTimeout(() => overlay.remove(), duracaoMs);
-}
-
-// Aviso (amarelo/laranja) quando todas as cameras estao em uso.
-function mostrarModalCamerasEmUso() {
-  mostrarModalAviso({
-    dataAttr: 'data-modal-cameras-em-uso',
-    paleta: PALETA_CAMERAS,
-    icone: 'warning',
-    tag: 'Aviso',
-    titulo: 'Todas as câmeras de contagem estão em uso',
-    mensagem: 'Por favor, aguarde a conclusão das sessões ou encerrá-las por gentileza...',
-    assinatura: 'Atenciosamente, Rei AutoParts!',
-  });
 }
 
 // Aviso (azul-escuro/ciano) quando a carga ainda nao foi faturada.
