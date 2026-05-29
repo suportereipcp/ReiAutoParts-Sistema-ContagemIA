@@ -1,6 +1,7 @@
 import { Button } from '../ui/primitives/button.js';
 import { formatarData, formatarHora, formatarNumero } from '../infra/formatters.js';
-import { abrirModalNovaContagemCargaAberta } from '../ui/composites/modal-nova-contagem-carga-aberta.js';
+import { abrirModalIniciarSessao } from '../ui/composites/modal-iniciar-sessao.js';
+import { toastCentralizado } from '../ui/primitives/toast-centralizado.js';
 
 export async function renderSelecaoCarga(ctx) {
   const el = document.createElement('div');
@@ -13,6 +14,39 @@ export async function renderSelecaoCarga(ctx) {
   const pendentesNota = abertas.filter((embarque) => embarque.status === 'fechado').length;
   let abaAtiva = abertas.length > 0 ? 'abertas' : 'expedidas';
 
+  const sessoesAtivas = await ctx.api.get('/sessoes').catch(() => []);
+  const ativasEmAndamento = (sessoesAtivas ?? []).filter(s => s.status === 'ativa');
+  const CAMERAS = [1, 2];
+  const camerasOcupadas = new Set(ativasEmAndamento.map(s => Number(s.camera_id)));
+  const camerasLivres = CAMERAS.filter(id => !camerasOcupadas.has(id));
+
+  function statusEmbarque(embarque) {
+    const sessoesDoEmbarque = ativasEmAndamento.filter(s => s.numero_embarque === embarque.numero_embarque);
+    if (sessoesDoEmbarque.length === 0) return { label: 'Disponivel', cameras: [], disponivel: true };
+    const camerasUsadas = sessoesDoEmbarque.map(s => Number(s.camera_id));
+    const label = `Em contagem · Camera ${camerasUsadas.join(', ')}`;
+    return { label, cameras: camerasUsadas, disponivel: camerasLivres.length > 0 };
+  }
+
+  async function abrirIniciarSessao(numeroEmbarque) {
+    const [ops, operadores] = await Promise.all([
+      ctx.catalogos.ops().catch(() => []),
+      ctx.catalogos.operadores().catch(() => []),
+    ]);
+    const livres = camerasLivres.map(id => ({ id }));
+    abrirModalIniciarSessao({
+      numeroEmbarque,
+      embarques: abertas,
+      ops,
+      operadores,
+      camerasLivres: livres,
+      onConfirmar: async (dados) => {
+        await ctx.sessoesSvc.abrir(dados);
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+      },
+    });
+  }
+
   const header = document.createElement('section');
   header.className = 'flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between';
   header.innerHTML = `
@@ -22,34 +56,6 @@ export async function renderSelecaoCarga(ctx) {
       <p class="mt-2 text-sm font-light text-on-surface-variant">Painel operacional para acompanhar embarques abertos, expedidos e pendências de expedição.</p>
     </div>
   `;
-
-  const novaCarga = Button({
-    texto: 'Nova Carga',
-    icone: 'add',
-    variante: 'primary',
-    onClick: () => { window.location.hash = '#/sessoes/nova'; },
-  });
-  novaCarga.dataset.abrirNovaCarga = 'true';
-  const novaContagem = Button({
-    texto: 'Nova Contagem',
-    icone: 'add',
-    variante: 'secondary',
-    onClick: () => {
-      if (abertas.length === 0) return;
-      abrirModalNovaContagemCargaAberta({
-        embarques: abertas,
-        onConfirmar: (numeroEmbarque) => {
-          window.location.hash = `#/cargas/${encodeURIComponent(numeroEmbarque)}/nova-sessao`;
-        },
-      });
-    },
-  });
-  novaContagem.dataset.acaoNovaContagem = 'true';
-  const headerActions = document.createElement('div');
-  headerActions.className = 'flex items-center gap-3';
-  headerActions.appendChild(novaContagem);
-  headerActions.appendChild(novaCarga);
-  header.appendChild(headerActions);
   el.appendChild(header);
 
   const stats = document.createElement('section');
@@ -163,13 +169,6 @@ export async function renderSelecaoCarga(ctx) {
     atualizarTabs([tabExpedidas, tabAbertas], abaAtiva);
     const expedidasAtivas = abaAtiva === 'expedidas';
     const itens = expedidasAtivas ? expedidas : abertas;
-    const deveMostrarNovaContagem = !expedidasAtivas && abertas.length > 0;
-    if (deveMostrarNovaContagem && !novaContagem.isConnected) {
-      headerActions.insertBefore(novaContagem, novaCarga);
-    }
-    if (!deveMostrarNovaContagem && novaContagem.isConnected) {
-      novaContagem.remove();
-    }
 
     tituloTabela.textContent = expedidasAtivas ? 'Relatório de Cargas Expedidas' : 'Relatório de Cargas em Processo';
     subtituloTabela.textContent = expedidasAtivas
@@ -181,7 +180,11 @@ export async function renderSelecaoCarga(ctx) {
 
     if (itens.length === 0) {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td colspan="5" class="px-8 py-10 text-center text-sm text-on-surface-variant">${expedidasAtivas ? 'Nenhuma carga expedida encontrada.' : 'Nenhuma carga aberta no momento.'}</td>`;
+      if (expedidasAtivas) {
+        tr.innerHTML = `<td colspan="5" class="px-8 py-10 text-center text-sm text-on-surface-variant">Nenhuma carga expedida encontrada.</td>`;
+      } else {
+        tr.innerHTML = `<td colspan="6" class="px-8 py-10 text-center text-sm text-on-surface-variant"><span class="material-symbols-outlined text-3xl text-outline mb-2 block">sync</span>Nenhum embarque disponivel. Aguarde sincronizacao com o ERP.</td>`;
+      }
       bodyTabela.appendChild(tr);
     } else {
       for (const embarque of itens) {
@@ -191,6 +194,65 @@ export async function renderSelecaoCarga(ctx) {
 
     const rotulo = expedidasAtivas ? 'cargas expedidas' : 'cargas abertas';
     rodapeTabela.textContent = `Mostrando ${itens.length} de ${itens.length} ${rotulo}`;
+  }
+
+  function linhaAberta(embarque) {
+    const tr = document.createElement('tr');
+    tr.dataset.linhaEmbarque = embarque.numero_embarque;
+    tr.className = 'hover:bg-surface-container-low/50 transition-colors';
+
+    const data = embarque.data_criacao
+      ? `${formatarData(embarque.data_criacao)} — ${formatarHora(embarque.data_criacao)}`
+      : '—';
+
+    const info = statusEmbarque(embarque);
+    const badgeStatus = info.cameras.length === 0
+      ? `<span class="inline-flex items-center rounded-full bg-secondary-container/50 text-on-secondary-container px-2.5 py-0.5 text-[11px] font-medium">${escapar(info.label)}</span>`
+      : `<span class="inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-[11px] font-medium">${escapar(info.label)}</span>`;
+
+    const btnIniciar = info.disponivel
+      ? `<button type="button" data-acao-iniciar="${escaparAttr(embarque.numero_embarque)}" class="rounded-lg bg-primary text-on-primary px-4 py-1.5 text-xs font-semibold hover:bg-primary/90 transition mr-2">Iniciar Contagem</button>`
+      : `<button type="button" data-acao-iniciar-disabled="${escaparAttr(embarque.numero_embarque)}" class="rounded-lg bg-surface-container-high text-outline cursor-not-allowed opacity-60 px-4 py-1.5 text-xs font-semibold mr-2">Iniciar Contagem</button>`;
+
+    tr.innerHTML = `
+      <td class="px-8 py-5">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary/60">pending_actions</span>
+          <span class="text-lg font-semibold tracking-tight text-on-background">${escapar(embarque.numero_embarque)}</span>
+        </div>
+      </td>
+      <td class="px-8 py-5 text-sm text-on-surface-variant">${escapar(data)}</td>
+      <td class="px-8 py-5 text-sm text-on-surface-variant">${formatarNumero(embarque.qtd_caixas ?? 0)}</td>
+      <td class="px-8 py-5 text-sm text-on-surface-variant">${formatarNumero(embarque.qtd_pecas ?? 0)}</td>
+      <td class="px-8 py-5">${badgeStatus}</td>
+      <td class="px-8 py-5 text-right">
+        ${btnIniciar}
+        <button type="button" data-acao-carga="${escaparAttr(embarque.numero_embarque)}" class="rounded-lg border border-primary/20 px-4 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/5">Detalhes</button>
+      </td>
+    `;
+
+    tr.querySelector('[data-acao-carga]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.location.hash = `#/cargas/${encodeURIComponent(embarque.numero_embarque)}`;
+    });
+
+    const btnIniciarEl = tr.querySelector('[data-acao-iniciar]');
+    if (btnIniciarEl) {
+      btnIniciarEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        abrirIniciarSessao(embarque.numero_embarque);
+      });
+    }
+
+    const btnIniciarDisabledEl = tr.querySelector('[data-acao-iniciar-disabled]');
+    if (btnIniciarDisabledEl) {
+      btnIniciarDisabledEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toastCentralizado('Nenhuma camera disponivel para nova sessao');
+      });
+    }
+
+    return tr;
   }
 }
 
@@ -232,6 +294,7 @@ function cabecalhoAbertas() {
       <th class="px-8 py-4 text-[10px] font-bold uppercase tracking-[0.18em]">Data de Criação</th>
       <th class="px-8 py-4 text-[10px] font-bold uppercase tracking-[0.18em]">Qtd. Caixa</th>
       <th class="px-8 py-4 text-[10px] font-bold uppercase tracking-[0.18em]">Qtd. Peças</th>
+      <th class="px-8 py-4 text-[10px] font-bold uppercase tracking-[0.18em]">Status</th>
       <th class="px-8 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em]">Ação</th>
     </tr>
   `;
@@ -247,36 +310,6 @@ function cabecalhoExpedidas() {
       <th class="px-8 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em]">Ação</th>
     </tr>
   `;
-}
-
-function linhaAberta(embarque) {
-  const tr = document.createElement('tr');
-  tr.dataset.linhaEmbarque = embarque.numero_embarque;
-  tr.className = 'hover:bg-surface-container-low/50 transition-colors';
-
-  const data = embarque.data_criacao
-    ? `${formatarData(embarque.data_criacao)} — ${formatarHora(embarque.data_criacao)}`
-    : '—';
-
-  tr.innerHTML = `
-    <td class="px-8 py-5">
-      <div class="flex items-center gap-3">
-        <span class="material-symbols-outlined text-primary/60">pending_actions</span>
-        <span class="text-lg font-semibold tracking-tight text-on-background">${escapar(embarque.numero_embarque)}</span>
-      </div>
-    </td>
-    <td class="px-8 py-5 text-sm text-on-surface-variant">${escapar(data)}</td>
-    <td class="px-8 py-5 text-sm text-on-surface-variant">${formatarNumero(embarque.qtd_caixas ?? 0)}</td>
-    <td class="px-8 py-5 text-sm text-on-surface-variant">${formatarNumero(embarque.qtd_pecas ?? 0)}</td>
-    <td class="px-8 py-5 text-right">
-      <button type="button" data-acao-carga="${escaparAttr(embarque.numero_embarque)}" class="rounded-lg border border-primary/20 px-4 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/5">Detalhes</button>
-    </td>
-  `;
-
-  tr.querySelector('[data-acao-carga]').addEventListener('click', () => {
-    window.location.hash = `#/cargas/${encodeURIComponent(embarque.numero_embarque)}`;
-  });
-  return tr;
 }
 
 function linhaExpedida(embarque, ctx) {
