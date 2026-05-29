@@ -79,13 +79,28 @@ export function rotasAcesso(fastify, { db, supabase, enfileirarSync }) {
 
   // --- Usuários ---
   fastify.get('/acesso/usuarios', async (req, reply) => {
-    // Tenta sincronizar do Supabase auth se disponível
+    // Tenta sincronizar do Supabase auth se disponível (paginado)
     if (supabase) {
       try {
-        const { data, error } = await supabase.auth.admin.listUsers();
-        if (!error && data?.users?.length) {
+        const todosUsuarios = [];
+        let page = 1;
+        const perPage = 100;
+        let hasMore = true;
+
+        while (hasMore) {
+          const { data, error } = await supabase.auth.admin.listUsers({ page, perPage });
+          if (error || !data?.users?.length) {
+            hasMore = false;
+          } else {
+            todosUsuarios.push(...data.users);
+            hasMore = data.users.length === perPage;
+            page++;
+          }
+        }
+
+        if (todosUsuarios.length) {
           const ts = now();
-          const usuarios = data.users.map(u => ({
+          const usuarios = todosUsuarios.map(u => ({
             id: u.id,
             email: u.email ?? null,
             nome: u.user_metadata?.name ?? u.email ?? '',
