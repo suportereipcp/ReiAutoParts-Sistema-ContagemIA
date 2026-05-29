@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Etiquetas ZPL — Rei AutoParts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; } code, pre { font-family: 'JetBrains Mono', monospace; }</style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
+      <a href="index.html" class="text-sky-600 hover:text-sky-800 text-sm">&larr; Voltar</a>
+      <h1 class="text-lg font-bold">Etiquetas ZPL</h1>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-8 space-y-8">
+
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Especificações Físicas</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-sky-50 rounded-lg p-4 text-center">
+          <p class="text-2xl font-bold text-sky-700">100 × 70mm</p>
+          <p class="text-xs text-sky-600">Tamanho da etiqueta</p>
+        </div>
+        <div class="bg-sky-50 rounded-lg p-4 text-center">
+          <p class="text-2xl font-bold text-sky-700">203 DPI</p>
+          <p class="text-xs text-sky-600">Resolução da impressora</p>
+        </div>
+        <div class="bg-sky-50 rounded-lg p-4 text-center">
+          <p class="text-2xl font-bold text-sky-700">799 × 559 dots</p>
+          <p class="text-xs text-sky-600">Dimensões em dots</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Layout (3 Faixas)</h2>
+      <div class="bg-gray-100 rounded-lg p-4 font-mono text-xs leading-relaxed">
+        <pre>┌─────────────────────────────────────────────────────────┐
+│ PRODUTO: R-3202AP/PRENSAD          (fonte 48)           │  TOPO
+│ OP: 999.999-99                     (fonte 40)           │  y: 10–165
+├─────────────────────────────────────────────────────────┤
+│ QTDE: 99.999    │ EMBARQ: 0078209                       │
+│ DATA: 31/12/26  │ N.F: 999999                           │  MEIO
+│ OPERADOR: João  │ CX: CM-073 (3/7)                      │  y: 165–420
+├─────────────────────────────────────────────────────────┤
+│ PARTE 1/2    29/05/2026 14:32              ▓▓▓ QR ▓▓▓  │  RODAPÉ
+└─────────────────────────────────────────────────────────┘  y: 420–549</pre>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">QR Code — Payload JSON</h2>
+      <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 text-sm"><code>{"e":"0078209","cx":"CM-073","op":"999.999-99","qt":99999,"seq":"3/7"}</code></pre>
+      <table class="w-full text-sm mt-4">
+        <thead><tr class="border-b"><th class="text-left py-2">Campo</th><th class="text-left py-2">Significado</th></tr></thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr><td class="py-2"><code>e</code></td><td>Número do embarque</td></tr>
+          <tr><td class="py-2"><code>cx</code></td><td>Código da caixa</td></tr>
+          <tr><td class="py-2"><code>op</code></td><td>Ordem de produção</td></tr>
+          <tr><td class="py-2"><code>qt</code></td><td>Quantidade total</td></tr>
+          <tr><td class="py-2"><code>seq</code></td><td>Sequência da caixa no embarque</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Fluxo de Emissão</h2>
+      <ol class="text-sm text-gray-700 space-y-2 list-decimal list-inside">
+        <li>Operador encerra sessão e escolhe caixa</li>
+        <li><code>sessaoService.encerrar()</code> grava sessão</li>
+        <li><code>caixaLabelService.emitirPorEncerramento()</code> monta documento lógico</li>
+        <li>Renderer ZPL gera payload(s) com paginação</li>
+        <li>Tabelas <code>etiquetas_caixa</code> + <code>etiquetas_caixa_partes</code> recebem dados</li>
+        <li>Print queue envia via TCP (porta 9100) ou spooler</li>
+        <li>Falha de impressão NÃO reverte a sessão</li>
+      </ol>
+    </section>
+
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Configuração</h2>
+      <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 text-sm"><code>LABEL_PRINTER_ENABLED=false
+LABEL_PRINTER_MODE=tcp
+LABEL_PRINTER_HOST=192.168.0.50
+LABEL_PRINTER_PORT=9100
+LABEL_DPI=203
+LABEL_WIDTH_DOTS=799
+LABEL_HEIGHT_DOTS=559
+LABEL_LINES_PER_PART=10</code></pre>
+    </section>
+
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Arquivos</h2>
+      <ul class="text-sm space-y-2 text-gray-700">
+        <li><code>src/labels/zpl-renderer.js</code> — gera ZPL a partir do documento lógico</li>
+        <li><code>src/labels/caixa-label-service.js</code> — monta documento, persiste, enfileira</li>
+        <li><code>src/printer/print-queue.js</code> — fila de impressão com retry</li>
+        <li><code>src/printer/transports/tcp.js</code> — envio TCP raw</li>
+        <li><code>src/printer/transports/spooler.js</code> — ponto de extensão Windows</li>
+      </ul>
+    </section>
+
+  </main>
+</body>
+</html>

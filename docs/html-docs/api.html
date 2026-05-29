@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API REST — Rei AutoParts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+    .method-get { background: #ecfdf5; color: #065f46; }
+    .method-post { background: #eff6ff; color: #1e40af; }
+    .method-put { background: #fef3c7; color: #92400e; }
+    .method-patch { background: #fef9c3; color: #854d0e; }
+    .method-delete { background: #fef2f2; color: #991b1b; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
+      <a href="index.html" class="text-sky-600 hover:text-sky-800 text-sm">&larr; Voltar</a>
+      <h1 class="text-lg font-bold">API REST</h1>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-8 space-y-10">
+
+    <!-- Sessões -->
+    <section>
+      <h2 class="text-xl font-bold mb-4 pb-2 border-b">Sessões</h2>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/sessoes</code><p class="text-xs text-gray-500 mt-1">Lista sessões (filtro por embarque, status)</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-post text-xs font-bold px-2 py-1 rounded">POST</span>
+          <div><code class="text-sm">/sessoes</code><p class="text-xs text-gray-500 mt-1">Abre nova sessão. Body: numero_embarque, codigo_op, codigo_operador, camera_id</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-post text-xs font-bold px-2 py-1 rounded">POST</span>
+          <div><code class="text-sm">/sessoes/:id/confirmar</code><p class="text-xs text-gray-500 mt-1">Confirma programa da câmera para a sessão</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-post text-xs font-bold px-2 py-1 rounded">POST</span>
+          <div><code class="text-sm">/sessoes/:id/encerrar</code><p class="text-xs text-gray-500 mt-1">Encerra sessão e emite etiqueta automaticamente</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Etiquetas -->
+    <section>
+      <h2 class="text-xl font-bold mb-4 pb-2 border-b">Etiquetas</h2>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-post text-xs font-bold px-2 py-1 rounded">POST</span>
+          <div><code class="text-sm">/etiquetas/caixas</code><p class="text-xs text-gray-500 mt-1">Reimpressão manual. Body: numero_embarque, numero_caixa, codigo_operador</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/etiquetas/caixas?embarque=X&amp;caixa=Y</code><p class="text-xs text-gray-500 mt-1">Histórico de emissões da caixa</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-post text-xs font-bold px-2 py-1 rounded">POST</span>
+          <div><code class="text-sm">/etiquetas/:id/retry</code><p class="text-xs text-gray-500 mt-1">Recoloca partes com erro na fila de impressão</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Faturamento -->
+    <section>
+      <h2 class="text-xl font-bold mb-4 pb-2 border-b">Faturamento</h2>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-post text-xs font-bold px-2 py-1 rounded">POST</span>
+          <div><code class="text-sm">/faturamento/sessoes/:id/aprovar</code><p class="text-xs text-gray-500 mt-1">Aprova sessão. Body: codigo_aprovador</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-post text-xs font-bold px-2 py-1 rounded">POST</span>
+          <div><code class="text-sm">/faturamento/sessoes/:id/reprovar</code><p class="text-xs text-gray-500 mt-1">Reprova sessão. Body: codigo_aprovador</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-post text-xs font-bold px-2 py-1 rounded">POST</span>
+          <div><code class="text-sm">/faturamento/sessoes/:id/realocar</code><p class="text-xs text-gray-500 mt-1">Realoca sessão para outro embarque. Body: embarque_destino</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Acesso -->
+    <section>
+      <h2 class="text-xl font-bold mb-4 pb-2 border-b">Controle de Acesso</h2>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/acesso/catalogo</code><p class="text-xs text-gray-500 mt-1">Catálogo de atividades agrupado por página</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/acesso/grupos</code><p class="text-xs text-gray-500 mt-1">Lista grupos com atividades atribuídas</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-post text-xs font-bold px-2 py-1 rounded">POST</span>
+          <div><code class="text-sm">/acesso/grupos</code><p class="text-xs text-gray-500 mt-1">Cria grupo. Body: nome, descricao?</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-patch text-xs font-bold px-2 py-1 rounded">PATCH</span>
+          <div><code class="text-sm">/acesso/grupos/:id</code><p class="text-xs text-gray-500 mt-1">Renomeia grupo. Body: nome?, descricao?</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-delete text-xs font-bold px-2 py-1 rounded">DELETE</span>
+          <div><code class="text-sm">/acesso/grupos/:id</code><p class="text-xs text-gray-500 mt-1">Exclui grupo (cascade em atividades e vínculos)</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-put text-xs font-bold px-2 py-1 rounded">PUT</span>
+          <div><code class="text-sm">/acesso/grupos/:id/atividades</code><p class="text-xs text-gray-500 mt-1">Define atividades do grupo. Body: { atividades: [...] }</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/acesso/usuarios</code><p class="text-xs text-gray-500 mt-1">Lista usuários (sincroniza do Supabase auth se online)</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-put text-xs font-bold px-2 py-1 rounded">PUT</span>
+          <div><code class="text-sm">/acesso/usuarios/:id/grupos</code><p class="text-xs text-gray-500 mt-1">Atribui grupos ao usuário. Body: { grupos: [...] }</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-put text-xs font-bold px-2 py-1 rounded">PUT</span>
+          <div><code class="text-sm">/acesso/usuarios/:id/overrides</code><p class="text-xs text-gray-500 mt-1">Define overrides. Body: { overrides: [{ atividade_id, efeito }] }</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/acesso/usuarios/:id/acesso</code><p class="text-xs text-gray-500 mt-1">Retorna grupos, overrides e acesso efetivo calculado</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Embarques e Operadores -->
+    <section>
+      <h2 class="text-xl font-bold mb-4 pb-2 border-b">Embarques, OPs e Operadores</h2>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/embarques</code><p class="text-xs text-gray-500 mt-1">Lista embarques abertos</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/ops</code><p class="text-xs text-gray-500 mt-1">Lista ordens de produção</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/operadores</code><p class="text-xs text-gray-500 mt-1">Lista operadores ativos</p></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 border flex items-start gap-3">
+          <span class="method-get text-xs font-bold px-2 py-1 rounded">GET</span>
+          <div><code class="text-sm">/health</code><p class="text-xs text-gray-500 mt-1">Estado do runtime: sync, outbox, câmeras</p></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

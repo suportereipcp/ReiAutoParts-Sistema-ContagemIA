@@ -13,13 +13,16 @@ arquivos_cobertos:
   - src/http/routes/sessoes.js
   - src/http/routes/eventos.js
   - src/http/routes/relatorios.js
+  - src/http/routes/etiquetas.js
+  - src/http/routes/faturamento.js
+  - src/http/routes/acesso.js
 testes_relacionados:
   - tests/eventos-route.test.js
   - tests/sessoes-routes.test.js
-origem:
-  - 80f6c08 feat: implementacao completa do sistema de contagem edge-first
-  - 6f88980 feat(frontend+backend): eventos page + GET /eventos route + tests
-atualizado_em: 2026-04-22
+  - tests/etiquetas-routes.test.js
+  - tests/faturamento-routes.test.js
+  - tests/acesso-routes.test.js
+atualizado_em: 2026-05-29
 ---
 
 # HTTP, WebSocket e Relatorios
@@ -48,6 +51,9 @@ Leia aqui primeiro se a alteracao envolve:
 | `src/http/routes/sessoes.js` | abrir, confirmar, encerrar e listar sessoes |
 | `src/http/routes/eventos.js` | lista eventos recentes com filtro opcional |
 | `src/http/routes/relatorios.js` | exporta sessoes por embarque em CSV, XLSX e PDF |
+| `src/http/routes/etiquetas.js` | emissao, reimpressao e retry de etiquetas de caixa |
+| `src/http/routes/faturamento.js` | aprovacao, reprovacao, realocacao e aprovadores |
+| `src/http/routes/acesso.js` | configurador de acessos: grupos, atividades, usuarios, overrides |
 
 ## Como a camada HTTP esta desenhada
 
@@ -71,6 +77,21 @@ Leia aqui primeiro se a alteracao envolve:
 | `POST /sessoes/:id/encerrar` | `sessao-service.encerrar()` |
 | `GET /eventos` | `eventos.js` |
 | `GET /relatorios/embarque/:numero` | query SQL local + geradores de arquivo |
+| `POST /etiquetas/caixas` | reimpressao manual de etiqueta |
+| `GET /etiquetas/caixas` | historico de emissoes da caixa |
+| `POST /etiquetas/:id/retry` | recoloca partes com erro na fila |
+| `GET /faturamento/aprovadores` | lista aprovadores |
+| `POST /faturamento/sessoes/:id/aprovar` | aprova sessao para faturamento |
+| `GET /acesso/catalogo` | catalogo de atividades (em codigo) |
+| `GET /acesso/grupos` | lista grupos com atividades |
+| `POST /acesso/grupos` | cria grupo |
+| `PATCH /acesso/grupos/:id` | renomeia grupo |
+| `DELETE /acesso/grupos/:id` | exclui grupo |
+| `PUT /acesso/grupos/:id/atividades` | define atividades do grupo |
+| `GET /acesso/usuarios` | lista usuarios (sync do Supabase auth) |
+| `PUT /acesso/usuarios/:id/grupos` | atribui grupos ao usuario |
+| `PUT /acesso/usuarios/:id/overrides` | define concessoes/revogacoes individuais |
+| `GET /acesso/usuarios/:id/acesso` | retorna acesso efetivo calculado |
 
 ## O que a UI espera do WS
 

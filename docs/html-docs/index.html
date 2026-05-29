@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rei AutoParts — Documentação do Sistema</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .nav-link.active { background: #f0f9ff; color: #0369a1; border-left: 3px solid #0369a1; }
+    .nav-link { border-left: 3px solid transparent; }
+    .section-card { transition: transform 0.15s, box-shadow 0.15s; }
+    .section-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+    pre code { font-size: 13px; line-height: 1.5; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">R</div>
+        <div>
+          <h1 class="text-lg font-bold text-gray-900">Rei AutoParts</h1>
+          <p class="text-xs text-gray-500">Sistema de Contagem Automatizada — Documentação</p>
+        </div>
+      </div>
+      <span class="text-xs text-gray-400">Atualizado em 29/05/2026</span>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto flex">
+    <!-- Sidebar -->
+    <aside class="w-64 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-6 px-4 border-r border-gray-200 bg-white">
+      <nav class="space-y-1">
+        <a href="#visao-geral" class="nav-link block px-3 py-2 text-sm rounded-r-lg hover:bg-gray-50">Visão Geral</a>
+        <a href="#arquitetura" class="nav-link block px-3 py-2 text-sm rounded-r-lg hover:bg-gray-50">Arquitetura</a>
+        <a href="#modulos" class="nav-link block px-3 py-2 text-sm rounded-r-lg hover:bg-gray-50">Módulos</a>
+        <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mt-4 mb-1 px-3">Detalhes</p>
+        <a href="api.html" class="nav-link block px-3 py-2 text-sm rounded-r-lg hover:bg-gray-50">API REST</a>
+        <a href="acesso.html" class="nav-link block px-3 py-2 text-sm rounded-r-lg hover:bg-gray-50">Controle de Acesso</a>
+        <a href="etiquetas.html" class="nav-link block px-3 py-2 text-sm rounded-r-lg hover:bg-gray-50">Etiquetas ZPL</a>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <main class="flex-1 py-8 px-8 space-y-12">
+
+      <!-- Visão Geral -->
+      <section id="visao-geral">
+        <h2 class="text-2xl font-bold mb-4">Visão Geral</h2>
+        <div class="bg-white rounded-xl p-6 border border-gray-200 section-card">
+          <p class="text-gray-700 mb-4">Sistema de contagem automatizada de peças para a Rei AutoParts. Roda em Edge PC Windows, conectado a câmeras industriais Keyence IV4 via TCP. Arquitetura edge-first: operações críticas nunca dependem de rede.</p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+            <div class="bg-sky-50 rounded-lg p-3 text-center">
+              <p class="text-2xl font-bold text-sky-700">Node.js 20</p>
+              <p class="text-xs text-sky-600">Runtime ESM</p>
+            </div>
+            <div class="bg-emerald-50 rounded-lg p-3 text-center">
+              <p class="text-2xl font-bold text-emerald-700">SQLite</p>
+              <p class="text-xs text-emerald-600">Banco local</p>
+            </div>
+            <div class="bg-violet-50 rounded-lg p-3 text-center">
+              <p class="text-2xl font-bold text-violet-700">Supabase</p>
+              <p class="text-xs text-violet-600">Sync remoto</p>
+            </div>
+            <div class="bg-amber-50 rounded-lg p-3 text-center">
+              <p class="text-2xl font-bold text-amber-700">Keyence IV4</p>
+              <p class="text-xs text-amber-600">Câmeras TCP</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Arquitetura -->
+      <section id="arquitetura">
+        <h2 class="text-2xl font-bold mb-4">Arquitetura</h2>
+        <div class="bg-white rounded-xl p-6 border border-gray-200 section-card">
+          <h3 class="font-semibold mb-3">Fluxo de Dados</h3>
+          <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm"><code>Câmera IV4 (TCP 8500) → TCP Listener → Camera Manager → Domain
+Domain → SQLite (contagem + outbox)
+Domain → WebSocket Hub → Monitor 1 / Monitor 2 (TV kiosk)
+Sync Worker → Supabase (schema: sistema_contagem) [assíncrono]
+Supabase → Reverse Poller (embarques/OPs/operadores a cada 30s)</code></pre>
+          <h3 class="font-semibold mt-6 mb-3">Invariantes Críticas</h3>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li>• <strong>1 sessão ativa por câmera</strong> — índice parcial único</li>
+            <li>• <strong>Comando antes de escuta</strong> — câmera só emite após OE,1</li>
+            <li>• <strong>Idempotência no sync</strong> — UNIQUE constraints previnem duplicatas</li>
+            <li>• <strong>Leitura sempre local</strong> — abertura de sessão nunca consulta Supabase</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Módulos -->
+      <section id="modulos">
+        <h2 class="text-2xl font-bold mb-4">Módulos</h2>
+        <div class="bg-white rounded-xl p-6 border border-gray-200 section-card overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="border-b"><th class="text-left py-2 font-semibold">Módulo</th><th class="text-left py-2 font-semibold">Caminho</th><th class="text-left py-2 font-semibold">Responsabilidade</th></tr></thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr><td class="py-2">Config</td><td class="text-gray-500"><code>src/config.js</code></td><td>Carrega .env, exporta singleton</td></tr>
+              <tr><td class="py-2">SQLite</td><td class="text-gray-500"><code>src/db/</code></td><td>openDatabase + migrations + queries</td></tr>
+              <tr><td class="py-2">HTTP</td><td class="text-gray-500"><code>src/http/</code></td><td>Fastify REST + WebSocket Hub</td></tr>
+              <tr><td class="py-2">Camera</td><td class="text-gray-500"><code>src/camera/</code></td><td>Cliente TCP bidirecional, reconnect</td></tr>
+              <tr><td class="py-2">Domain</td><td class="text-gray-500"><code>src/domain/</code></td><td>Sessão, contagem, faturamento, calibração</td></tr>
+              <tr><td class="py-2">Acesso</td><td class="text-gray-500"><code>src/acesso/</code></td><td>Catálogo de atividades, resolver de permissões</td></tr>
+              <tr><td class="py-2">Labels</td><td class="text-gray-500"><code>src/labels/</code></td><td>Renderer ZPL, service de etiquetas</td></tr>
+              <tr><td class="py-2">Printer</td><td class="text-gray-500"><code>src/printer/</code></td><td>Fila de impressão, transportes TCP/spooler</td></tr>
+              <tr><td class="py-2">Sync</td><td class="text-gray-500"><code>src/sync/</code></td><td>Outbox pusher, reverse poller, healthcheck</td></tr>
+              <tr><td class="py-2">Audit</td><td class="text-gray-500"><code>src/audit/</code></td><td>Pulse audit, chunk uploader</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Sync -->
+      <section id="sync">
+        <h2 class="text-2xl font-bold mb-4">Sync &amp; Supabase</h2>
+        <div class="bg-white rounded-xl p-6 border border-gray-200 section-card">
+          <p class="text-sm text-gray-700 mb-4">Sincronização assíncrona bidirecional entre SQLite local e Supabase (schema <code>sistema_contagem</code>).</p>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-emerald-50 rounded-lg p-4">
+              <h3 class="font-semibold text-sm mb-2">Edge → Supabase (Outbox)</h3>
+              <ul class="text-xs text-gray-600 space-y-1">
+                <li>sessoes_contagem</li>
+                <li>eventos_log</li>
+                <li>etiquetas_caixa / partes</li>
+                <li>acesso_grupos / atividades / overrides</li>
+                <li>embarques_status</li>
+              </ul>
+            </div>
+            <div class="bg-violet-50 rounded-lg p-4">
+              <h3 class="font-semibold text-sm mb-2">Supabase → Edge (Reverse Poller)</h3>
+              <ul class="text-xs text-gray-600 space-y-1">
+                <li>embarques</li>
+                <li>ordens_producao</li>
+                <li>operadores</li>
+                <li>acesso_usuarios (auth cache)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Câmera -->
+      <section id="camera">
+        <h2 class="text-2xl font-bold mb-4">Câmera Keyence IV4</h2>
+        <div class="bg-white rounded-xl p-6 border border-gray-200 section-card">
+          <p class="text-sm text-gray-700 mb-4">2 câmeras Keyence IV4-600CA conectadas via TCP na porta 8500. Protocolo texto com comandos e respostas.</p>
+          <h3 class="font-semibold text-sm mb-2">Comandos Principais</h3>
+          <table class="w-full text-sm">
+            <thead><tr class="border-b"><th class="text-left py-2">Comando</th><th class="text-left py-2">Função</th></tr></thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr><td class="py-2"><code>OE,1</code></td><td>Ativa escuta de pulsos (output enable)</td></tr>
+              <tr><td class="py-2"><code>OE,0</code></td><td>Desativa escuta</td></tr>
+              <tr><td class="py-2"><code>PW,n</code></td><td>Seleciona programa n</td></tr>
+              <tr><td class="py-2"><code>PR</code></td><td>Lê programa atual</td></tr>
+              <tr><td class="py-2"><code>T1</code></td><td>Trigger manual (disparo)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Frontend -->
+      <section id="frontend">
+        <h2 class="text-2xl font-bold mb-4">Frontend</h2>
+        <div class="bg-white rounded-xl p-6 border border-gray-200 section-card">
+          <p class="text-sm text-gray-700 mb-4">SPA vanilla JS + Tailwind CDN. DOM imperativo, sem framework. Design System: Industrial Zen.</p>
+          <h3 class="font-semibold text-sm mb-2">Páginas</h3>
+          <table class="w-full text-sm">
+            <thead><tr class="border-b"><th class="text-left py-2">Rota</th><th class="text-left py-2">Página</th></tr></thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr><td class="py-2"><code>#/</code></td><td>Dashboard</td></tr>
+              <tr><td class="py-2"><code>#/cargas</code></td><td>Seleção de carga</td></tr>
+              <tr><td class="py-2"><code>#/cargas/:n</code></td><td>Detalhes da carga</td></tr>
+              <tr><td class="py-2"><code>#/relatorios</code></td><td>Emitir relatórios</td></tr>
+              <tr><td class="py-2"><code>#/eventos</code></td><td>Log de eventos</td></tr>
+              <tr><td class="py-2"><code>#/configurador</code></td><td>Configurador de Acessos</td></tr>
+            </tbody>
+          </table>
+          <h3 class="font-semibold text-sm mt-4 mb-2">Primitivas UI</h3>
+          <p class="text-xs text-gray-600">Button, Input, Icon, Modal, Toast, SideNav, TopNav — em <code>public/js/ui/primitives/</code></p>
+        </div>
+      </section>
+
+      <!-- Testes -->
+      <section id="testes">
+        <h2 class="text-2xl font-bold mb-4">Testes</h2>
+        <div class="bg-white rounded-xl p-6 border border-gray-200 section-card">
+          <p class="text-sm text-gray-700 mb-4">Runner: <code>node:test</code> nativo. Sem dependência externa de test framework.</p>
+          <table class="w-full text-sm">
+            <thead><tr class="border-b"><th class="text-left py-2">Arquivo</th><th class="text-left py-2">Cobertura</th></tr></thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr><td class="py-2"><code>tests/acesso-resolver.test.js</code></td><td>Lógica de permissões efetivas</td></tr>
+              <tr><td class="py-2"><code>tests/acesso-queries.test.js</code></td><td>CRUD de grupos, usuários, overrides</td></tr>
+              <tr><td class="py-2"><code>tests/acesso-routes.test.js</code></td><td>Rotas HTTP /acesso/*</td></tr>
+              <tr><td class="py-2"><code>tests/zpl-renderer.test.js</code></td><td>Geração de ZPL</td></tr>
+              <tr><td class="py-2"><code>tests/caixa-label-service.test.js</code></td><td>Service de etiquetas</td></tr>
+              <tr><td class="py-2"><code>tests/sessoes-routes.test.js</code></td><td>Rotas de sessão</td></tr>
+              <tr><td class="py-2"><code>tests/etiquetas-routes.test.js</code></td><td>Rotas de etiquetas</td></tr>
+            </tbody>
+          </table>
+          <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 mt-4 text-sm"><code>node --test tests/acesso-*.test.js tests/zpl-renderer.test.js</code></pre>
+        </div>
+      </section>
+
+      <!-- Operação -->
+      <section id="operacao">
+        <h2 class="text-2xl font-bold mb-4">Operação</h2>
+        <div class="bg-white rounded-xl p-6 border border-gray-200 section-card">
+          <h3 class="font-semibold text-sm mb-2">Iniciar o sistema</h3>
+          <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 text-sm"><code>npm run dev          # desenvolvimento
+npm start            # produção</code></pre>
+          <h3 class="font-semibold text-sm mt-4 mb-2">Variáveis obrigatórias (.env)</h3>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li><code>NEXT_PUBLIC_SUPABASE_URL</code></li>
+            <li><code>SUPABASE_SERVICE_ROLE_KEY</code></li>
+            <li><code>CAMERA_1_IP</code> / <code>CAMERA_2_IP</code></li>
+          </ul>
+          <h3 class="font-semibold text-sm mt-4 mb-2">Banco de dados</h3>
+          <p class="text-xs text-gray-600">SQLite em <code>./data/contagem.db</code>. Migrations aplicadas automaticamente no boot.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>

@@ -11,6 +11,10 @@ arquivos_cobertos:
   - public/js/pages/emitir-relatorios.js
   - public/js/pages/relatorios-cargas-abertas.js
   - public/js/pages/eventos.js
+  - public/js/pages/gestao-aprovadores.js
+  - public/js/pages/configurador.js
+  - public/js/pages/configurador-grupos.js
+  - public/js/pages/configurador-usuarios.js
   - public/js/ui/primitives/*.js
   - public/js/ui/composites/*.js
 testes_relacionados:
@@ -58,6 +62,10 @@ Leia aqui primeiro se a alteracao envolve:
 | `public/js/pages/emitir-relatorios.js` | fluxo de emissao de relatorios |
 | `public/js/pages/relatorios-cargas-abertas.js` | visao auxiliar de relatorios para cargas abertas |
 | `public/js/pages/eventos.js` | tabela de eventos com consumo de `/eventos` |
+| `public/js/pages/gestao-aprovadores.js` | cadastro de aprovadores (legado, substituido pelo configurador) |
+| `public/js/pages/configurador.js` | pagina principal do configurador de acessos com abas |
+| `public/js/pages/configurador-grupos.js` | aba Grupos: mestre-detalhe com arvore de atividades |
+| `public/js/pages/configurador-usuarios.js` | aba Usuarios: filtro, atribuicao de grupos, overrides, efetivo |
 
 ## Arquivos de fluxo mais importantes
 

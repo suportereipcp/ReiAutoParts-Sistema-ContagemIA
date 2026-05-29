@@ -1,0 +1,10 @@
+{
+  "mode": "auto",
+  "agents": {
+    "security-reviewer": "auto",
+    "sync-integrity-checker": "auto",
+    "test-coverage-reviewer": "auto",
+    "zpl-validator": "auto",
+    "domain-invariant-checker": "auto"
+  }
+}
