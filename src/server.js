@@ -48,6 +48,7 @@ import { rotasProgramas } from './http/routes/programas.js';
 import { rotasCalibracao } from './http/routes/calibracao.js';
 import { rotasRelatorios } from './http/routes/relatorios.js';
 import { rotasEventos } from './http/routes/eventos.js';
+import { rotasAcesso } from './http/routes/acesso.js';
 import { criarPulseAuditService } from './audit/pulse-audit-service.js';
 import { criarChunkUploader } from './audit/chunk-uploader.js';
 
@@ -225,6 +226,7 @@ async function main() {
   rotasRelatorios(fastify, { db });
   rotasEventos(fastify, { db });
   rotasFaturamento(fastify, { faturamentoService });
+  rotasAcesso(fastify, { db, supabase: sb });
 
   if (config.audit.bootRecovery) {
     const sessoesAtivas = db.prepare(`SELECT * FROM sessoes_contagem WHERE status = 'ativa'`).all();

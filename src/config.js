@@ -45,8 +45,8 @@ export function loadConfig(env = process.env) {
     },
     labels: {
       dpi: Number(env.LABEL_DPI ?? 203),
-      widthDots: Number(env.LABEL_WIDTH_DOTS ?? 1181),
-      heightDots: Number(env.LABEL_HEIGHT_DOTS ?? 709),
+      widthDots: Number(env.LABEL_WIDTH_DOTS ?? 799),
+      heightDots: Number(env.LABEL_HEIGHT_DOTS ?? 559),
       linesPerPart: Number(env.LABEL_LINES_PER_PART ?? 10),
       template: env.LABEL_TEMPLATE ?? 'caixa-default',
     },

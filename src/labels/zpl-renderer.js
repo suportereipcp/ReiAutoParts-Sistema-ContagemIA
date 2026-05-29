@@ -1,3 +1,9 @@
+// ---------------------------------------------------------------------------
+// ZPL Renderer — Etiqueta de Caixa (v2)
+// Layout: 100×70mm @ 203 DPI (799×559 dots)
+// 3 faixas: Topo (produto+OP), Meio (metadados 2 colunas), Rodapé (QR+paginação)
+// ---------------------------------------------------------------------------
+
 function sanitizar(text, max = 40) {
   return String(text ?? '')
     .replace(/[\^~\\]/g, ' ')
@@ -14,11 +20,32 @@ function dataBR(iso) {
   return fmt.format(d);
 }
 
-function campo(x, y, fonte, valor) {
-  return `^FT${x},${y}^A0N,${fonte}^FH\\^CI28^FD${sanitizar(valor)}^FS^CI27`;
+function horaLocal(iso) {
+  const d = iso ? new Date(iso) : new Date();
+  if (Number.isNaN(d.getTime())) return '';
+  const fmt = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hour12: false,
+  });
+  return fmt.format(d);
 }
 
-function quebrarOperadores(operadores, maxChars = 22) {
+function label(x, y, tamanho, texto) {
+  return `^FT${x},${y}^A0N,${tamanho},${tamanho}^FH\\^CI28^FD${texto}^FS^CI27`;
+}
+
+function valor(x, y, tamanho, texto) {
+  return `^FT${x},${y}^A0N,${tamanho},${tamanho}^FH\\^CI28^FD${sanitizar(texto)}^FS^CI27`;
+}
+
+function linhaH(x, y, largura, espessura = 2) {
+  return `^FO${x},${y}^GB${largura},0,${espessura}^FS`;
+}
+
+function linhaV(x, y, altura, espessura = 2) {
+  return `^FO${x},${y}^GB0,${altura},${espessura}^FS`;
+}
+
+function quebrarOperadores(operadores, maxChars = 28) {
   const linhas = [];
   let atual = '';
   for (const op of operadores) {
@@ -27,54 +54,94 @@ function quebrarOperadores(operadores, maxChars = 22) {
     else { atual = proximo; }
   }
   if (atual) linhas.push(atual);
-  return linhas.slice(0, 3);
+  return linhas.slice(0, 2);
+}
+
+function montarQrPayload(documento, linha, sequencia) {
+  const obj = {
+    e: sanitizar(documento.numero_embarque, 10),
+    cx: sanitizar(documento.numero_caixa_exibicao ?? '', 10),
+    op: sanitizar(linha.codigo_op, 12),
+    qt: Number(linha.quantidade_total ?? 0),
+  };
+  if (sequencia) obj.seq = sequencia;
+  return JSON.stringify(obj);
 }
 
 export function renderizarEtiquetaCaixaZpl(documento, config = {}) {
-  const largura = Number(config.larguraDots ?? 1181);
-  const altura = Number(config.alturaDots ?? 709);
+  const largura = Number(config.larguraDots ?? 799);
+  const altura = Number(config.alturaDots ?? 559);
   const total = Math.max(documento.linhas.length, 1);
   const data = dataBR(documento.gerada_em);
+  const hora = horaLocal(documento.gerada_em);
   const caixa = documento.numero_caixa_exibicao ?? '';
   const nf = documento.numero_nota_fiscal ?? '';
+  const sequencia = documento.sequencia_caixa ?? '';
 
   return documento.linhas.map((linha, index) => {
     const operadores = quebrarOperadores(linha.operadores ?? []);
-    const opLinhas = operadores
-      .map((txt, i) => campo(416, 518 + i * 58, '60,61', txt))
-      .join('\n');
+    const qrData = montarQrPayload(documento, linha, sequencia);
 
-    const payload_zpl = [
+    const cmds = [
+      // --- Cabeçalho ZPL ---
       '^XA',
       '^MMT',
       `^PW${largura}`,
       `^LL${altura}`,
       '^LS0',
-      '^FT45,107^A0N,67,71^FH\\^CI28^FDPRODUTO:^FS^CI27',
-      campo(380, 108, '67,66', linha.item_codigo),
-      '^FT44,213^A0N,68,71^FH\\^CI28^FDQTIDADE:^FS^CI27',
-      campo(369, 215, '60,61', linha.quantidade_total),
-      '^FT613,213^A0N,68,71^FH\\^CI28^FDEMBARQ:^FS^CI27',
-      campo(911, 215, '60,61', documento.numero_embarque),
-      '^FT46,311^A0N,68,71^FH\\^CI28^FDOP:^FS^CI27',
-      campo(173, 316, '60,61', linha.codigo_op),
-      '^FT616,311^A0N,68,66^FH\\^CI28^FDN.F:^FS^CI27',
-      campo(755, 311, '60,61', nf),
-      '^FT46,411^A0N,68,71^FH\\^CI28^FDDATA:^FS^CI27',
-      campo(244, 413, '60,61', data),
-      '^FT616,411^A0N,68,71^FH\\^CI28^FDCX:^FS^CI27',
-      campo(751, 411, '68,71', caixa),
-      '^FT46,519^A0N,68,71^FH\\^CI28^FDOPERADOR:^FS^CI27',
-      opLinhas,
-      `^FT969,691^BQN,2,8^FDMA,${sanitizar(caixa)}^FS`,
-      '^FO16,17^GB1146,0,10^FS',
-      '^FO1154,16^GB0,673,12^FS',
-      '^FO14,16^GB0,667,10^FS',
-      '^FO16,681^GB1146,0,10^FS',
+
+      // --- Bordas externas (espessura 4) ---
+      linhaH(10, 10, largura - 20, 4),       // topo
+      linhaH(10, altura - 10, largura - 20, 4), // base
+      linhaV(10, 10, altura - 20, 4),         // esquerda
+      linhaV(largura - 14, 10, altura - 20, 4), // direita
+
+      // === FAIXA TOPO (y: 10–180) — Produto + OP ===
+      label(30, 50, 22, 'PRODUTO:'),
+      valor(30, 95, 48, linha.item_codigo),
+      label(30, 135, 22, 'OP:'),
+      valor(100, 135, 40, linha.codigo_op),
+
+      // Separador topo/meio
+      linhaH(10, 165, largura - 20, 2),
+
+      // === FAIXA MEIO (y: 165–430) — 2 colunas ===
+      // Coluna esquerda
+      label(30, 200, 20, 'QTDE:'),
+      valor(120, 200, 36, String(linha.quantidade_total ?? '')),
+      label(30, 260, 20, 'DATA:'),
+      valor(120, 260, 32, data),
+      label(30, 315, 20, 'OPERADOR:'),
+      ...operadores.map((txt, i) => valor(30, 350 + i * 35, 28, txt)),
+
+      // Coluna direita
+      label(420, 200, 20, 'EMBARQ:'),
+      valor(420, 235, 36, documento.numero_embarque),
+      label(420, 290, 20, 'N.F:'),
+      valor(420, 320, 32, nf),
+      label(420, 365, 20, 'CX:'),
+      valor(480, 365, 36, caixa),
+      sequencia ? valor(650, 365, 28, `(${sequencia})`) : null,
+
+      // Separador meio/rodapé
+      linhaH(10, 420, largura - 20, 2),
+
+      // === FAIXA RODAPÉ (y: 420–549) — QR + paginação ===
+      // Paginação (só se múltiplas partes)
+      total > 1 ? label(30, 460, 24, `PARTE ${index + 1}/${total}`) : null,
+      // Timestamp
+      valor(30, 500, 20, `${data} ${hora}`),
+
+      // QR Code (canto inferior direito)
+      `^FT${largura - 140},${altura - 25}^BQN,2,5`,
+      `^FDMA,${sanitizar(qrData, 80)}^FS`,
+
+      // --- Impressão ---
       '^PQ1,0,1,Y',
       '^XZ',
-    ].filter(Boolean).join('\n');
+    ];
 
+    const payload_zpl = cmds.filter(Boolean).join('\n');
     return { parte_numero: index + 1, partes_total: total, payload_zpl };
   });
 }
