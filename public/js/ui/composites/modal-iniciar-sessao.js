@@ -69,9 +69,37 @@ export function abrirModalIniciarSessao({ numeroEmbarque, embarques = [], ops = 
   const { campo: campoOperador, select: selectOperador } = criarCampo('Operador', 'codigo_operador', operadores.map(o => ({ value: o.codigo, text: `${o.codigo} — ${o.nome}` })), { placeholder: 'Selecione o operador...' });
   stage.appendChild(campoOperador);
 
-  // Camera field
-  const preSelectCamera = camerasLivres.length === 1;
-  const { campo: campoCamera, select: selectCamera } = criarCampo('Camera', 'camera_id', camerasLivres.map(c => ({ value: c.id, text: `Camera ${c.id}` })), { placeholder: 'Selecione a camera...', preSelect: preSelectCamera });
+  // Camera field — botões (só câmeras configuradas aparecem)
+  let cameraSelecionada = camerasLivres.length === 1 ? String(camerasLivres[0].id) : '';
+  const campoCamera = document.createElement('div');
+  campoCamera.className = 'block';
+  const cameraLabel = document.createElement('span');
+  cameraLabel.className = LABEL_CLASS;
+  cameraLabel.textContent = 'Camera';
+  campoCamera.appendChild(cameraLabel);
+
+  const cameraBtns = document.createElement('div');
+  cameraBtns.className = 'flex items-center gap-3 mt-2';
+
+  for (const cam of camerasLivres) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.cameraBtn = String(cam.id);
+    btn.className = cameraSelecionada === String(cam.id)
+      ? 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-primary text-on-primary shadow-md'
+      : 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-surface-container-high text-on-surface hover:bg-surface-container';
+    btn.textContent = String(cam.id);
+    btn.addEventListener('click', () => {
+      cameraSelecionada = String(cam.id);
+      for (const b of cameraBtns.querySelectorAll('[data-camera-btn]')) {
+        b.className = b.dataset.cameraBtn === cameraSelecionada
+          ? 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-primary text-on-primary shadow-md'
+          : 'flex-1 rounded-2xl px-4 py-4 text-sm font-semibold transition bg-surface-container-high text-on-surface hover:bg-surface-container';
+      }
+    });
+    cameraBtns.appendChild(btn);
+  }
+  campoCamera.appendChild(cameraBtns);
   stage.appendChild(campoCamera);
 
   // Inline error
@@ -96,7 +124,7 @@ export function abrirModalIniciarSessao({ numeroEmbarque, embarques = [], ops = 
       const embarque = numeroEmbarque || selectEmbarque?.value;
       const codigoOp = selectOp.value;
       const codigoOperador = selectOperador.value;
-      const cameraId = selectCamera.value;
+      const cameraId = cameraSelecionada;
 
       if (!embarque) { erro.textContent = 'Selecione um embarque.'; erro.classList.remove('hidden'); return; }
       if (!codigoOp) { erro.textContent = 'Selecione uma Ordem de Producao.'; erro.classList.remove('hidden'); return; }
