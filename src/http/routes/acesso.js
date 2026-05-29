@@ -10,7 +10,7 @@ import {
   atividadesDoUsuarioViaGrupos,
 } from '../../db/queries/acesso.js';
 
-export function rotasAcesso(fastify, { db, supabase }) {
+export function rotasAcesso(fastify, { db, supabase, enfileirarSync }) {
   const now = () => new Date().toISOString();
 
   // --- Catálogo ---
@@ -36,7 +36,9 @@ export function rotasAcesso(fastify, { db, supabase }) {
       if (err.message?.includes('UNIQUE')) return reply.code(409).send({ error: 'Grupo com esse nome já existe' });
       throw err;
     }
-    return reply.code(201).send(buscarGrupo(db, id));
+    const grupo = buscarGrupo(db, id);
+    if (enfileirarSync) enfileirarSync('acesso_grupos', grupo);
+    return reply.code(201).send(grupo);
   });
 
   fastify.patch('/acesso/grupos/:id', (req, reply) => {
@@ -49,13 +51,16 @@ export function rotasAcesso(fastify, { db, supabase }) {
       if (err.message?.includes('UNIQUE')) return reply.code(409).send({ error: 'Nome já em uso' });
       throw err;
     }
-    return buscarGrupo(db, req.params.id);
+    const atualizado = buscarGrupo(db, req.params.id);
+    if (enfileirarSync) enfileirarSync('acesso_grupos', atualizado);
+    return atualizado;
   });
 
   fastify.delete('/acesso/grupos/:id', (req, reply) => {
     const grupo = buscarGrupo(db, req.params.id);
     if (!grupo) return reply.code(404).send({ error: 'Grupo não encontrado' });
     excluirGrupo(db, req.params.id);
+    if (enfileirarSync) enfileirarSync('acesso_grupos_delete', { id: req.params.id });
     return { ok: true };
   });
 
@@ -68,6 +73,7 @@ export function rotasAcesso(fastify, { db, supabase }) {
     const invalidas = atividades.filter(a => !atividadeExiste(a));
     if (invalidas.length) return reply.code(400).send({ error: `Atividades inválidas: ${invalidas.join(', ')}` });
     definirAtividadesGrupo(db, req.params.id, atividades);
+    if (enfileirarSync) enfileirarSync('acesso_grupo_atividades', { grupo_id: req.params.id, atividades });
     return { ok: true, atividades };
   });
 
@@ -101,6 +107,7 @@ export function rotasAcesso(fastify, { db, supabase }) {
     const { grupos } = req.body ?? {};
     if (!Array.isArray(grupos)) return reply.code(400).send({ error: 'grupos deve ser array' });
     definirGruposUsuario(db, req.params.id, grupos);
+    if (enfileirarSync) enfileirarSync('acesso_usuario_grupos', { usuario_id: req.params.id, grupos });
     return { ok: true };
   });
 
@@ -117,6 +124,7 @@ export function rotasAcesso(fastify, { db, supabase }) {
       if (!['conceder', 'revogar'].includes(ov.efeito)) return reply.code(400).send({ error: `Efeito inválido: ${ov.efeito}` });
     }
     definirOverrides(db, req.params.id, overrides);
+    if (enfileirarSync) enfileirarSync('acesso_usuario_overrides', { usuario_id: req.params.id, overrides });
     return { ok: true };
   });
 

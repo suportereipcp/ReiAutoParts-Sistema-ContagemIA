@@ -19,7 +19,7 @@ import {
   formatarLinhaKeyenceNaoReconhecida,
   formatarRespostaKeyenceSemComando,
 } from './camera/keyence-diagnostics.js';
-import { createSupabase, upsertSessao, upsertEvento, upsertEtiquetaCaixa, upsertEtiquetaCaixaParte, buscarAlteracoes, atualizarStatusEmbarque } from './sync/supabase-client.js';
+import { createSupabase, upsertSessao, upsertEvento, upsertEtiquetaCaixa, upsertEtiquetaCaixaParte, buscarAlteracoes, atualizarStatusEmbarque, upsertAcessoGrupo, upsertAcessoGrupoAtividades, upsertAcessoUsuarioGrupos, upsertAcessoUsuarioOverrides, deleteAcessoGrupo } from './sync/supabase-client.js';
 import { criarCaixaLabelService } from './labels/caixa-label-service.js';
 import { renderizarEtiquetaCaixaZpl } from './labels/zpl-renderer.js';
 import { criarPrintQueue } from './printer/print-queue.js';
@@ -133,6 +133,11 @@ async function main() {
       else if (tabela === 'etiquetas_caixa') await upsertEtiquetaCaixa(sb, payload);
       else if (tabela === 'etiquetas_caixa_partes') await upsertEtiquetaCaixaParte(sb, payload);
       else if (tabela === 'embarques_status') await atualizarStatusEmbarque(sb, payload);
+      else if (tabela === 'acesso_grupos') await upsertAcessoGrupo(sb, payload);
+      else if (tabela === 'acesso_grupo_atividades') await upsertAcessoGrupoAtividades(sb, payload);
+      else if (tabela === 'acesso_usuario_grupos') await upsertAcessoUsuarioGrupos(sb, payload);
+      else if (tabela === 'acesso_usuario_overrides') await upsertAcessoUsuarioOverrides(sb, payload);
+      else if (tabela === 'acesso_grupos_delete') await deleteAcessoGrupo(sb, payload.id);
     },
     logger,
   });
@@ -226,7 +231,7 @@ async function main() {
   rotasRelatorios(fastify, { db });
   rotasEventos(fastify, { db });
   rotasFaturamento(fastify, { faturamentoService });
-  rotasAcesso(fastify, { db, supabase: sb });
+  rotasAcesso(fastify, { db, supabase: sb, enfileirarSync });
 
   if (config.audit.bootRecovery) {
     const sessoesAtivas = db.prepare(`SELECT * FROM sessoes_contagem WHERE status = 'ativa'`).all();

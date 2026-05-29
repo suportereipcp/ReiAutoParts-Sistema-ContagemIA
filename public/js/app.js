@@ -51,7 +51,6 @@ function renderShell(ativo) {
       { id: 'cargas', label: 'Cargas', icone: 'package_2', href: '#/cargas' },
       { id: 'relatorios', label: 'Relatórios', icone: 'print', href: '#/relatorios' },
       { id: 'eventos', label: 'Eventos', icone: 'history', href: '#/eventos' },
-      { id: 'aprovadores', label: 'Aprovadores', icone: 'shield_person', href: '#/aprovadores' },
       { id: 'configurador', label: 'Configurador', icone: 'tune', href: '#/configurador' },
     ],
     ativo,
@@ -63,7 +62,7 @@ function renderShell(ativo) {
 }
 
 function caminhoPadrao(id) {
-  return { inicial: 'Inicial', cargas: 'Cargas', relatorios: 'Relatórios', eventos: 'Eventos', aprovadores: 'Aprovadores', configurador: 'Configurador' }[id] ?? 'Rei AutoParts';
+  return { inicial: 'Inicial', cargas: 'Cargas', relatorios: 'Relatórios', eventos: 'Eventos', configurador: 'Configurador' }[id] ?? 'Rei AutoParts';
 }
 
 const ctx = { api, catalogos, sessoesSvc, etiquetasSvc, sync, sessoes };
