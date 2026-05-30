@@ -31,3 +31,6 @@ Thumbs.db
 
 # Plugins pack (download from Release)
 .claude/plugins-pack/
+
+# Installer WPF output
+installer/wpf/Output/
