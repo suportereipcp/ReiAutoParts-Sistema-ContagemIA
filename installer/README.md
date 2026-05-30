@@ -44,3 +44,43 @@ Saída: `installer\Output\ContagemReiAutoParts-Setup.exe` (~50 MB com `node_modu
 
 Painel de Controle → Programas → "Sistema de Contagem Rei AutoParts" → Desinstalar.
 O banco SQLite (`data\contagem.db`) é **preservado** intencionalmente.
+
+---
+
+## Instalador WPF (novo)
+
+Instalador com interface visual nativa Windows (PowerShell + WPF). Localizado em `installer/wpf/`.
+
+### Como gerar o .exe
+
+Pre-requisitos na maquina de build:
+- Python 3.12+ com Pillow (`pip install Pillow`)
+- Modulo ps2exe (`Install-Module ps2exe -Force`)
+
+```powershell
+cd installer\wpf
+.\Build-Exe.ps1
+```
+
+Saida: `installer/wpf/Output/ReiAutoContagem-Installer.exe` (~3-5 MB).
+
+### Como instalar no Edge PC
+
+1. Copie `ReiAutoContagem-Installer.exe` para o Edge PC.
+2. Botao direito → **Executar como administrador**.
+3. Siga o wizard (4 telas):
+   - Verificacao de pre-requisitos (Node.js, Git, Python)
+   - Token GitHub (para clone e atualizacoes futuras)
+   - Credenciais Supabase (URL, Anon Key, Service Role Key)
+   - Instalacao automatica com progresso
+4. Ao concluir, clique "Abrir Sistema" ou configure cameras pelo dashboard.
+
+### Variaveis sensiveis
+
+As 4 variaveis criticas ficam em **variaveis de ambiente Windows (Machine-level)**:
+- `GITHUB_TOKEN`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Nao aparecem no `.env` nem sao visiveis para usuarios nao-admin.
