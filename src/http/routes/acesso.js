@@ -149,6 +149,6 @@ export function rotasAcesso(fastify, { db, supabase, enfileirarSync }) {
     const atividadesGrupos = atividadesDoUsuarioViaGrupos(db, req.params.id);
     const overrides = listarOverrides(db, req.params.id);
     const efetivo = resolverEfetivo(atividadesGrupos, overrides);
-    return { grupos, overrides, efetivo };
+    return { grupos, overrides, efetivo, herdadas: atividadesGrupos };
   });
 }

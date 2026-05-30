@@ -8,6 +8,9 @@ import {
   listarPorCaixaNoEmbarque,
   listarPorEmbarque,
   zerarContagem,
+  contarCaixasHoje,
+  ultimasCaixasFechadas,
+  progressoEmbarque,
 } from '../db/queries/sessoes.js';
 import { buscarEmbarque, buscarOP, buscarOperador } from '../db/queries/espelhos.js';
 
@@ -237,5 +240,8 @@ export function criarSessaoService({ db, cameraManagers, registrarEvento, enfile
     reiniciarSessao,
     listarAtivas: listarAtivasSnapshot,
     listarPorEmbarque: listarPorEmbarqueSnapshot,
+    contarCaixasHoje: () => contarCaixasHoje(db),
+    ultimasCaixasFechadas: (limite) => ultimasCaixasFechadas(db, limite),
+    progressoEmbarque: (numero) => progressoEmbarque(db, numero),
   };
 }

@@ -15,6 +15,8 @@ export async function renderSelecaoCarga(ctx) {
   let abaAtiva = abertas.length > 0 ? 'abertas' : 'expedidas';
 
   const sessoesAtivas = await ctx.api.get('/sessoes').catch(() => []);
+  const caixasHojeResp = await ctx.api.get('/sessoes/caixas-hoje').catch(() => ({ total: 0 }));
+  const caixasHoje = caixasHojeResp?.total ?? 0;
   const ativasEmAndamento = (sessoesAtivas ?? []).filter(s => s.status === 'ativa');
   const CAMERAS = [1, 2];
   const camerasOcupadas = new Set(ativasEmAndamento.map(s => Number(s.camera_id)));
@@ -44,49 +46,75 @@ export async function renderSelecaoCarga(ctx) {
     });
   }
 
-  const header = document.createElement('section');
-  header.className = 'flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between';
-  header.innerHTML = `
-    <div>
-      <p class="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-outline">Gestão de Cargas</p>
-      <h2 class="text-4xl font-headline font-light tracking-tight text-on-surface">Gerenciador de Cargas</h2>
-      <p class="mt-2 text-sm font-light text-on-surface-variant">Painel operacional para acompanhar embarques abertos, expedidos e pendências de expedição.</p>
-    </div>
-  `;
-  el.appendChild(header);
-
   const stats = document.createElement('section');
-  stats.className = 'grid grid-cols-12 gap-6';
+  stats.className = 'grid grid-cols-12 gap-4';
+
+  const emContagem = ativasEmAndamento.length;
+  const camerasTotal = CAMERAS.length;
+  const camerasAtivas = camerasOcupadas.size;
+
   stats.innerHTML = `
-    <article data-stat="produtividade" class="col-span-12 rounded-[28px] border border-surface-container bg-surface-container-lowest p-8 md:col-span-8">
-      <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div class="space-y-4">
-          <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Produtividade Semanal</span>
-          <h3 class="text-3xl font-headline font-light tracking-tight text-primary">Cargas Processadas</h3>
-          <div class="flex items-baseline gap-3">
-            <span class="text-5xl font-bold tracking-tight text-on-background">${formatarNumero(lista.length)}</span>
-            <span class="text-sm font-medium text-secondary">${lista.length === 0 ? 'sem registros' : `${formatarNumero(abertas.length)} abertas`}</span>
-          </div>
-        </div>
-        <div class="flex h-24 w-40 items-end gap-2">
-          ${['38','62','28','80','48','100'].map((altura, indice) => `<div class="w-3 rounded-t-sm ${indice === 5 ? 'bg-primary' : 'bg-primary/15'}" style="height:${altura}%"></div>`).join('')}
-        </div>
+    <article class="col-span-12 md:col-span-3 rounded-2xl border border-surface-container bg-surface-container-lowest p-5 flex flex-col justify-between gap-3">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Abertas</span>
+        <span class="material-symbols-outlined text-2xl text-primary/60" style="font-variation-settings:'FILL' 1,'wght' 300">package_2</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-bold tracking-tight text-on-background">${abertas.length}</span>
+        <span class="text-xs text-on-surface-variant">embarques</span>
+      </div>
+      <div class="h-1 w-full rounded-full bg-surface-container-high overflow-hidden">
+        <div class="h-full rounded-full bg-primary" style="width:${lista.length ? Math.round((abertas.length / lista.length) * 100) : 0}%"></div>
       </div>
     </article>
-    <article data-stat="pendentes-nota" class="relative col-span-12 overflow-hidden rounded-[28px] border border-white/40 bg-white/70 p-8 shadow-sm backdrop-blur md:col-span-4">
-      <div class="relative z-10 space-y-4">
-        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70">Alerta de Status</span>
-        <h3 class="text-2xl font-headline font-light tracking-tight text-primary">Aguardando Expedição</h3>
-        <div class="text-6xl font-extrabold tracking-tighter text-primary">${formatarNumero(pendentesNota)}</div>
-        <p class="max-w-xs text-sm font-medium text-on-surface-variant">Cargas concluídas pendentes de nota fiscal.</p>
+
+    <article class="col-span-12 md:col-span-3 rounded-2xl border border-surface-container bg-surface-container-lowest p-5 flex flex-col justify-between gap-3">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Em Contagem</span>
+        <span class="material-symbols-outlined text-2xl ${emContagem > 0 ? 'text-secondary' : 'text-outline/40'}" style="font-variation-settings:'FILL' 1,'wght' 300">videocam</span>
       </div>
-      <span class="material-symbols-outlined pointer-events-none absolute -bottom-6 -right-6 text-[9rem] text-primary/5">local_shipping</span>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-bold tracking-tight ${emContagem > 0 ? 'text-secondary' : 'text-on-background'}">${emContagem}</span>
+        <span class="text-xs text-on-surface-variant">sessões ativas</span>
+      </div>
+      <div class="flex gap-1.5">
+        ${CAMERAS.map(id => `<div class="h-2 flex-1 rounded-full ${camerasOcupadas.has(id) ? 'bg-secondary' : 'bg-surface-container-high'}"></div>`).join('')}
+      </div>
+    </article>
+
+    <article class="col-span-12 md:col-span-3 rounded-2xl border border-surface-container bg-surface-container-lowest p-5 flex flex-col justify-between gap-3">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Caixas Hoje</span>
+        <span class="material-symbols-outlined text-2xl text-primary/60" style="font-variation-settings:'FILL' 1,'wght' 300">deployed_code</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-bold tracking-tight text-on-background">${caixasHoje}</span>
+        <span class="text-xs text-on-surface-variant">fechadas</span>
+      </div>
+      <p class="text-[11px] text-on-surface-variant">Sessões encerradas no dia</p>
+    </article>
+
+    <article class="col-span-12 md:col-span-3 rounded-2xl border ${pendentesNota > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-surface-container bg-surface-container-lowest'} p-5 flex flex-col justify-between gap-3">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] font-bold uppercase tracking-[0.2em] ${pendentesNota > 0 ? 'text-amber-700' : 'text-on-surface-variant'}">Aguardando NF</span>
+        <span class="material-symbols-outlined text-2xl ${pendentesNota > 0 ? 'text-amber-500' : 'text-outline/40'}" style="font-variation-settings:'FILL' 1,'wght' 300">receipt_long</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="text-4xl font-bold tracking-tight ${pendentesNota > 0 ? 'text-amber-700' : 'text-on-background'}">${pendentesNota}</span>
+        <span class="text-xs ${pendentesNota > 0 ? 'text-amber-600' : 'text-on-surface-variant'}">pendentes</span>
+      </div>
+      <p class="text-[11px] ${pendentesNota > 0 ? 'text-amber-600' : 'text-on-surface-variant'}">
+        ${pendentesNota > 0 ? 'Concluídas, aguardando nota fiscal' : 'Nenhuma pendência'}
+      </p>
     </article>
   `;
   el.appendChild(stats);
 
   const tabs = document.createElement('div');
-  tabs.className = 'flex gap-8 border-b border-surface-container';
+  tabs.className = 'flex items-center justify-between border-b border-surface-container';
+
+  const tabsLeft = document.createElement('div');
+  tabsLeft.className = 'flex gap-8';
   const tabExpedidas = criarTab('expedidas', 'Cargas Expedidas', expedidas.length, () => {
     abaAtiva = 'expedidas';
     atualizar();
@@ -95,69 +123,157 @@ export async function renderSelecaoCarga(ctx) {
     abaAtiva = 'abertas';
     atualizar();
   });
-  tabs.appendChild(tabExpedidas);
-  tabs.appendChild(tabAbertas);
+  tabsLeft.appendChild(tabExpedidas);
+  tabsLeft.appendChild(tabAbertas);
+  tabs.appendChild(tabsLeft);
+
+  // Barra de pesquisa + botão filtro
+  const tabsRight = document.createElement('div');
+  tabsRight.className = 'flex items-center gap-3 pb-2';
+  tabsRight.innerHTML = `
+    <div class="relative">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-outline">search</span>
+      <input data-busca-tabela type="text" placeholder="Buscar embarque..." class="w-52 rounded-lg border border-surface-container bg-surface-container-low pl-9 pr-3 py-1.5 text-xs text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition" />
+    </div>
+    <button data-btn-filtros type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-surface-container bg-surface-container-lowest px-3 py-1.5 text-xs font-medium text-on-surface-variant hover:bg-surface-container-low transition">
+      <span class="material-symbols-outlined text-sm">tune</span>Filtros
+    </button>
+  `;
+  tabs.appendChild(tabsRight);
   el.appendChild(tabs);
+
+  // Lógica de busca
+  let termoBusca = '';
+  const inputBusca = tabsRight.querySelector('[data-busca-tabela]');
+  inputBusca.addEventListener('input', (e) => {
+    termoBusca = e.target.value.trim().toLowerCase();
+    atualizar();
+  });
+
+  // Lógica de filtros
+  let filtrosAtivos = { status: 'todos' }; // todos | disponivel | em_contagem
+  const btnFiltros = tabsRight.querySelector('[data-btn-filtros]');
+  btnFiltros.addEventListener('click', () => abrirModalFiltros());
+
+  function abrirModalFiltros() {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm';
+    overlay.innerHTML = `
+      <div class="w-80 rounded-2xl bg-surface-container-lowest p-6 shadow-xl border border-surface-container space-y-5">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-semibold text-on-surface">Filtros</h3>
+          <button data-fechar-filtros type="button" class="rounded-full p-1 hover:bg-surface-container-high transition">
+            <span class="material-symbols-outlined text-lg text-outline">close</span>
+          </button>
+        </div>
+        <div class="space-y-2">
+          <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Status</label>
+          <div class="flex flex-col gap-2">
+            <label class="flex items-center gap-2 text-sm text-on-surface cursor-pointer">
+              <input type="radio" name="filtro-status" value="todos" ${filtrosAtivos.status === 'todos' ? 'checked' : ''} class="accent-primary" /> Todos
+            </label>
+            <label class="flex items-center gap-2 text-sm text-on-surface cursor-pointer">
+              <input type="radio" name="filtro-status" value="disponivel" ${filtrosAtivos.status === 'disponivel' ? 'checked' : ''} class="accent-primary" /> Disponível
+            </label>
+            <label class="flex items-center gap-2 text-sm text-on-surface cursor-pointer">
+              <input type="radio" name="filtro-status" value="em_contagem" ${filtrosAtivos.status === 'em_contagem' ? 'checked' : ''} class="accent-primary" /> Em contagem
+            </label>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button data-limpar-filtros type="button" class="rounded-lg px-3 py-1.5 text-xs font-medium text-on-surface-variant hover:bg-surface-container-high transition">Limpar</button>
+          <button data-aplicar-filtros type="button" class="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-on-primary hover:bg-primary/90 transition">Aplicar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('[data-fechar-filtros]').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    overlay.querySelector('[data-limpar-filtros]').addEventListener('click', () => {
+      filtrosAtivos = { status: 'todos' };
+      overlay.remove();
+      atualizarBadgeFiltro();
+      atualizar();
+    });
+    overlay.querySelector('[data-aplicar-filtros]').addEventListener('click', () => {
+      const selecionado = overlay.querySelector('input[name="filtro-status"]:checked');
+      filtrosAtivos.status = selecionado?.value ?? 'todos';
+      overlay.remove();
+      atualizarBadgeFiltro();
+      atualizar();
+    });
+  }
+
+  function atualizarBadgeFiltro() {
+    const ativo = filtrosAtivos.status !== 'todos';
+    btnFiltros.classList.toggle('border-primary', ativo);
+    btnFiltros.classList.toggle('text-primary', ativo);
+  }
+
+  function pareceData(texto) {
+    return /^\d{2}\//.test(texto);
+  }
+
+  function filtrarItens(itens) {
+    let resultado = itens;
+    if (termoBusca) {
+      if (pareceData(termoBusca)) {
+        // Filtra por data de criação (formato dd/mm/yyyy, dd/mm ou parcial)
+        resultado = resultado.filter(e => {
+          if (!e.data_criacao) return false;
+          const d = new Date(e.data_criacao);
+          const dia = String(d.getDate()).padStart(2, '0');
+          const mes = String(d.getMonth() + 1).padStart(2, '0');
+          const ano = String(d.getFullYear());
+          const dataFormatada = `${dia}/${mes}/${ano}`;
+          return dataFormatada.startsWith(termoBusca);
+        });
+      } else {
+        resultado = resultado.filter(e => e.numero_embarque.toLowerCase().startsWith(termoBusca));
+      }
+    }
+    if (filtrosAtivos.status === 'disponivel') {
+      resultado = resultado.filter(e => statusEmbarque(e).cameras.length === 0);
+    } else if (filtrosAtivos.status === 'em_contagem') {
+      resultado = resultado.filter(e => statusEmbarque(e).cameras.length > 0);
+    }
+    return resultado;
+  }
 
   const secaoTabela = document.createElement('section');
   secaoTabela.className = 'space-y-4';
 
-  const cabecalhoTabela = document.createElement('div');
-  cabecalhoTabela.className = 'flex items-center justify-between gap-4';
-
-  const legenda = document.createElement('div');
-  legenda.innerHTML = `
-    <h3 data-titulo-tabela class="text-2xl font-headline font-light tracking-tight text-primary"></h3>
-    <p data-subtitulo-tabela class="mt-1 text-sm text-outline"></p>
-  `;
-
-  const acoes = document.createElement('div');
-  acoes.className = 'flex items-center gap-2';
-  const filtro = document.createElement('button');
-  filtro.type = 'button';
-  filtro.className = 'inline-flex items-center gap-2 rounded-xl bg-surface-container-lowest px-4 py-2 text-xs font-medium text-primary shadow-sm';
-  filtro.innerHTML = '<span class="material-symbols-outlined text-sm">filter_list</span>Filtros';
-  const exportar = document.createElement('a');
-  exportar.dataset.exportarManifesto = 'true';
-  exportar.href = '#/relatorios';
-  exportar.className = 'inline-flex items-center gap-2 rounded-xl bg-primary-dim px-4 py-2 text-xs font-medium text-on-primary shadow-sm';
-  exportar.innerHTML = '<span class="material-symbols-outlined text-sm">download</span>Exportar Manifesto';
-  acoes.appendChild(filtro);
-  acoes.appendChild(exportar);
-
-  cabecalhoTabela.appendChild(legenda);
-  cabecalhoTabela.appendChild(acoes);
-  secaoTabela.appendChild(cabecalhoTabela);
-
   const tabela = document.createElement('div');
-  tabela.className = 'overflow-hidden rounded-[28px] border border-surface-container bg-surface-container-lowest shadow-sm';
+  tabela.className = 'overflow-hidden rounded-[28px] border border-surface-container bg-surface-container-lowest shadow-sm flex flex-col';
   tabela.innerHTML = `
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto flex-1 min-h-0 overflow-y-auto zen-scroll" data-scroll-tabela>
       <table class="w-full border-collapse text-left">
-        <thead data-head-tabela></thead>
+        <thead data-head-tabela class="sticky top-0 z-10"></thead>
         <tbody data-body-tabela class="divide-y divide-surface-container"></tbody>
       </table>
-    </div>
-    <div class="flex items-center justify-between border-t border-surface-container px-8 py-4">
-      <span data-rodape-tabela class="text-xs font-medium text-outline"></span>
-      <div class="flex gap-2">
-        <button type="button" class="rounded border border-surface-container px-2 py-2 text-outline">
-          <span class="material-symbols-outlined text-sm leading-none">chevron_left</span>
-        </button>
-        <button type="button" class="rounded border border-surface-container px-2 py-2 text-outline">
-          <span class="material-symbols-outlined text-sm leading-none">chevron_right</span>
-        </button>
-      </div>
     </div>
   `;
   secaoTabela.appendChild(tabela);
   el.appendChild(secaoTabela);
 
-  const tituloTabela = legenda.querySelector('[data-titulo-tabela]');
-  const subtituloTabela = legenda.querySelector('[data-subtitulo-tabela]');
   const headTabela = tabela.querySelector('[data-head-tabela]');
   const bodyTabela = tabela.querySelector('[data-body-tabela]');
-  const rodapeTabela = tabela.querySelector('[data-rodape-tabela]');
+  const scrollContainer = tabela.querySelector('[data-scroll-tabela]');
+  // Altura fixa via CSS: ocupa ~60vh (viewport restante após header/cards)
+  scrollContainer.style.maxHeight = 'clamp(200px, calc(100vh - 420px), 70vh)';
+  // Scroll interno só ativa quando o scroll da página chega ao final
+  scrollContainer.style.overflowY = 'hidden';
+
+  const pageScroller = document.querySelector('[data-page-scroll]') || document.documentElement;
+  function verificarFimScroll() {
+    const el = pageScroller === document.documentElement ? document.documentElement : pageScroller;
+    const noFundo = Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 2;
+    scrollContainer.style.overflowY = noFundo ? 'auto' : 'hidden';
+  }
+  const scrollTarget = pageScroller === document.documentElement ? window : pageScroller;
+  scrollTarget.addEventListener('scroll', verificarFimScroll, { passive: true });
+  requestAnimationFrame(verificarFimScroll);
 
   atualizar();
   return el;
@@ -165,19 +281,17 @@ export async function renderSelecaoCarga(ctx) {
   function atualizar() {
     atualizarTabs([tabExpedidas, tabAbertas], abaAtiva);
     const expedidasAtivas = abaAtiva === 'expedidas';
-    const itens = expedidasAtivas ? expedidas : abertas;
-
-    tituloTabela.textContent = expedidasAtivas ? 'Relatório de Cargas Expedidas' : 'Relatório de Cargas em Processo';
-    subtituloTabela.textContent = expedidasAtivas
-      ? 'Listagem de embarques finalizados com acesso rápido ao detalhamento e manifesto.'
-      : 'Listagem de embarques abertos aguardando conferência ou processamento.';
+    const itensBase = expedidasAtivas ? expedidas : abertas;
+    const itens = filtrarItens(itensBase);
 
     headTabela.innerHTML = expedidasAtivas ? cabecalhoExpedidas() : cabecalhoAbertas();
     bodyTabela.innerHTML = '';
 
     if (itens.length === 0) {
       const tr = document.createElement('tr');
-      if (expedidasAtivas) {
+      if (termoBusca || filtrosAtivos.status !== 'todos') {
+        tr.innerHTML = `<td colspan="6" class="px-8 py-10 text-center text-sm text-on-surface-variant"><span class="material-symbols-outlined text-3xl text-outline mb-2 block">search_off</span>Nenhum resultado encontrado para os filtros aplicados.</td>`;
+      } else if (expedidasAtivas) {
         tr.innerHTML = `<td colspan="5" class="px-8 py-10 text-center text-sm text-on-surface-variant">Nenhuma carga expedida encontrada.</td>`;
       } else {
         tr.innerHTML = `<td colspan="6" class="px-8 py-10 text-center text-sm text-on-surface-variant"><span class="material-symbols-outlined text-3xl text-outline mb-2 block">sync</span>Nenhum embarque disponivel. Aguarde sincronizacao com o ERP.</td>`;
@@ -188,9 +302,6 @@ export async function renderSelecaoCarga(ctx) {
         bodyTabela.appendChild(expedidasAtivas ? linhaExpedida(embarque, ctx) : linhaAberta(embarque));
       }
     }
-
-    const rotulo = expedidasAtivas ? 'cargas expedidas' : 'cargas abertas';
-    rodapeTabela.textContent = `Mostrando ${itens.length} de ${itens.length} ${rotulo}`;
   }
 
   function linhaAberta(embarque) {

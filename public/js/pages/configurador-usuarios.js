@@ -162,6 +162,21 @@ async function renderEditorUsuario(editor, usuario, todosGrupos, catalogo, ctx) 
 
   const gruposAtuais = new Set(acesso.grupos.map(g => g.id));
   const overridesMap = new Map(acesso.overrides.map(o => [o.atividade_id, o.efeito]));
+  let herdadasSet = new Set(acesso.herdadas ?? []);
+
+  // Recalcula herdadas localmente a partir dos grupos selecionados
+  function recalcularHerdadas() {
+    const novas = new Set();
+    for (const g of todosGrupos) {
+      if (gruposAtuais.has(g.id) && g.atividades) {
+        for (const aid of g.atividades) novas.add(aid);
+      }
+    }
+    herdadasSet = novas;
+  }
+
+  // Callbacks para atualizar visual dos botões "Herdar" quando grupos mudam
+  const atualizadoresHerdar = [];
 
   // Header
   const header = document.createElement('div');
@@ -212,6 +227,9 @@ async function renderEditorUsuario(editor, usuario, todosGrupos, catalogo, ctx) 
       chip.className = cb.checked
         ? 'flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 cursor-pointer transition-all text-sm font-medium'
         : 'flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container border border-outline-variant cursor-pointer transition-all text-sm hover:border-primary/20 hover:bg-surface-container-high';
+      // Recalcula herança e atualiza botões
+      recalcularHerdadas();
+      for (const fn of atualizadoresHerdar) fn();
     });
 
     const lbl = document.createElement('span');
@@ -265,18 +283,35 @@ async function renderEditorUsuario(editor, usuario, todosGrupos, catalogo, ctx) 
       segmented.className = 'flex rounded-lg overflow-hidden border border-outline-variant';
 
       const atual = overridesMap.get(at.id) ?? '';
+      function herdarActiveClass() {
+        return herdadasSet.has(at.id)
+          ? 'bg-emerald-100 text-emerald-800 font-semibold border-emerald-300'
+          : 'bg-surface-container-high text-on-surface font-semibold';
+      }
       const opcoes = [
-        { value: '', label: 'Herdar', icon: 'remove', activeClass: 'bg-surface-container-high text-on-surface font-semibold' },
-        { value: 'conceder', label: 'Conceder', icon: 'check', activeClass: 'bg-emerald-50 text-emerald-700 font-semibold border-emerald-200' },
-        { value: 'revogar', label: 'Revogar', icon: 'close', activeClass: 'bg-red-50 text-red-700 font-semibold border-red-200' },
+        { value: '', label: 'Herdar', icon: 'remove', getActiveClass: herdarActiveClass },
+        { value: 'conceder', label: 'Conceder', icon: 'check', getActiveClass: () => 'bg-emerald-50 text-emerald-700 font-semibold border-emerald-200' },
+        { value: 'revogar', label: 'Revogar', icon: 'close', getActiveClass: () => 'bg-red-50 text-red-700 font-semibold border-red-200' },
       ];
       const inactiveClass = 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high';
 
       const botoes = [];
+      let valorAtual = atual;
+
+      function atualizarBotoes() {
+        for (let i = 0; i < botoes.length; i++) {
+          const b = botoes[i];
+          const o = opcoes[i];
+          const isActive = o.value === valorAtual;
+          b.className = `px-3 py-1.5 text-[11px] flex items-center gap-1 transition-all ${isActive ? o.getActiveClass() : inactiveClass}`;
+          if (i > 0) b.classList.add('border-l', 'border-outline-variant');
+        }
+      }
+
       for (const op of opcoes) {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = `px-3 py-1.5 text-[11px] flex items-center gap-1 transition-all ${atual === op.value ? op.activeClass : inactiveClass}`;
+        btn.className = `px-3 py-1.5 text-[11px] flex items-center gap-1 transition-all ${atual === op.value ? op.getActiveClass() : inactiveClass}`;
         if (op !== opcoes[0]) btn.classList.add('border-l', 'border-outline-variant');
 
         const iconEl = document.createElement('span');
@@ -287,19 +322,16 @@ async function renderEditorUsuario(editor, usuario, todosGrupos, catalogo, ctx) 
         btn.addEventListener('click', () => {
           if (op.value) overridesMap.set(at.id, op.value);
           else overridesMap.delete(at.id);
-          // Atualiza visual
-          for (let i = 0; i < botoes.length; i++) {
-            const b = botoes[i];
-            const o = opcoes[i];
-            const isActive = o.value === op.value;
-            b.className = `px-3 py-1.5 text-[11px] flex items-center gap-1 transition-all ${isActive ? o.activeClass : inactiveClass}`;
-            if (i > 0) b.classList.add('border-l', 'border-outline-variant');
-          }
+          valorAtual = op.value;
+          atualizarBotoes();
         });
 
         botoes.push(btn);
         segmented.appendChild(btn);
       }
+
+      // Registra atualizador para quando grupos mudam
+      atualizadoresHerdar.push(atualizarBotoes);
 
       row.append(lbl, segmented);
       secPag.appendChild(row);
@@ -317,22 +349,36 @@ async function renderEditorUsuario(editor, usuario, todosGrupos, catalogo, ctx) 
   tituloEf.textContent = 'Acesso Efetivo (calculado)';
   secEfetivo.appendChild(tituloEf);
 
-  if (acesso.efetivo.length === 0) {
-    const msg = document.createElement('p');
-    msg.className = 'text-xs text-on-surface-variant italic';
-    msg.textContent = 'Nenhuma atividade concedida a este usuário.';
-    secEfetivo.appendChild(msg);
-  } else {
-    const chips = document.createElement('div');
-    chips.className = 'flex flex-wrap gap-1.5';
-    for (const aid of acesso.efetivo) {
-      const chip = document.createElement('span');
-      chip.className = 'text-[10px] px-2.5 py-1 rounded-md font-medium bg-emerald-50 text-emerald-700 border border-emerald-200';
-      chip.textContent = aid;
-      chips.appendChild(chip);
+  const chipsContainer = document.createElement('div');
+  chipsContainer.className = 'flex flex-wrap gap-1.5';
+  secEfetivo.appendChild(chipsContainer);
+
+  function renderizarEfetivo() {
+    chipsContainer.innerHTML = '';
+    // Calcula efetivo local: herdadas - revogadas + concedidas
+    const efetivo = new Set(herdadasSet);
+    for (const [aid, efeito] of overridesMap) {
+      if (efeito === 'conceder') efetivo.add(aid);
+      else if (efeito === 'revogar') efetivo.delete(aid);
     }
-    secEfetivo.appendChild(chips);
+    if (efetivo.size === 0) {
+      chipsContainer.innerHTML = '<p class="text-xs text-on-surface-variant italic">Nenhuma atividade concedida a este usuário.</p>';
+      return;
+    }
+    for (const aid of efetivo) {
+      const chip = document.createElement('span');
+      const isHerdada = herdadasSet.has(aid);
+      chip.className = isHerdada
+        ? 'text-[10px] px-2.5 py-1 rounded-md font-medium bg-emerald-100 text-emerald-800 border border-emerald-300'
+        : 'text-[10px] px-2.5 py-1 rounded-md font-medium bg-surface-container-high text-on-surface-variant border border-outline-variant';
+      chip.textContent = aid;
+      if (isHerdada) chip.title = 'Herdada do grupo';
+      chipsContainer.appendChild(chip);
+    }
   }
+
+  renderizarEfetivo();
+  atualizadoresHerdar.push(renderizarEfetivo);
   editor.appendChild(secEfetivo);
 
   // --- Botão Salvar ---

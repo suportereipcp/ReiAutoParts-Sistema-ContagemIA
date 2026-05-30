@@ -213,71 +213,31 @@ function renderizarLogsCamera({ lista, vazio, filtroCamera, logs, filtros }) {
 // Renderiza a linha individual do log do banco de dados/Supabase
 function criarLinhaEvento(e) {
   const nivelEstilo = COR_NIVEL[e.nivel] ?? COR_NIVEL.INFO;
-  const categoriaEstilo = CATEGORIA_ESTILO[e.categoria] ?? { icon: 'settings', color: 'text-slate-500 bg-slate-100 border-slate-200' };
-  
-  const row = document.createElement('div');
-  row.className = 'group relative flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-surface-container-lowest rounded-xl border border-outline-variant hover:border-outline hover:shadow-sm transition-all duration-200 select-text';
-  row.dataset.linhaEvento = '';
-  
-  // Faixa colorida lateral indicando o nível
-  const borderPill = document.createElement('div');
-  borderPill.className = `absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${nivelEstilo.indicator}`;
-  
-  // Lado esquerdo: ícone, informações e mensagem
-  const leftSection = document.createElement('div');
-  leftSection.className = 'flex items-start gap-4 flex-1 pl-1';
 
-  // Ícone de Categoria
-  const iconBox = document.createElement('div');
-  iconBox.className = `w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${categoriaEstilo.color}`;
-  iconBox.innerHTML = `<span class="material-symbols-outlined text-xl">${categoriaEstilo.icon}</span>`;
+  const row = document.createElement('tr');
+  row.className = 'hover:bg-surface-container-low/50 transition-colors';
 
-  const textContainer = document.createElement('div');
-  textContainer.className = 'space-y-1';
+  const tdTime = document.createElement('td');
+  tdTime.className = 'px-4 py-2.5 text-xs text-on-surface-variant font-mono whitespace-nowrap';
+  tdTime.textContent = formatarDataHoraCompleta(e.timestamp);
 
-  // Meta Info: Timestamp, Categoria, Nível
-  const metaContainer = document.createElement('div');
-  metaContainer.className = 'flex flex-wrap items-center gap-2 text-xs';
+  const tdNivel = document.createElement('td');
+  tdNivel.className = 'px-4 py-2.5';
+  tdNivel.innerHTML = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${nivelEstilo.bg}">${e.nivel}</span>`;
 
-  const timeSpan = document.createElement('span');
-  timeSpan.className = 'text-on-surface-variant font-semibold';
-  timeSpan.textContent = formatarDataHoraCompleta(e.timestamp);
+  const tdCategoria = document.createElement('td');
+  tdCategoria.className = 'px-4 py-2.5 text-xs text-on-surface-variant font-medium uppercase';
+  tdCategoria.textContent = e.categoria ?? '—';
 
-  const catBadge = document.createElement('span');
-  catBadge.className = 'bg-surface-container text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase';
-  catBadge.textContent = e.categoria;
+  const tdMsg = document.createElement('td');
+  tdMsg.className = 'px-4 py-2.5 text-sm text-on-surface';
+  tdMsg.textContent = e.mensagem;
 
-  const nivelBadge = document.createElement('span');
-  nivelBadge.className = `px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${nivelEstilo.bg}`;
-  nivelBadge.textContent = e.nivel;
+  const tdOp = document.createElement('td');
+  tdOp.className = 'px-4 py-2.5 text-xs text-on-surface-variant font-mono';
+  tdOp.textContent = e.codigo_operador ?? '—';
 
-  metaContainer.append(timeSpan, catBadge, nivelBadge);
-
-  if (e.codigo_operador) {
-    const opBadge = document.createElement('span');
-    opBadge.className = 'bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 border border-primary/20';
-    opBadge.innerHTML = `<span class="material-symbols-outlined text-xs">person</span> Op: ${e.codigo_operador}`;
-    metaContainer.appendChild(opBadge);
-  }
-
-  // Mensagem
-  const msgP = document.createElement('p');
-  msgP.className = 'text-sm text-on-surface font-medium leading-relaxed';
-  msgP.textContent = e.mensagem;
-
-  textContainer.append(metaContainer, msgP);
-  leftSection.append(iconBox, textContainer);
-
-  // Lado direito: status de sincronização e ações extras
-  const rightSection = document.createElement('div');
-  rightSection.className = 'flex items-center gap-3 shrink-0 self-end md:self-center text-xs';
-
-  const syncBadge = document.createElement('div');
-  syncBadge.className = 'flex items-center gap-1 text-emerald-600 font-semibold bg-emerald-50 border border-emerald-100 rounded px-2 py-1';
-  syncBadge.innerHTML = '<span class="material-symbols-outlined text-sm">cloud_done</span><span class="text-[10px] uppercase font-bold tracking-wide">Supabase</span>';
-  
-  rightSection.appendChild(syncBadge);
-  row.append(borderPill, leftSection, rightSection);
+  row.append(tdTime, tdNivel, tdCategoria, tdMsg, tdOp);
   return row;
 }
 
@@ -299,7 +259,7 @@ function renderizarLogsSistema({ container, vazio, logs, filtros }) {
   container.innerHTML = '';
   const filtrados = filtrarLogsSistema(logs, filtros);
   vazio.hidden = filtrados.length > 0;
-  
+
   for (const e of filtrados) {
     container.appendChild(criarLinhaEvento(e));
   }
@@ -307,7 +267,7 @@ function renderizarLogsSistema({ container, vazio, logs, filtros }) {
 
 export async function renderEventos(ctx) {
   const el = document.createElement('div');
-  el.className = 'space-y-6 max-w-6xl';
+  el.className = 'space-y-6';
 
   // Carrega histórico de eventos do banco
   let eventosSistema = [];
@@ -317,21 +277,9 @@ export async function renderEventos(ctx) {
     console.error('Falha ao carregar eventos do sistema', err);
   }
 
-  // Cabeçalho Principal
-  const header = document.createElement('section');
-  header.className = 'flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant pb-6';
-  header.innerHTML = `
-    <div>
-      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-1">Observabilidade</p>
-      <h2 class="text-3xl font-headline font-light tracking-tight text-on-surface">Eventos & Logs</h2>
-      <p class="text-sm text-on-surface-variant font-light">Diagnóstico completo das conexões de câmeras, contagens e integridade da sincronização com o Supabase.</p>
-    </div>
-  `;
-  el.appendChild(header);
-
   // Grid de Cards com Estatísticas
   const statsGrid = document.createElement('section');
-  statsGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4';
+  statsGrid.className = 'grid grid-cols-2 lg:grid-cols-4 gap-3';
   statsGrid.innerHTML = `
     <!-- Card Sincronização -->
     <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 flex items-center justify-between zen-shadow-ambient">
@@ -402,19 +350,15 @@ export async function renderEventos(ctx) {
   painelCameras.className = 'space-y-4';
   painelCameras.innerHTML = `
     <!-- Barra de Filtros Câmeras -->
-    <div class="flex flex-col sm:flex-row gap-3 items-center justify-between bg-surface-container-low rounded-xl p-4 border border-outline-variant">
-      <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-        <input data-filtro-log-dia type="date" class="rounded-lg border-outline-variant bg-surface-container-lowest text-xs text-on-surface font-medium focus:ring-primary h-9">
-        <select data-filtro-log-camera class="rounded-lg border-outline-variant bg-surface-container-lowest text-xs text-on-surface font-medium focus:ring-primary h-9">
-          <option value="todas">Todas as Câmeras</option>
-        </select>
-      </div>
-      <div class="flex gap-2 w-full sm:w-auto">
-        <input data-filtro-log-busca type="text" placeholder="Filtrar console..." class="flex-1 sm:w-64 rounded-lg border-outline-variant bg-surface-container-lowest text-xs text-on-surface focus:ring-primary h-9">
-        <button data-btn-limpar-console class="h-9 px-3 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface border border-outline-variant hover:border-outline rounded-lg flex items-center justify-center gap-1.5 transition-all text-xs font-semibold">
-          <span class="material-symbols-outlined text-base">mop</span> Limpar
-        </button>
-      </div>
+    <div class="flex flex-wrap gap-2 items-center bg-surface-container-low rounded-xl p-3 border border-outline-variant">
+      <input data-filtro-log-dia type="date" class="rounded-lg border border-outline-variant bg-surface-container-lowest text-xs text-on-surface font-medium focus:ring-primary h-8 px-2">
+      <select data-filtro-log-camera class="rounded-lg border border-outline-variant bg-surface-container-lowest text-xs text-on-surface font-medium focus:ring-primary h-8 px-2">
+        <option value="todas">Todas as Câmeras</option>
+      </select>
+      <input data-filtro-log-busca type="text" placeholder="Filtrar console..." class="flex-1 min-w-[140px] rounded-lg border border-outline-variant bg-surface-container-lowest text-xs text-on-surface focus:ring-primary h-8 px-3">
+      <button data-btn-limpar-console class="h-8 px-3 bg-surface-container-lowest text-on-surface-variant hover:text-on-surface border border-outline-variant hover:border-outline rounded-lg flex items-center gap-1.5 transition-all text-xs font-semibold shrink-0">
+        <span class="material-symbols-outlined text-sm">mop</span> Limpar
+      </button>
     </div>
 
     <!-- Console de Tráfego -->
@@ -430,7 +374,7 @@ export async function renderEventos(ctx) {
           <span class="bg-slate-900 border border-slate-800 text-slate-400 px-2 py-0.5 rounded font-bold tracking-wider">WS ACTIVE</span>
         </div>
       </div>
-      <div data-log-camera-scroll class="max-h-[500px] overflow-auto p-2 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+      <div data-log-camera-scroll class="max-h-[calc(100vh-380px)] min-h-[300px] overflow-auto p-2 zen-scroll">
         <div data-log-camera-vazio class="text-slate-500 py-16 text-center italic text-xs font-mono">
           Aguardando fluxo de dados das câmeras Keyence...
         </div>
@@ -446,34 +390,43 @@ export async function renderEventos(ctx) {
   painelSistema.className = 'space-y-4 hidden';
   painelSistema.innerHTML = `
     <!-- Barra de Filtros Sistema -->
-    <div class="flex flex-col sm:flex-row gap-3 items-center justify-between bg-surface-container-low rounded-xl p-4 border border-outline-variant">
-      <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-        <select data-filtro-sys-nivel class="rounded-lg border-outline-variant bg-surface-container-lowest text-xs text-on-surface font-medium focus:ring-primary h-9">
-          <option value="todos">Todos os Níveis</option>
-          <option value="SUCCESS">Sucessos</option>
-          <option value="INFO">Informação</option>
-          <option value="WARN">Avisos</option>
-          <option value="ERROR">Erros</option>
-        </select>
-        <select data-filtro-sys-categoria class="rounded-lg border-outline-variant bg-surface-container-lowest text-xs text-on-surface font-medium focus:ring-primary h-9">
-          <option value="todas">Todas as Categorias</option>
-          <option value="SESSAO">Sessão</option>
-          <option value="CAMERA">Câmera</option>
-          <option value="SYNC">Sincronização</option>
-          <option value="SISTEMA">Sistema</option>
-        </select>
-      </div>
-      <div class="w-full sm:w-auto">
-        <input data-filtro-sys-busca type="text" placeholder="Pesquisar mensagens de log..." class="w-full sm:w-64 rounded-lg border-outline-variant bg-surface-container-lowest text-xs text-on-surface focus:ring-primary h-9">
-      </div>
+    <div class="flex flex-wrap gap-2 items-center bg-surface-container-low rounded-xl p-3 border border-outline-variant">
+      <select data-filtro-sys-nivel class="rounded-lg border border-outline-variant bg-surface-container-lowest text-xs text-on-surface font-medium focus:ring-primary h-8 px-2">
+        <option value="todos">Todos os Níveis</option>
+        <option value="SUCCESS">Sucessos</option>
+        <option value="INFO">Informação</option>
+        <option value="WARN">Avisos</option>
+        <option value="ERROR">Erros</option>
+      </select>
+      <select data-filtro-sys-categoria class="rounded-lg border border-outline-variant bg-surface-container-lowest text-xs text-on-surface font-medium focus:ring-primary h-8 px-2">
+        <option value="todas">Todas as Categorias</option>
+        <option value="SESSAO">Sessão</option>
+        <option value="CAMERA">Câmera</option>
+        <option value="SYNC">Sincronização</option>
+        <option value="SISTEMA">Sistema</option>
+      </select>
+      <input data-filtro-sys-busca type="text" placeholder="Pesquisar mensagens..." class="flex-1 min-w-[140px] rounded-lg border border-outline-variant bg-surface-container-lowest text-xs text-on-surface focus:ring-primary h-8 px-3">
     </div>
 
     <!-- Lista de Logs -->
-    <div class="space-y-3">
-      <div data-log-sys-vazio class="rounded-2xl bg-surface-container-lowest p-8 text-center border border-outline-variant text-sm text-on-surface-variant shadow-sm hidden">
+    <div class="rounded-2xl border border-outline-variant bg-surface-container-lowest overflow-hidden">
+      <div data-log-sys-vazio class="p-8 text-center text-sm text-on-surface-variant hidden">
         Nenhum evento registrado no sistema para os filtros aplicados.
       </div>
-      <div data-log-sys-lista class="space-y-3"></div>
+      <div data-log-sys-scroll class="max-h-[calc(100vh-380px)] min-h-[300px] overflow-auto zen-scroll">
+        <table class="w-full text-left text-sm border-collapse">
+          <thead class="sticky top-0 z-10 bg-surface-container-low">
+            <tr class="text-on-surface-variant">
+              <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] w-40">Data/Hora</th>
+              <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] w-24">Nível</th>
+              <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] w-28">Categoria</th>
+              <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em]">Mensagem</th>
+              <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] w-20">Operador</th>
+            </tr>
+          </thead>
+          <tbody data-log-sys-lista class="divide-y divide-surface-container"></tbody>
+        </table>
+      </div>
     </div>
   `;
   paineisContainer.appendChild(painelSistema);

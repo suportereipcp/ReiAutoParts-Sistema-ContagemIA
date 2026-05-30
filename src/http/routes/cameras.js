@@ -3,6 +3,10 @@ import { buscarImagemCamera } from '../../camera/live-image.js';
 export function rotasCameras(fastify, { cameras, buscarImagem = buscarImagemCamera }) {
   const porId = new Map(cameras.map((c) => [c.id, c]));
 
+  fastify.get('/cameras', async () => {
+    return cameras.map(c => ({ id: c.id, ip: c.ip, porta: c.porta }));
+  });
+
   fastify.get('/cameras/:id/live-image', async (req, reply) => {
     const id = Number(req.params.id);
     const cam = porId.get(id);

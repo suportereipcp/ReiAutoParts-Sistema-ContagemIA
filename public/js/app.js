@@ -61,7 +61,7 @@ function renderShell(ativo) {
 }
 
 function caminhoPadrao(id) {
-  return { inicial: 'Inicial', cargas: 'Cargas', relatorios: 'Relatórios', eventos: 'Eventos', configurador: 'Configurador' }[id] ?? 'Rei AutoParts';
+  return { inicial: 'Inicial', cargas: 'Gerenciador de Cargas', relatorios: 'Relatórios', eventos: 'Eventos', configurador: 'Configurador' }[id] ?? 'Rei AutoParts';
 }
 
 const ctx = { api, catalogos, sessoesSvc, etiquetasSvc, sync, sessoes };

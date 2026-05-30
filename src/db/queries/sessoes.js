@@ -79,3 +79,30 @@ export function listarPorCaixaNoEmbarque(db, numero_embarque, numero_caixa) {
       ORDER BY iniciada_em DESC`
   ).all(numero_embarque, numero_caixa);
 }
+
+export function contarCaixasHoje(db) {
+  return db.prepare(
+    `SELECT COUNT(*) as total FROM sessoes_contagem
+     WHERE status = 'encerrada'
+       AND date(encerrada_em) = date('now', 'localtime')`
+  ).get().total;
+}
+
+export function ultimasCaixasFechadas(db, limite = 10) {
+  return db.prepare(
+    `SELECT id, numero_embarque, numero_caixa, quantidade_total, encerrada_em, camera_id
+     FROM sessoes_contagem
+     WHERE status = 'encerrada'
+     ORDER BY encerrada_em DESC
+     LIMIT ?`
+  ).all(limite);
+}
+
+export function progressoEmbarque(db, numeroEmbarque) {
+  const caixas = db.prepare(
+    `SELECT COUNT(*) as total_caixas, COALESCE(SUM(quantidade_total), 0) as total_pecas
+     FROM sessoes_contagem
+     WHERE numero_embarque = ? AND status = 'encerrada'`
+  ).get(numeroEmbarque);
+  return caixas;
+}

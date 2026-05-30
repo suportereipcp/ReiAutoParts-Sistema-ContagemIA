@@ -46,4 +46,17 @@ export function rotasSessoes(fastify, { sessaoService }) {
       return reply.code(400).send({ erro: e.message });
     }
   });
+
+  fastify.get('/sessoes/caixas-hoje', async () => {
+    return { total: sessaoService.contarCaixasHoje() };
+  });
+
+  fastify.get('/sessoes/ultimas-caixas', async (req) => {
+    const limite = Number(req.query.limite ?? 10);
+    return sessaoService.ultimasCaixasFechadas(limite);
+  });
+
+  fastify.get('/sessoes/progresso/:embarque', async (req) => {
+    return sessaoService.progressoEmbarque(req.params.embarque);
+  });
 }
