@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostCommit": [
+      {
+        "matcher": "installer/wpf/**/*.{ps1,xaml}",
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File installer/wpf/Build-Exe.ps1"
+      }
+    ]
+  }
+}
