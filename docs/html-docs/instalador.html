@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instalador WPF — Rei AutoParts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; } code, pre { font-family: 'JetBrains Mono', monospace; }</style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
+      <a href="index.html" class="text-sky-600 hover:text-sky-800 text-sm">&larr; Voltar</a>
+      <h1 class="text-lg font-bold">Instalador WPF</h1>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- Visão Geral -->
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Visão Geral</h2>
+      <p class="text-sm text-gray-700 mb-4">Aplicação WPF (.NET) que configura o Edge PC Windows para rodar o sistema de contagem. Wizard de 4 etapas que instala dependências, configura variáveis de ambiente e registra o serviço Node.js.</p>
+      <div class="grid md:grid-cols-4 gap-4">
+        <div class="bg-sky-50 rounded-lg p-3 text-center">
+          <p class="text-2xl font-bold text-sky-700">WPF</p>
+          <p class="text-xs text-sky-600">.NET Framework</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3 text-center">
+          <p class="text-2xl font-bold text-emerald-700">4 Steps</p>
+          <p class="text-xs text-emerald-600">Wizard guiado</p>
+        </div>
+        <div class="bg-violet-50 rounded-lg p-3 text-center">
+          <p class="text-2xl font-bold text-violet-700">Machine</p>
+          <p class="text-xs text-violet-600">Env vars de sistema</p>
+        </div>
+        <div class="bg-amber-50 rounded-lg p-3 text-center">
+          <p class="text-2xl font-bold text-amber-700">.exe</p>
+          <p class="text-xs text-amber-600">Single-file publish</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Estrutura de Arquivos -->
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Estrutura de Arquivos</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+          <thead class="bg-gray-50">
+            <tr class="border-b"><th class="text-left py-2 px-3 font-semibold">Arquivo</th><th class="text-left py-2 px-3 font-semibold">Responsabilidade</th></tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="py-2 px-3"><code>MainWindow.xaml</code></td><td class="py-2 px-3">Layout do wizard (4 páginas)</td></tr>
+            <tr><td class="py-2 px-3"><code>MainWindow.xaml.cs</code></td><td class="py-2 px-3">Lógica de navegação e validação</td></tr>
+            <tr><td class="py-2 px-3"><code>App.xaml</code></td><td class="py-2 px-3">Recursos globais e tema</td></tr>
+            <tr><td class="py-2 px-3"><code>Helpers/EnvWriter.cs</code></td><td class="py-2 px-3">Grava variáveis em Machine-level</td></tr>
+            <tr><td class="py-2 px-3"><code>Helpers/ServiceInstaller.cs</code></td><td class="py-2 px-3">Registra serviço Windows (NSSM)</td></tr>
+            <tr><td class="py-2 px-3"><code>Helpers/NodeChecker.cs</code></td><td class="py-2 px-3">Verifica Node.js instalado</td></tr>
+            <tr><td class="py-2 px-3"><code>installer.csproj</code></td><td class="py-2 px-3">Projeto .NET, target single-file</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Fluxo do Wizard -->
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Fluxo do Wizard</h2>
+      <div class="space-y-4">
+        <div class="flex items-start gap-4">
+          <div class="w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">1</div>
+          <div>
+            <h3 class="font-semibold text-sm">Verificação de Pré-requisitos</h3>
+            <p class="text-xs text-gray-600 mt-1">Checa Node.js 20+, conectividade de rede, permissões de administrador. Bloqueia avanço se faltar algo.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">2</div>
+          <div>
+            <h3 class="font-semibold text-sm">Configuração de Ambiente</h3>
+            <p class="text-xs text-gray-600 mt-1">Formulário para preencher variáveis: Supabase URL, Service Role Key, IPs das câmeras, porta do servidor. Validação em tempo real.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">3</div>
+          <div>
+            <h3 class="font-semibold text-sm">Instalação</h3>
+            <p class="text-xs text-gray-600 mt-1">Grava variáveis de ambiente (Machine-level), executa <code>npm install</code>, registra serviço Windows via NSSM.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="w-8 h-8 bg-sky-600 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">4</div>
+          <div>
+            <h3 class="font-semibold text-sm">Conclusão</h3>
+            <p class="text-xs text-gray-600 mt-1">Resumo do que foi configurado, status do serviço, botão para abrir o Monitor 1 no navegador.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Segurança -->
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Segurança</h2>
+      <p class="text-sm text-gray-700 mb-4">Variáveis sensíveis são gravadas como <strong>Machine-level environment variables</strong> (requer elevação de administrador). Nunca ficam em arquivo <code>.env</code> em produção.</p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+          <thead class="bg-gray-50">
+            <tr class="border-b"><th class="text-left py-2 px-3 font-semibold">Variável</th><th class="text-left py-2 px-3 font-semibold">Escopo</th><th class="text-left py-2 px-3 font-semibold">Sensível</th></tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="py-2 px-3"><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td class="py-2 px-3">Machine</td><td class="py-2 px-3">Não</td></tr>
+            <tr><td class="py-2 px-3"><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td class="py-2 px-3">Machine</td><td class="py-2 px-3 text-red-600 font-semibold">Sim</td></tr>
+            <tr><td class="py-2 px-3"><code>CAMERA_1_IP</code></td><td class="py-2 px-3">Machine</td><td class="py-2 px-3">Não</td></tr>
+            <tr><td class="py-2 px-3"><code>CAMERA_2_IP</code></td><td class="py-2 px-3">Machine</td><td class="py-2 px-3">Não</td></tr>
+            <tr><td class="py-2 px-3"><code>SERVER_PORT</code></td><td class="py-2 px-3">Machine</td><td class="py-2 px-3">Não</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Como Gerar o .exe -->
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Como Gerar o .exe</h2>
+      <h3 class="font-semibold text-sm mb-2">Pré-requisitos</h3>
+      <ul class="text-sm text-gray-700 space-y-1 mb-4">
+        <li>• .NET SDK 8.0+ instalado</li>
+        <li>• Visual Studio 2022 ou <code>dotnet</code> CLI</li>
+      </ul>
+      <h3 class="font-semibold text-sm mb-2">Comando</h3>
+      <pre class="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true</code></pre>
+      <p class="text-xs text-gray-500 mt-2">O executável gerado fica em <code>bin/Release/net8.0-windows/win-x64/publish/</code></p>
+    </section>
+
+    <!-- Como Instalar -->
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Como Instalar</h2>
+      <div class="space-y-3 text-sm text-gray-700">
+        <div class="flex items-start gap-3">
+          <span class="bg-sky-100 text-sky-700 font-bold text-xs px-2 py-1 rounded">1</span>
+          <p>Copiar o <code>.exe</code> para o Edge PC de destino</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="bg-sky-100 text-sky-700 font-bold text-xs px-2 py-1 rounded">2</span>
+          <p>Executar como <strong>Administrador</strong> (botão direito → Executar como administrador)</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="bg-sky-100 text-sky-700 font-bold text-xs px-2 py-1 rounded">3</span>
+          <p>Seguir o wizard: preencher variáveis, aguardar instalação</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="bg-sky-100 text-sky-700 font-bold text-xs px-2 py-1 rounded">4</span>
+          <p>Verificar que o serviço <code>rei-contagem</code> está rodando no Gerenciador de Serviços</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quando Regerar -->
+    <section class="bg-white rounded-xl p-6 border">
+      <h2 class="text-xl font-bold mb-3">Quando Regerar</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-red-50 rounded-lg p-4">
+          <h3 class="font-semibold text-sm text-red-800 mb-2">Precisa regerar o .exe</h3>
+          <ul class="text-xs text-red-700 space-y-1">
+            <li>• Nova variável de ambiente adicionada</li>
+            <li>• Mudança no fluxo do wizard</li>
+            <li>• Atualização de dependência .NET</li>
+            <li>• Correção de bug no instalador</li>
+          </ul>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-4">
+          <h3 class="font-semibold text-sm text-emerald-800 mb-2">Não precisa regerar</h3>
+          <ul class="text-xs text-emerald-700 space-y-1">
+            <li>• Mudanças no código Node.js</li>
+            <li>• Novas migrations SQLite</li>
+            <li>• Alterações no frontend</li>
+            <li>• Atualizações de dependências npm</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>
