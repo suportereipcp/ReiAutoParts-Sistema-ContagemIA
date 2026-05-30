@@ -27,7 +27,10 @@ export function criarPoller({ db, buscarAlteracoes, logger, faturamentoService }
             const local = buscarEmbarque(db, r.numero_embarque);
             const nfNova = r.numero_nota_fiscal && (!local || !local.numero_nota_fiscal);
             const embarqueNovo = !local;
-            if (nfNova) faturamentoService.aoReceberNF(r.numero_embarque);
+            // DESATIVADO: finalização automática ao receber NF.
+            // Agora a finalização é feita manualmente via botão "Finalizar Carga"
+            // (que dispara impressão em lote das etiquetas finais).
+            // if (nfNova) faturamentoService.aoReceberNF(r.numero_embarque);
             if (embarqueNovo) faturamentoService.notificarEmbarqueNovo(r.numero_embarque);
           }
         }

@@ -18,7 +18,7 @@ function criarDb() {
   return db;
 }
 
-test('poller chama aoReceberNF em transicao NF vazio->preenchido', async () => {
+test('poller NAO chama aoReceberNF em transicao NF vazio->preenchido (desativado — finalização manual)', async () => {
   const db = criarDb();
   db.prepare(`INSERT INTO embarques (numero_embarque, status, numero_nota_fiscal) VALUES ('E1', 'aberto', NULL)`).run();
 
@@ -34,7 +34,7 @@ test('poller chama aoReceberNF em transicao NF vazio->preenchido', async () => {
   });
 
   await poller.tick();
-  assert.deepEqual(chamados, ['E1']);
+  assert.deepEqual(chamados, []);
 });
 
 test('poller nao chama aoReceberNF quando NF nao muda', async () => {
