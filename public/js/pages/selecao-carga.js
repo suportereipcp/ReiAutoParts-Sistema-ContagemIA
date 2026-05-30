@@ -29,17 +29,12 @@ export async function renderSelecaoCarga(ctx) {
   }
 
   async function abrirIniciarSessao(numeroEmbarque) {
-    const [ops, operadores, camerasConfig] = await Promise.all([
-      ctx.catalogos.ops().catch(() => []),
-      ctx.catalogos.operadores().catch(() => []),
-      ctx.api.get('/cameras/config').catch(() => []),
-    ]);
+    const camerasConfig = await ctx.api.get('/cameras/config').catch(() => []);
     const livres = camerasLivres.map(id => ({ id }));
     abrirModalIniciarSessao({
       numeroEmbarque,
       embarques: abertas,
-      ops,
-      operadores,
+      api: ctx.api,
       camerasLivres: livres,
       camerasConfig,
       onConfirmar: async (dados) => {
